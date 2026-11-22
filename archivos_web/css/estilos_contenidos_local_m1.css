@@ -5,4 +5,10 @@
     --segundo-color:#0D63C9;
     --tercer-color:#BBD6F5;
 }
-.container { max-width: 640px; margin: 0 auto; }
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+    height: auto;
+    padding-bottom: 0;      /* el original usa % del ancho de la página; aquí la caja manda */
+    aspect-ratio: 16 / 9;
+}

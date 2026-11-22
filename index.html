@@ -110,10 +110,10 @@ const CURSO = [
       { anterior:[["","modulo_2/unidad_2/5_accion/anterior/Acción.html"]] },
       { anterior:[["","modulo_2/unidad_2/6_evaluacion/anterior/Evaluación.html"]] } ] } ] },
   { titulo:"Material Complementario", tipo:"complementario", grupos:[
-    { titulo:"M1U1", archivos:["material_complementario/m1u1/FuncionActivacionPersonalizada.ipynb", "material_complementario/m1u1/SeleccionHiperparametros_avanzado.ipynb", "material_complementario/m1u1/SeleccionHiperparametros_basico.ipynb"] },
-    { titulo:"M1U2", archivos:["material_complementario/m1u2/EarlyStopping.ipynb", "material_complementario/m1u2/SeleccionHiperparametros_avanzado_Regularizacion.ipynb", "omitido.html"] },
-    { titulo:"M2U1", archivos:["material_complementario/m2u1/MultiOutput.ipynb", "material_complementario/m2u1/SegmentacionSemantica.ipynb", "material_complementario/m2u1/Sincronico4_DL_MCD.ipynb", "omitido.html"] },
-    { titulo:"M2U2", archivos:["omitido.html", "omitido.html", "material_complementario/m2u2/VariacionesModelosSecuenciales.ipynb"] } ] },
+    { titulo:"M1U1", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/FuncionActivacionPersonalizada.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_avanzado.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_basico.ipynb"] },
+    { titulo:"M1U2", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/EarlyStopping.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/SeleccionHiperparametros_avanzado_Regularizacion.ipynb"] },
+    { titulo:"M2U1", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/MultiOutput.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/SegmentacionSemantica.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/Sincronico4_DL_MCD.ipynb"] },
+    { titulo:"M2U2", archivos:[, "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u2/VariacionesModelosSecuenciales.ipynb"] } ] },
   { titulo:"Evaluación final de la asignatura", tipo:"encuesta" },
 ];
 
@@ -129,13 +129,13 @@ function seccion(s, i) {
   if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} (en construcción)</span></span>`);
   return filas.join("");
 }
-const arch = r => `<a class="sec arch" href="${esc(r)}" target="_blank" rel="noopener"><span class="nombre">${esc(r.split("/").pop())}</span></a>`;
+const arch = r => `<a class="sec arch" href="${esc(r)}" target="_blank" rel="noopener"><span class="nombre">${esc(decodeURIComponent(r.split("/").pop()))}</span></a>`;
 function cuerpo(m) {
   if (m.tipo === "presentacion")
     return m.items.map(x => fila(x[0], ["", x[1]], true)).join("") +
            `<span class="sec pend"><span class="nombre">Comunicaciones (foros del LMS): ${m.foros.map(esc).join(" · ")}</span></span>`;
   if (m.tipo === "complementario")
-    return m.grupos.map(g => `<details class="uni"><summary><span class="tri">▶</span><span class="t">${g.titulo}</span></summary>
+    return `<span class="sec pend"><span class="nombre">Las diapositivas de los sincrónicos 3 a 6 (PDF) no se suben al repositorio: están en el LMS (Material Complementario).</span></span>` + m.grupos.map(g => `<details class="uni"><summary><span class="tri">▶</span><span class="t">${g.titulo}</span></summary>
       <div class="uni-body">${g.archivos.map(arch).join("")}</div></details>`).join("");
   if (m.tipo === "encuesta")
     return `<span class="sec pend"><span class="nombre">Encuesta de satisfacción del LMS (21 preguntas). No tiene contenido para descargar.</span></span>`;
