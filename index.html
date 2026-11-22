@@ -36,6 +36,25 @@
   .sec.arch::before { content:"📎"; }
   .tag { font-size:.75rem; font-weight:700; border-radius:10px; padding:2px 9px; background:var(--viejo); color:#fff; }
 
+
+  /* cambios por sección (viñetas) */
+  .cambios-sec { margin: 4px 0 10px 40px; padding: 8px 14px 8px 28px; background: #fff7e6; border-left: 3px solid #f0a030; border-radius: 4px; font-size: .92rem; color:#3b4456; }
+  .cambios-sec li { margin: 6px 0; }
+  .cambios-sec ol { margin: 6px 0; padding-left: 22px; }
+  .cambios-sec code { background:#fdecc8; padding:0 4px; border-radius:3px; }
+  /* cambios generales */
+  #cambios-generales { margin-bottom: 16px; }
+  .bloque h3 { font-size: 1.05rem; margin: 0 0 6px; }
+  .bloque h4 { font-size: .95rem; margin: 18px 0 6px; color: #3b4456; text-transform: uppercase; letter-spacing: .03em; }
+  .resumen { margin: 0 0 4px; padding: 10px 12px; background: #eef4ff; border-left: 4px solid #2f6fdb; border-radius: 4px; }
+  .razones { margin: 0; padding-left: 22px; } .razones li { margin: 6px 0; }
+  .bloque .nota { font-size: .85rem; color: #5b6472; margin: 6px 0 0; }
+  .tabla { border-collapse: collapse; margin: 6px 0 4px; font-size: .92rem; }
+  .tabla th, .tabla td { border: 1px solid #dde1e7; padding: 4px 14px; text-align: center; }
+  .tabla th { background: #f0f3f8; }
+  .grafica { display: block; width: 100%; max-width: 600px; height: auto; margin: 6px 0 2px; }
+  h1.titulo { font-size: 1.5rem; margin: 0 0 4px; } p.sub { color:#5b6472; margin: 0 0 20px; }
+
   /* visor con flecha de regreso */
   #visor { position:fixed; inset:0; background:#fff; display:none; flex-direction:column; z-index:10; }
   #visor.on { display:flex; }
@@ -48,7 +67,73 @@
 </style>
 </head>
 <body>
-<main id="app"></main>
+<main>
+  <h1 class="titulo">Curso Aprendizaje Profundo</h1>
+  <p class="sub">Versión anterior (LMS) y versión nueva, sección por sección. En cada sección se listan los cambios que se hacen.</p>
+  <!-- CAMBIOS-GENERALES:INICIO -->
+  <details class="mod" id="cambios-generales"><summary><span class="tri">▶</span><span class="t">Cambios generales: de TensorFlow (y Keras) a PyTorch</span></summary>
+    <div class="mod-body">
+<div class="bloque">
+  <h3>1. Cambiar de TensorFlow (y Keras) a PyTorch</h3>
+  <p class="resumen">PyTorch es un framework más usado que TensorFlow para deep learning, especialmente en LLMs, una de las mayores aplicaciones de hoy.</p>
+
+  <h4>Por qué</h4>
+  <ul class="razones">
+    <li><strong>La investigación ya usa PyTorch.</strong> En 2026, cerca del 85 % de los artículos usan PyTorch y cerca del 15 %, TensorFlow.</li>
+    <li><strong>La comunidad y la industria lo adoptaron.</strong> PyTorch tiene más descargas y más modelos publicados (ver tabla).</li>
+    <li><strong>TensorFlow pierde soporte.</strong> Hugging Face quitó TensorFlow de su librería en la versión 5.0 (enero de 2026). Google enfoca TensorFlow en seguridad y errores, y pone su trabajo de IA generativa en JAX y PyTorch.</li>
+    <li><strong>Empresas grandes trabajan con PyTorch.</strong> OpenAI, Meta, Anthropic, Tesla y Hugging Face trabajan exclusivamente con PyTorch.</li>
+  </ul>
+
+  <h4>Artículos de investigación (2018 a 2026)</h4>
+  <svg class="grafica" viewBox="0 0 600 250" role="img" aria-label="Artículos de investigación por framework, 2018 a 2026">
+    <g font-size="11" fill="#3b4456" font-family="system-ui, sans-serif">
+      <rect x="40" y="2" width="12" height="12" fill="#2f6fdb"/>
+      <text x="58" y="12">PyTorch</text>
+      <rect x="140" y="2" width="12" height="12" fill="#f0a030"/>
+      <text x="158" y="12">TensorFlow</text>
+      <line x1="40" y1="20" x2="580" y2="20" stroke="#dde1e7"/>
+      <line x1="40" y1="120" x2="580" y2="120" stroke="#dde1e7"/>
+      <line x1="40" y1="220" x2="580" y2="220" stroke="#9aa1ab"/>
+      <text x="32" y="24" text-anchor="end">100</text>
+      <text x="32" y="124" text-anchor="end">50</text>
+      <text x="32" y="224" text-anchor="end">0</text>
+      <rect x="55" y="180" width="30" height="40" fill="#2f6fdb"/>
+      <rect x="87" y="120" width="30" height="100" fill="#f0a030"/>
+      <rect x="145" y="120" width="30" height="100" fill="#2f6fdb"/>
+      <rect x="177" y="160" width="30" height="60" fill="#f0a030"/>
+      <rect x="235" y="118" width="30" height="102" fill="#2f6fdb"/>
+      <rect x="267" y="200" width="30" height="20" fill="#f0a030"/>
+      <rect x="325" y="70" width="30" height="150" fill="#2f6fdb"/>
+      <rect x="357" y="210" width="30" height="10" fill="#f0a030"/>
+      <rect x="415" y="82" width="30" height="138" fill="#2f6fdb"/>
+      <rect x="447" y="203" width="30" height="17" fill="#f0a030"/>
+      <rect x="505" y="50" width="30" height="170" fill="#2f6fdb"/>
+      <rect x="537" y="190" width="30" height="30" fill="#f0a030"/>
+      <text x="85" y="240" text-anchor="middle">2018</text>
+      <text x="175" y="240" text-anchor="middle">2019</text>
+      <text x="265" y="240" text-anchor="middle">2020</text>
+      <text x="355" y="240" text-anchor="middle">2022</text>
+      <text x="445" y="240" text-anchor="middle">2024</text>
+      <text x="535" y="240" text-anchor="middle">2026</text>
+    </g>
+  </svg>
+  <p class="nota">2024 usa el punto medio de los rangos (PyTorch 69 %, TensorFlow 8,5 %).</p>
+
+  <h4>Uso actual</h4>
+  <table class="tabla">
+    <thead><tr><th>Fuente</th><th>PyTorch</th><th>TensorFlow</th></tr></thead>
+    <tbody>
+      <tr><td>Descargas PyPI (ago 2026)</td><td>86,2 M/mes</td><td>16,7 M/mes (5,2:1)</td></tr>
+      <tr><td>Modelos en Hugging Face (oct 2026)</td><td>242.652</td><td>17.479 (14:1)</td></tr>
+    </tbody>
+  </table>
+</div>
+    </div>
+  </details>
+  <!-- CAMBIOS-GENERALES:FIN -->
+  <div id="app"></div>
+</main>
 
 <div id="visor">
   <div id="barra">
@@ -60,62 +145,371 @@
   <iframe id="marco"></iframe>
 </div>
 
+<script type="application/json" id="datos">
+[
+ {
+  "titulo": "Presentación del Curso",
+  "tipo": "presentacion",
+  "items": [
+   [
+    "Introducción",
+    "presentacion/anterior/Introducción.html"
+   ],
+   [
+    "Datos del docente",
+    "omitido.html"
+   ],
+   [
+    "Contacta a tu asesor(a) académico(a)",
+    "omitido.html"
+   ]
+  ],
+  "foros": [
+   "Café virtual",
+   "Necesidades e inquietudes"
+  ]
+ },
+ {
+  "titulo": "Módulo 1: Conceptos básicos y buenas prácticas dentro del aprendizaje profundo",
+  "intro": {
+   "anterior": [
+    [
+     "",
+     "modulo_1/introduccion/anterior/Introducción.html"
+    ]
+   ]
+  },
+  "unidades": [
+   {
+    "titulo": "Unidad 1: Componentes fundamentales de las redes neuronales",
+    "secciones": [
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/1_introduccion/anterior/Introducción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/2_contexto/anterior/Contexto.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio:</strong> reemplazar el libro guía <a href=\"https://www.manning.com/books/deep-learning-with-python\">\"Deep Learning with Python\"</a> (2017, casi 10 años) por <a href=\"https://oreilly.com/library/view/hands-on-machine-learning/9798341607972/\"><em>Hands-On Machine Learning with Scikit-Learn and PyTorch</em></a> de Aurélien Géron.",
+       "<strong>Lectura obligatoria para esta unidad:</strong> capítulo 4 del libro (secciones \"Linear Regression\" y \"Gradient Descent\"), y capítulos 9 y 10."
+      ]
+     },
+     {
+      "nueva": [
+       [
+        "Regresión lineal",
+        "modulo_1/unidad_1/3_experiencia/linear_regression.html"
+       ],
+       [
+        "Redes neuronales",
+        "modulo_1/unidad_1/3_experiencia/redes_neuronales.html"
+       ]
+      ],
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/3_experiencia/anterior/Experiencia.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio 1:</strong> agregar el notebook <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_1/unidad_1/3_experiencia/repaso_regresion_lineal.ipynb\"><code>Script1M1U1_repaso_regresion_lineal.ipynb</code></a>.",
+       "<strong>Cambio 2:</strong> reemplazar la <a href=\"https://view.genially.com/641392da9b752f001850191d\">presentación de Genially de regresión lineal</a> por la presentación interactiva <a href=\"modulo_1/unidad_1/3_experiencia/linear_regression.html\"><code>linear_regression.html</code></a>, y agregar el notebook <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_1/unidad_1/3_experiencia/repaso_regresion_lineal.ipynb\"><code>repaso_regresion_lineal.ipynb</code></a> como complemento al HTML.",
+       "<strong>Cambio 3:</strong> reemplazar la <a href=\"https://view.genially.com/641392cabe6bed0018eebd1a\">presentación de Genially de funciones de activación</a> por la presentación interactiva <a href=\"modulo_1/unidad_1/3_experiencia/redes_neuronales.html\"><code>redes_neuronales.html</code></a>."
+      ]
+     },
+     {
+      "nueva": [
+       [
+        "",
+        "modulo_1/unidad_1/4_reflexion/preguntas_redes_neuronales.html"
+       ]
+      ],
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/4_reflexion/anterior/Reflexión.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio 1:</strong> reemplazar las preguntas actuales por las preguntas del archivo <a href=\"modulo_1/unidad_1/4_reflexion/preguntas_redes_neuronales.html\"><code>preguntas_redes_neuronales.html</code></a>."
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/5_accion/anterior/Acción.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio 1:</strong> reemplazar los botones de enlaces de TensorFlow y Keras por tutoriales de PyTorch para principiantes: <a href=\"https://docs.pytorch.org/tutorials/beginner/basics/intro.html\">Learn the Basics (intro)</a> en lugar de TensorFlow, y <a href=\"https://docs.pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html\">Build the Neural Network</a> en lugar de Keras.",
+       "<strong>Cambio 2:</strong> reemplazar <code>Script1M1U1.ipynb</code> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_1/unidad_1/5_accion/Script1M1U1_pytorch.ipynb\"><code>Script1M1U1_pytorch.ipynb</code></a>.",
+       "<strong>Cambio 3:</strong> reemplazar la nota sobre Keras y TensorFlow (\"Usaremos la librería Keras sobre TensorFlow…\") por su versión en PyTorch: \"Usaremos PyTorch, con el módulo <code>torch.nn</code>, para diseñar, entrenar y evaluar las redes neuronales profundas. En caso de requerir información sobre esta librería podemos consultar los siguientes enlaces: <a href=\"https://docs.pytorch.org/docs/stable/index.html\">documentación de PyTorch</a> y <a href=\"https://docs.pytorch.org/docs/stable/nn.html\">documentación de torch.nn</a>.\""
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_1/6_evaluacion/anterior/Evaluación.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio 1:</strong> reemplazar el notebook <code>Script2M1U1.ipynb</code> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_1/unidad_1/6_evaluacion/Script2M1U1_pytorch.ipynb\"><code>Script2M1U1_pytorch.ipynb</code></a>.",
+       "<strong>Cambio 2:</strong> reemplazar el enunciado del problema por el siguiente: <br>El script debe cumplir los siguientes criterios: <ol> <li>Construir una red neuronal densa en PyTorch, usando <code>nn.Sequential</code> (como en la guía del curso) o una clase que herede de <code>nn.Module</code>.</li> <li>El tamaño del batch se debe fijar como el número de instancias del conjunto de entrenamiento (entrenamiento <em>full-batch</em>).</li> <li>Debe realizarse una búsqueda de algunos hiperparámetros: número de capas, número de unidades por capa y funciones de activación, de tal forma que se maximice el accuracy. La mejor configuración se elige con el conjunto de <strong>validación</strong>, y su accuracy sobre el conjunto de <strong>prueba</strong> (test) debe ser <strong>superior al 78 %</strong>.</li> <li>Luego de completar el numeral anterior, añada una nueva sección en el código. Allí se debe tomar el mejor modelo del numeral 3 y entrenarlo con diferentes valores para el parámetro <em>learning rate</em>, específicamente: 0.0001, 0.01, 0.1, 1, 10. Para cada uno de los experimentos obtenga las gráficas de la función de costo y del accuracy para los conjuntos de entrenamiento y validación, y reporte el accuracy en prueba al final (no realizar búsqueda de hiperparámetros). Con base en las gráficas concluya acerca del efecto del learning rate en el entrenamiento de una red neuronal.</li> </ol>"
+      ]
+     }
+    ]
+   },
+   {
+    "titulo": "Unidad 2: Buenas prácticas para la construcción de modelos de aprendizaje profundo",
+    "secciones": [
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/1_introduccion/anterior/Introducción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/2_contexto/anterior/Contexto.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/3_experiencia/anterior/Experiencia.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/4_reflexion/anterior/Reflexión.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/5_accion/anterior/Acción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_1/unidad_2/6_evaluacion/anterior/Evaluación.html"
+       ]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "titulo": "Módulo 2: Aplicaciones a partir de las redes convolucionales y recurrentes con sus principales variaciones",
+  "intro": {
+   "anterior": [
+    [
+     "",
+     "modulo_2/introduccion/anterior/Introducción.html"
+    ]
+   ]
+  },
+  "unidades": [
+   {
+    "titulo": "Unidad 1: Redes neuronales convolucionales",
+    "secciones": [
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/1_introduccion/anterior/Introducción.html"
+       ]
+      ]
+     },
+     {
+      "sinCambios": true,
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/2_contexto/anterior/Contexto.html"
+       ]
+      ]
+     },
+     {
+      "nueva": [
+       [
+        "",
+        "modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html"
+       ]
+      ],
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/3_experiencia/anterior/Experiencia.html"
+       ]
+      ],
+      "cambios": [
+       "<strong>Cambio 1:</strong> reemplazar la <a href=\"https://view.genially.com/6422e7f9c4f1900012d62ea0\">presentación de Genially \"Convolución\"</a> por la presentación interactiva <a href=\"modulo_2/unidad_1/3_experiencia/nueva/redes_convolucionales.html\"><code>redes_convolucionales.html</code></a>.",
+       "<strong>Cambio 2:</strong> reemplazar los notebooks <code>3_Script1_M2_U1.ipynb</code> y <code>4_Script2_M2_U1.ipynb</code> (TensorFlow/Keras) por sus versiones en PyTorch: <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_1/3_experiencia/nueva/3_Script1_M2_U1_pytorch.ipynb\"><code>3_Script1_M2_U1_pytorch.ipynb</code></a>, <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_data_augmentation_pytorch.ipynb\"><code>4_Script2_M2_U1_data_augmentation_pytorch.ipynb</code></a> y <a href=\"https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_pytorch.ipynb\"><code>4_Script2_M2_U1_transfer_learning_pytorch.ipynb</code></a>."
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/4_reflexion/anterior/Reflexión.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/5_accion/anterior/Acción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_1/6_evaluacion/anterior/Evaluación.html"
+       ]
+      ]
+     }
+    ]
+   },
+   {
+    "titulo": "Unidad 2: Redes neuronales recurrentes",
+    "secciones": [
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/1_introduccion/anterior/Introducción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/2_contexto/anterior/Contexto.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/3_experiencia/anterior/Experiencia.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/4_reflexion/anterior/Reflexión.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/5_accion/anterior/Acción.html"
+       ]
+      ]
+     },
+     {
+      "anterior": [
+       [
+        "",
+        "modulo_2/unidad_2/6_evaluacion/anterior/Evaluación.html"
+       ]
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "titulo": "Material Complementario",
+  "tipo": "complementario",
+  "grupos": [
+   {
+    "titulo": "M1U1",
+    "archivos": [
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/FuncionActivacionPersonalizada.ipynb",
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_avanzado.ipynb",
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_basico.ipynb"
+    ]
+   },
+   {
+    "titulo": "M1U2",
+    "archivos": [
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/EarlyStopping.ipynb",
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/SeleccionHiperparametros_avanzado_Regularizacion.ipynb"
+    ]
+   },
+   {
+    "titulo": "M2U1",
+    "archivos": [
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/MultiOutput.ipynb",
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/SegmentacionSemantica.ipynb",
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/Sincronico4_DL_MCD.ipynb"
+    ]
+   },
+   {
+    "titulo": "M2U2",
+    "archivos": [
+     "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u2/VariacionesModelosSecuenciales.ipynb"
+    ]
+   }
+  ]
+ },
+ {
+  "titulo": "Evaluación final de la asignatura",
+  "tipo": "encuesta"
+ }
+]
+</script>
+
 <script>
 /* ---------------------------------------------------------------
-   Cómo agregar contenido:
-   En cada unidad, secciones[i] corresponde a SECCIONES[i].
-     nueva    : versión nueva (HTML propio del curso)
-     anterior : versión vieja (la que viene en los zip del LMS)
-   Cada una es una lista de [etiqueta, ruta]. Etiqueta "" = sin subtítulo.
-   Rutas relativas a este index.html. Sin entrada = "en construcción".
+   Los datos del curso están en el bloque JSON <script id="datos"> (arriba).
+   Es la única fuente de verdad: README.md se genera desde aquí (scripts/generar_readme.py).
+   En cada unidad, secciones[i] corresponde a SECCIONES[i]:
+     nueva     : versión nueva            [["etiqueta","ruta"]]
+     anterior  : versión del LMS          [["etiqueta","ruta"]]
+     sinCambios: true = la nueva es igual a la anterior
+     cambios   : viñetas (HTML) con lo que se actualiza en esa sección
+   Rutas relativas a este index.html; notebooks con URL de GitHub.
 ---------------------------------------------------------------- */
 const SECCIONES = ["Introducción","Contexto","Experiencia","Reflexión","Acción","Evaluación"];
-const VACIA = {};
-const CURSO = [
-  { titulo:"Presentación del Curso", tipo:"presentacion", items:[
-      ["Introducción","presentacion/anterior/Introducción.html"],
-      ["Datos del docente","omitido.html"],
-      ["Contacta a tu asesor(a) académico(a)","omitido.html"] ],
-    foros:["Café virtual","Necesidades e inquietudes"] },
-  { titulo:"Módulo 1: Conceptos básicos y buenas prácticas dentro del aprendizaje profundo",
-    intro:{ anterior:[["","modulo_1/introduccion/anterior/Introducción.html"]] }, unidades:[
-    { titulo:"Unidad 1: Componentes fundamentales de las redes neuronales", secciones:[
-      { anterior:[["","modulo_1/unidad_1/1_introduccion/anterior/Introducción.html"]] },
-      { anterior:[["","modulo_1/unidad_1/2_contexto/anterior/Contexto.html"]] },
-      { nueva:[["Regresión lineal","modulo_1/unidad_1/3_experiencia/linear_regression.html"],["Redes neuronales","modulo_1/unidad_1/3_experiencia/redes_neuronales.html"]], anterior:[["","modulo_1/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
-      { nueva:[["","modulo_1/unidad_1/4_reflexion/preguntas_redes_neuronales.html"]], anterior:[["","modulo_1/unidad_1/4_reflexion/anterior/Reflexión.html"]] },
-      { anterior:[["","modulo_1/unidad_1/5_accion/anterior/Acción.html"]] },
-      { anterior:[["","modulo_1/unidad_1/6_evaluacion/anterior/Evaluación.html"]] } ] },
-    { titulo:"Unidad 2: Buenas prácticas para la construcción de modelos de aprendizaje profundo", secciones:[
-      { anterior:[["","modulo_1/unidad_2/1_introduccion/anterior/Introducción.html"]] },
-      { anterior:[["","modulo_1/unidad_2/2_contexto/anterior/Contexto.html"]] },
-      { anterior:[["","modulo_1/unidad_2/3_experiencia/anterior/Experiencia.html"]] },
-      { anterior:[["","modulo_1/unidad_2/4_reflexion/anterior/Reflexión.html"]] },
-      { anterior:[["","modulo_1/unidad_2/5_accion/anterior/Acción.html"]] },
-      { anterior:[["","modulo_1/unidad_2/6_evaluacion/anterior/Evaluación.html"]] } ] } ] },
-  { titulo:"Módulo 2: Aplicaciones a partir de las redes convolucionales y recurrentes con sus principales variaciones",
-    intro:{ anterior:[["","modulo_2/introduccion/anterior/Introducción.html"]] }, unidades:[
-    { titulo:"Unidad 1: Redes neuronales convolucionales", secciones:[
-      { anterior:[["","modulo_2/unidad_1/1_introduccion/anterior/Introducción.html"]] },
-      { sinCambios:true, anterior:[["","modulo_2/unidad_1/2_contexto/anterior/Contexto.html"]] },
-      { nueva:[["","modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html"]], anterior:[["","modulo_2/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
-      { anterior:[["","modulo_2/unidad_1/4_reflexion/anterior/Reflexión.html"]] },
-      { anterior:[["","modulo_2/unidad_1/5_accion/anterior/Acción.html"]] },
-      { anterior:[["","modulo_2/unidad_1/6_evaluacion/anterior/Evaluación.html"]] } ] },
-    { titulo:"Unidad 2: Redes neuronales recurrentes", secciones:[
-      { anterior:[["","modulo_2/unidad_2/1_introduccion/anterior/Introducción.html"]] },
-      { anterior:[["","modulo_2/unidad_2/2_contexto/anterior/Contexto.html"]] },
-      { anterior:[["","modulo_2/unidad_2/3_experiencia/anterior/Experiencia.html"]] },
-      { anterior:[["","modulo_2/unidad_2/4_reflexion/anterior/Reflexión.html"]] },
-      { anterior:[["","modulo_2/unidad_2/5_accion/anterior/Acción.html"]] },
-      { anterior:[["","modulo_2/unidad_2/6_evaluacion/anterior/Evaluación.html"]] } ] } ] },
-  { titulo:"Material Complementario", tipo:"complementario", grupos:[
-    { titulo:"M1U1", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/FuncionActivacionPersonalizada.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_avanzado.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u1/SeleccionHiperparametros_basico.ipynb"] },
-    { titulo:"M1U2", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/EarlyStopping.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m1u2/SeleccionHiperparametros_avanzado_Regularizacion.ipynb"] },
-    { titulo:"M2U1", archivos:["https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/MultiOutput.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/SegmentacionSemantica.ipynb", "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u1/Sincronico4_DL_MCD.ipynb"] },
-    { titulo:"M2U2", archivos:[, "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/material_complementario/m2u2/VariacionesModelosSecuenciales.ipynb"] } ] },
-  { titulo:"Evaluación final de la asignatura", tipo:"encuesta" },
-];
+const CURSO = JSON.parse(document.getElementById("datos").textContent);
 
 /* ---------- render ---------- */
 const esc = s => s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
@@ -127,7 +521,8 @@ function seccion(s, i) {
   const n = i < 0 ? "Introducción del módulo" : SECCIONES[i], nueva = s.nueva || [], vieja = s.anterior || [];
   const filas = nueva.map(x => fila(n, x, false)).concat(vieja.map(x => fila(n, x, true)));
   if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} ${s.sinCambios ? "nueva: sin cambios, igual a la anterior" : "(en construcción)"}</span></span>`);
-  return filas.join("");
+  const cam = (s.cambios || []).length ? `<ul class="cambios-sec">${s.cambios.map(c => `<li>${c}</li>`).join("")}</ul>` : "";
+  return filas.join("") + cam;
 }
 const arch = r => `<a class="sec arch" href="${esc(r)}" target="_blank" rel="noopener"><span class="nombre">${esc(decodeURIComponent(r.split("/").pop()))}</span></a>`;
 function cuerpo(m) {
