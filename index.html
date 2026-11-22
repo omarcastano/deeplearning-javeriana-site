@@ -42,9 +42,10 @@
   .cambios-sec li { margin: 6px 0; }
   .cambios-sec ol { margin: 6px 0; padding-left: 22px; }
   .cambios-sec code { background:#fdecc8; padding:0 4px; border-radius:3px; }
-  .archivos-sec { margin: 4px 0 6px 40px; padding: 0 0 0 28px; font-size: .92rem; }
-  .archivos-sec li { margin: 3px 0; }
-  .archivos-sec .ver { font-size: .72rem; font-weight:700; color:#fff; background:#2f6fdb; border-radius:9px; padding:1px 7px; margin-left:6px; }
+  .archivos-sec { margin: 2px 0 8px 46px; padding: 0; font-size: .88rem; color:#5b6472; line-height: 1.7; }
+  .archivos-sec .lbl { font-weight: 700; color:#3b4456; margin-right: 4px; }
+  .archivos-sec a { color: var(--link); text-decoration: none; }
+  .archivos-sec a:hover { text-decoration: underline; }
   /* cambios generales */
   #cambios-generales { margin-bottom: 16px; }
   .bloque h3 { font-size: 1.05rem; margin: 0 0 6px; }
@@ -255,7 +256,7 @@
       ],
       "cambios": [
        "<strong>Cambio 1:</strong> reemplazar los botones de enlaces de TensorFlow y Keras por tutoriales de PyTorch para principiantes: <a href=\"https://docs.pytorch.org/tutorials/beginner/basics/intro.html\">Learn the Basics (intro)</a> en lugar de TensorFlow, y <a href=\"https://docs.pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html\">Build the Neural Network</a> en lugar de Keras.",
-       "<strong>Cambio 2:</strong> reemplazar <code>Script1M1U1.ipynb</code> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"modulo_1/unidad_1/5_accion/Script1M1U1_pytorch.ipynb\"><code>Script1M1U1_pytorch.ipynb</code></a>.",
+       "<strong>Cambio 2:</strong> reemplazar <a href=\"modulo_1/unidad_1/5_accion/anterior/Script1M1U1.ipynb\"><code>Script1M1U1.ipynb</code></a> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"modulo_1/unidad_1/5_accion/Script1M1U1_pytorch.ipynb\"><code>Script1M1U1_pytorch.ipynb</code></a>.",
        "<strong>Cambio 3:</strong> reemplazar la nota sobre Keras y TensorFlow (\"Usaremos la librería Keras sobre TensorFlow…\") por su versión en PyTorch: \"Usaremos PyTorch, con el módulo <code>torch.nn</code>, para diseñar, entrenar y evaluar las redes neuronales profundas. En caso de requerir información sobre esta librería podemos consultar los siguientes enlaces: <a href=\"https://docs.pytorch.org/docs/stable/index.html\">documentación de PyTorch</a> y <a href=\"https://docs.pytorch.org/docs/stable/nn.html\">documentación de torch.nn</a>.\""
       ],
       "archivos": [
@@ -270,7 +271,7 @@
        ]
       ],
       "cambios": [
-       "<strong>Cambio 1:</strong> reemplazar el notebook <code>Script2M1U1.ipynb</code> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"modulo_1/unidad_1/6_evaluacion/Script2M1U1_pytorch.ipynb\"><code>Script2M1U1_pytorch.ipynb</code></a>.",
+       "<strong>Cambio 1:</strong> reemplazar el notebook <a href=\"modulo_1/unidad_1/6_evaluacion/anterior/Script2M1U1.ipynb\"><code>Script2M1U1.ipynb</code></a> (TensorFlow/Keras) por su versión en PyTorch, <a href=\"modulo_1/unidad_1/6_evaluacion/Script2M1U1_pytorch.ipynb\"><code>Script2M1U1_pytorch.ipynb</code></a>.",
        "<strong>Cambio 2:</strong> reemplazar el enunciado del problema por el siguiente: <br>El script debe cumplir los siguientes criterios: <ol> <li>Construir una red neuronal densa en PyTorch, usando <code>nn.Sequential</code> (como en la guía del curso) o una clase que herede de <code>nn.Module</code>.</li> <li>El tamaño del batch se debe fijar como el número de instancias del conjunto de entrenamiento (entrenamiento <em>full-batch</em>).</li> <li>Debe realizarse una búsqueda de algunos hiperparámetros: número de capas, número de unidades por capa y funciones de activación, de tal forma que se maximice el accuracy. La mejor configuración se elige con el conjunto de <strong>validación</strong>, y su accuracy sobre el conjunto de <strong>prueba</strong> (test) debe ser <strong>superior al 78 %</strong>.</li> <li>Luego de completar el numeral anterior, añada una nueva sección en el código. Allí se debe tomar el mejor modelo del numeral 3 y entrenarlo con diferentes valores para el parámetro <em>learning rate</em>, específicamente: 0.0001, 0.01, 0.1, 1, 10. Para cada uno de los experimentos obtenga las gráficas de la función de costo y del accuracy para los conjuntos de entrenamiento y validación, y reporte el accuracy en prueba al final (no realizar búsqueda de hiperparámetros). Con base en las gráficas concluya acerca del efecto del learning rate en el entrenamiento de una red neuronal.</li> </ol>"
       ],
       "archivos": [
@@ -392,7 +393,7 @@
       ],
       "cambios": [
        "<strong>Cambio 1:</strong> reemplazar la <a href=\"https://view.genially.com/6422e7f9c4f1900012d62ea0\">presentación de Genially \"Convolución\"</a> por la presentación interactiva <a href=\"modulo_2/unidad_1/3_experiencia/nueva/redes_convolucionales.html\"><code>redes_convolucionales.html</code></a>.",
-       "<strong>Cambio 2:</strong> reemplazar los notebooks <code>3_Script1_M2_U1.ipynb</code> y <code>4_Script2_M2_U1.ipynb</code> (TensorFlow/Keras) por sus versiones en PyTorch: <a href=\"modulo_2/unidad_1/3_experiencia/nueva/3_Script1_M2_U1_pytorch.ipynb\"><code>3_Script1_M2_U1_pytorch.ipynb</code></a>, <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_data_augmentation_pytorch.ipynb\"><code>4_Script2_M2_U1_data_augmentation_pytorch.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_pytorch.ipynb\"><code>4_Script2_M2_U1_transfer_learning_pytorch.ipynb</code></a>."
+       "<strong>Cambio 2:</strong> reemplazar los notebooks <a href=\"modulo_2/unidad_1/3_experiencia/anterior/3_Script1_M2_U1.ipynb\"><code>3_Script1_M2_U1.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/anterior/4_Script2_M2_U1.ipynb\"><code>4_Script2_M2_U1.ipynb</code></a> (TensorFlow/Keras) por sus versiones en PyTorch: <a href=\"modulo_2/unidad_1/3_experiencia/nueva/3_Script1_M2_U1_pytorch.ipynb\"><code>3_Script1_M2_U1_pytorch.ipynb</code></a>, <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_data_augmentation_pytorch.ipynb\"><code>4_Script2_M2_U1_data_augmentation_pytorch.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_pytorch.ipynb\"><code>4_Script2_M2_U1_transfer_learning_pytorch.ipynb</code></a>."
       ],
       "archivos": [
        "modulo_2/unidad_1/3_experiencia/anterior/3_Script1_M2_U1.ipynb",
@@ -568,13 +569,20 @@ function fila(nombre, [sub, ruta], viejo) {
   return `<button class="sec${viejo ? " viejo" : ""}" data-ruta="${esc(ruta)}" data-titulo="${esc(nombre)}" data-viejo="${viejo ? 1 : 0}">
     <span class="nombre">${esc(nombre)}${viejo ? " (anterior)" : ""}</span>${sub ? `<span class="sub">· ${esc(sub)}</span>` : ""}</button>`;
 }
+function lista(archivos, rotulo) {
+  if (!archivos.length) return "";
+  return `<div class="archivos-sec"><span class="lbl">${rotulo}</span> ` +
+    archivos.map(r => `<a href="${esc(ghUrl(r))}" target="_blank" rel="noopener">${esc(r.split("/").pop())}</a>`).join(" · ") + `</div>`;
+}
 function seccion(s, i) {
   const n = i < 0 ? "Introducción del módulo" : SECCIONES[i], nueva = s.nueva || [], vieja = s.anterior || [];
-  const filas = nueva.map(x => fila(n, x, false)).concat(vieja.map(x => fila(n, x, true)));
-  if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} ${s.sinCambios ? "nueva: sin cambios, igual a la anterior" : "(en construcción)"}</span></span>`);
+  const arc = s.archivos || [];
+  const filasNueva = nueva.map(x => fila(n, x, false));
+  if (!nueva.length) filasNueva.unshift(`<span class="sec pend"><span class="nombre">${n} ${s.sinCambios ? "nueva: sin cambios, igual a la anterior" : "(en construcción)"}</span></span>`);
+  const filasVieja = vieja.map(x => fila(n, x, true));
   const cam = (s.cambios || []).length ? `<ul class="cambios-sec">${s.cambios.map(c => `<li>${enlazar(c)}</li>`).join("")}</ul>` : "";
-  const arc = (s.archivos || []).length ? `<ul class="archivos-sec">${s.archivos.map(r => `<li><a href="${esc(ghUrl(r))}" target="_blank" rel="noopener">${esc(r.split("/").pop())}</a> <span class="ver">${r.includes("/anterior/") ? "anterior" : "nueva"}</span></li>`).join("")}</ul>` : "";
-  return filas.join("") + arc + cam;
+  return filasNueva.join("") + lista(arc.filter(r => r.includes("/nueva/")), "Notebooks y archivos de la versión nueva:") +
+         filasVieja.join("") + lista(arc.filter(r => r.includes("/anterior/")), "Notebooks y archivos de la versión anterior:") + cam;
 }
 const arch = r => `<a class="sec arch" href="${esc(ghUrl(r))}" target="_blank" rel="noopener"><span class="nombre">${esc(decodeURIComponent(r.split("/").pop()))}</span></a>`;
 function cuerpo(m) {
