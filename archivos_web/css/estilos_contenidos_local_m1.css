@@ -1,0 +1,8 @@
+/* Reconstruido: el original del LMS (local_m1) no venía en ningún zip. Misma base que local_m2, con colores del Módulo 1. */
+@import url("estilos_contenidos_servidor.css");
+:root{
+    --primer-color:#F7941D;
+    --segundo-color:#0D63C9;
+    --tercer-color:#BBD6F5;
+}
+.container { max-width: 640px; margin: 0 auto; }

@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Barlow+Semi+Condensed:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap');
+@import url("estilos_contenidos_servidor.css");
+
+
+
+:root{
+    --primer-color:#0D63C9;
+    --segundo-color:#0EB0C6;
+    --tercer-color: #B0E6EA;
+}
+
+.icono_fecha {
+    width: 70px;
+    position: absolute;
+    margin-left: -70px;
+    background-image: url(/content/enforced/152479-GRAD;400ITA019;A;20231/archivos_web/imagenes/iconos/m2/fecha.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+/* Video / Genially más pequeños (16:9, centrados) */
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+}

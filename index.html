@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aprendizaje profundo · Curso</title>
+<style>
+  :root { --azul:#2d5699; --link:#0b6bbf; --borde:#cfd6e0; --viejo:#b5560f; --viejo-bg:#fdf1e6; }
+  body { margin:0; font-family:Lato,system-ui,sans-serif; background:#fff; color:#1d2330; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 60px; }
+  details { margin-bottom:16px; }
+  details.mod > summary { background:var(--azul); color:#fff; border-radius:6px; padding:22px 28px;
+    font-size:1.25rem; font-weight:700; cursor:pointer; list-style:none; display:flex; gap:20px; align-items:center; }
+  details.mod > summary::-webkit-details-marker, details.uni > summary::-webkit-details-marker { display:none; }
+  summary .tri { font-size:.8rem; transition:transform .15s; }
+  details[open] > summary .tri { transform:rotate(90deg); }
+  summary .t { flex:1; }
+  .mod-body { border:1px solid var(--borde); border-top:0; padding:24px 40px; }
+  details.mod[open] > summary { border-radius:6px 6px 0 0; }
+  details.uni { border:1px solid var(--borde); border-radius:8px; margin:12px 0; }
+  details.uni > summary { padding:24px 30px; color:var(--link); font-weight:700; font-size:1.1rem; cursor:pointer;
+    list-style:none; display:flex; gap:20px; align-items:center; }
+  .uni-body { padding:0 30px 10px; }
+
+  /* fila de sección */
+  .sec { display:flex; align-items:center; gap:14px; padding:16px 4px; border-top:1px solid var(--borde);
+    color:var(--link); text-decoration:none; font-size:1.1rem; cursor:pointer; background:none; border-left:0; border-right:0; border-bottom:0;
+    width:100%; text-align:left; font-family:inherit; }
+  .sec::before { content:"🌐"; }
+  .sec:hover .nombre { text-decoration:underline; }
+  .sec .sub { color:#5b6472; font-size:.9rem; }
+  .sec.pend { color:#8a94a3; cursor:default; }
+  .sec.pend:hover .nombre { text-decoration:none; }
+  .sec.viejo { color:var(--viejo); background:var(--viejo-bg); padding-left:28px; font-size:1rem; }
+  .sec.viejo::before { content:"🕘"; }
+  .sec.arch::before { content:"📎"; }
+  .tag { font-size:.75rem; font-weight:700; border-radius:10px; padding:2px 9px; background:var(--viejo); color:#fff; }
+
+  /* visor con flecha de regreso */
+  #visor { position:fixed; inset:0; background:#fff; display:none; flex-direction:column; z-index:10; }
+  #visor.on { display:flex; }
+  #barra { display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--azul); color:#fff; }
+  #volver { background:#fff; color:var(--azul); border:0; border-radius:6px; font-size:1.1rem; font-weight:700;
+    padding:6px 14px; cursor:pointer; }
+  #titulo { flex:1; font-weight:700; }
+  #cambiar { background:transparent; color:#fff; border:1px solid #fff; border-radius:6px; padding:6px 12px; cursor:pointer; display:none; }
+  #marco { flex:1; border:0; width:100%; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<div id="visor">
+  <div id="barra">
+    <button id="volver" title="Volver al curso">← Volver</button>
+    <span id="titulo"></span>
+    <span id="etiqueta" class="tag" hidden>versión anterior</span>
+    <button id="cambiar"></button>
+  </div>
+  <iframe id="marco"></iframe>
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   Cómo agregar contenido:
+   En cada unidad, secciones[i] corresponde a SECCIONES[i].
+     nueva    : versión nueva (HTML propio del curso)
+     anterior : versión vieja (la que viene en los zip del LMS)
+   Cada una es una lista de [etiqueta, ruta]. Etiqueta "" = sin subtítulo.
+   Rutas relativas a este index.html. Sin entrada = "en construcción".
+---------------------------------------------------------------- */
+const SECCIONES = ["Introducción","Contexto","Experiencia","Reflexión","Acción","Evaluación"];
+const VACIA = {};
+const CURSO = [
+  { titulo:"Presentación del Curso", tipo:"presentacion", items:[
+      ["Introducción","presentacion/anterior/Introducción.html"],
+      ["Datos del docente","omitido.html"],
+      ["Contacta a tu asesor(a) académico(a)","omitido.html"] ],
+    foros:["Café virtual","Necesidades e inquietudes"] },
+  { titulo:"Módulo 1: Conceptos básicos y buenas prácticas dentro del aprendizaje profundo",
+    intro:{ anterior:[["","modulo_1/introduccion/anterior/Introducción.html"]] }, unidades:[
+    { titulo:"Unidad 1: Componentes fundamentales de las redes neuronales", secciones:[
+      { anterior:[["","modulo_1/unidad_1/1_introduccion/anterior/Introducción.html"]] },
+      { anterior:[["","modulo_1/unidad_1/2_contexto/anterior/Contexto.html"]] },
+      { nueva:[["Regresión lineal","modulo_1/unidad_1/3_experiencia/linear_regression.html"],["Redes neuronales","modulo_1/unidad_1/3_experiencia/redes_neuronales.html"]], anterior:[["","modulo_1/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
+      { nueva:[["","modulo_1/unidad_1/4_reflexion/preguntas_redes_neuronales.html"]], anterior:[["","modulo_1/unidad_1/4_reflexion/anterior/Reflexión.html"]] },
+      { anterior:[["","modulo_1/unidad_1/5_accion/anterior/Acción.html"]] },
+      { anterior:[["","modulo_1/unidad_1/6_evaluacion/anterior/Evaluación.html"]] } ] },
+    { titulo:"Unidad 2: Buenas prácticas para la construcción de modelos de aprendizaje profundo", secciones:[
+      { anterior:[["","modulo_1/unidad_2/1_introduccion/anterior/Introducción.html"]] },
+      { anterior:[["","modulo_1/unidad_2/2_contexto/anterior/Contexto.html"]] },
+      { anterior:[["","modulo_1/unidad_2/3_experiencia/anterior/Experiencia.html"]] },
+      { anterior:[["","modulo_1/unidad_2/4_reflexion/anterior/Reflexión.html"]] },
+      { anterior:[["","modulo_1/unidad_2/5_accion/anterior/Acción.html"]] },
+      { anterior:[["","modulo_1/unidad_2/6_evaluacion/anterior/Evaluación.html"]] } ] } ] },
+  { titulo:"Módulo 2: Aplicaciones a partir de las redes convolucionales y recurrentes con sus principales variaciones",
+    intro:{ anterior:[["","modulo_2/introduccion/anterior/Introducción.html"]] }, unidades:[
+    { titulo:"Unidad 1: Redes neuronales convolucionales", secciones:[
+      { anterior:[["","modulo_2/unidad_1/1_introduccion/anterior/Introducción.html"]] },
+      { nueva:[["","modulo_2/unidad_1/2_contexto/redes_convolucionales.html"]], anterior:[["","modulo_2/unidad_1/2_contexto/anterior/Contexto.html"]] },
+      { nueva:[["","modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html"]], anterior:[["","modulo_2/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
+      { anterior:[["","modulo_2/unidad_1/4_reflexion/anterior/Reflexión.html"]] },
+      { anterior:[["","modulo_2/unidad_1/5_accion/anterior/Acción.html"]] },
+      { anterior:[["","modulo_2/unidad_1/6_evaluacion/anterior/Evaluación.html"]] } ] },
+    { titulo:"Unidad 2: Redes neuronales recurrentes", secciones:[
+      { anterior:[["","modulo_2/unidad_2/1_introduccion/anterior/Introducción.html"]] },
+      { anterior:[["","modulo_2/unidad_2/2_contexto/anterior/Contexto.html"]] },
+      { anterior:[["","modulo_2/unidad_2/3_experiencia/anterior/Experiencia.html"]] },
+      { anterior:[["","modulo_2/unidad_2/4_reflexion/anterior/Reflexión.html"]] },
+      { anterior:[["","modulo_2/unidad_2/5_accion/anterior/Acción.html"]] },
+      { anterior:[["","modulo_2/unidad_2/6_evaluacion/anterior/Evaluación.html"]] } ] } ] },
+  { titulo:"Material Complementario", tipo:"complementario", grupos:[
+    { titulo:"M1U1", archivos:["material_complementario/m1u1/FuncionActivacionPersonalizada.ipynb", "material_complementario/m1u1/SeleccionHiperparametros_avanzado.ipynb", "material_complementario/m1u1/SeleccionHiperparametros_basico.ipynb"] },
+    { titulo:"M1U2", archivos:["material_complementario/m1u2/EarlyStopping.ipynb", "material_complementario/m1u2/SeleccionHiperparametros_avanzado_Regularizacion.ipynb", "omitido.html"] },
+    { titulo:"M2U1", archivos:["material_complementario/m2u1/MultiOutput.ipynb", "material_complementario/m2u1/SegmentacionSemantica.ipynb", "material_complementario/m2u1/Sincronico4_DL_MCD.ipynb", "omitido.html"] },
+    { titulo:"M2U2", archivos:["omitido.html", "omitido.html", "material_complementario/m2u2/VariacionesModelosSecuenciales.ipynb"] } ] },
+  { titulo:"Evaluación final de la asignatura", tipo:"encuesta" },
+];
+
+/* ---------- render ---------- */
+const esc = s => s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+function fila(nombre, [sub, ruta], viejo) {
+  return `<button class="sec${viejo ? " viejo" : ""}" data-ruta="${esc(ruta)}" data-titulo="${esc(nombre)}" data-viejo="${viejo ? 1 : 0}">
+    <span class="nombre">${esc(nombre)}${viejo ? " (anterior)" : ""}</span>${sub ? `<span class="sub">· ${esc(sub)}</span>` : ""}</button>`;
+}
+function seccion(s, i) {
+  const n = i < 0 ? "Introducción del módulo" : SECCIONES[i], nueva = s.nueva || [], vieja = s.anterior || [];
+  const filas = nueva.map(x => fila(n, x, false)).concat(vieja.map(x => fila(n, x, true)));
+  if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} (en construcción)</span></span>`);
+  return filas.join("");
+}
+const arch = r => `<a class="sec arch" href="${esc(r)}" target="_blank" rel="noopener"><span class="nombre">${esc(r.split("/").pop())}</span></a>`;
+function cuerpo(m) {
+  if (m.tipo === "presentacion")
+    return m.items.map(x => fila(x[0], ["", x[1]], true)).join("") +
+           `<span class="sec pend"><span class="nombre">Comunicaciones (foros del LMS): ${m.foros.map(esc).join(" · ")}</span></span>`;
+  if (m.tipo === "complementario")
+    return m.grupos.map(g => `<details class="uni"><summary><span class="tri">▶</span><span class="t">${g.titulo}</span></summary>
+      <div class="uni-body">${g.archivos.map(arch).join("")}</div></details>`).join("");
+  if (m.tipo === "encuesta")
+    return `<span class="sec pend"><span class="nombre">Encuesta de satisfacción del LMS (21 preguntas). No tiene contenido para descargar.</span></span>`;
+  return (m.intro ? seccion(m.intro, -1) : "") + m.unidades.map(u => `
+      <details class="uni"><summary><span class="tri">▶</span><span class="t">${u.titulo}</span></summary>
+        <div class="uni-body">${u.secciones.map(seccion).join("")}</div>
+      </details>`).join("");
+}
+document.getElementById("app").innerHTML = CURSO.map(m => `
+  <details class="mod"><summary><span class="tri">▶</span><span class="t">${m.titulo}</span></summary>
+    <div class="mod-body">${cuerpo(m)}</div>
+  </details>`).join("");
+
+/* ---------- visor con flecha de volver (usa el historial: el botón Atrás del navegador también sirve) ---------- */
+const $ = id => document.getElementById(id);
+function abrir(ruta, titulo, viejo) {
+  $("marco").src = ruta;
+  $("titulo").textContent = titulo;
+  $("etiqueta").hidden = !viejo;
+  $("visor").classList.add("on");
+  // botón para saltar a la otra versión de la misma sección
+  const otra = [...document.querySelectorAll(".sec[data-titulo]")]
+    .find(b => b.dataset.titulo === titulo && b.dataset.ruta !== ruta && (b.dataset.viejo === "1") !== viejo
+               && b.closest(".uni-body") === document.querySelector(`.sec[data-ruta="${CSS.escape(ruta)}"]`).closest(".uni-body"));
+  const c = $("cambiar");
+  c.style.display = otra ? "inline-block" : "none";
+  if (otra) { c.textContent = viejo ? "Ver versión nueva" : "Ver versión anterior";
+              c.onclick = () => { location.hash = "ver=" + encodeURIComponent(otra.dataset.ruta); }; }
+}
+function cerrar() { $("visor").classList.remove("on"); $("marco").src = "about:blank"; }
+function ruteo() {
+  const m = location.hash.match(/^#ver=(.+)$/);
+  if (!m) return cerrar();
+  const ruta = decodeURIComponent(m[1]);
+  const b = document.querySelector(`.sec[data-ruta="${CSS.escape(ruta)}"]`);
+  if (b) abrir(ruta, b.dataset.titulo, b.dataset.viejo === "1"); else cerrar();
+}
+document.getElementById("app").addEventListener("click", e => {
+  const b = e.target.closest(".sec[data-ruta]");
+  if (b) location.hash = "ver=" + encodeURIComponent(b.dataset.ruta);
+});
+$("volver").onclick = () => { location.hash = ""; };
+addEventListener("hashchange", ruteo);
+ruteo();
+</script>
+</body>
+</html>

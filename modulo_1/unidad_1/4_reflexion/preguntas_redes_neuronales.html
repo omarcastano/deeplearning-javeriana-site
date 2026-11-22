@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preguntas sobre redes neuronales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  :root {
+    --bg: #EFEADF;
+    --paper: #FFFDF8;
+    --paper-2: #F3EEE2;
+    --fg: #1A1D3B;
+    --muted: #4F5380;
+    --line: rgba(26, 29, 59, .13);
+    --grid: rgba(26, 29, 59, .09);
+    --axis: #7A7EA6;
+    --indigo: #3A47B5;
+    --teal: #0B8570;
+    --amber: #B86A00;
+    --coral: #C03F32;
+    --teal-soft: #D3F0E8;
+    --amber-soft: #F8E5C2;
+    --coral-soft: #F8D9D4;
+    --indigo-soft: #DDE0F7;
+    --shadow: 0 1px 2px rgba(26,29,59,.06), 0 8px 24px rgba(26,29,59,.07);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090B1C;
+    --paper: #151834;
+    --paper-2: #1C2043;
+    --fg: #F3EFE6;
+    --muted: #AEB4E2;
+    --line: rgba(243, 239, 230, .14);
+    --grid: rgba(243, 239, 230, .09);
+    --axis: #8B91C4;
+    --indigo: #8E9BFF;
+    --teal: #4FE3C8;
+    --amber: #FFB547;
+    --coral: #FF7F70;
+    --teal-soft: #103A36;
+    --amber-soft: #3A2B12;
+    --coral-soft: #3F1F23;
+    --indigo-soft: #22275A;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--text); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* escenario 16:9 escalado a la ventana */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: 0 0; background: var(--bg); overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; padding: 50px 80px 70px; display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  .slide.active { display: flex; }
+  .slide::before {            /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
+    background: linear-gradient(180deg, var(--teal), var(--indigo) 55%, var(--amber));
+  }
+
+  h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 600; color: var(--fg); }
+  p { margin: 0; }
+  .eyebrow {
+    font: 700 15px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 30px; height: 3px; border-radius: 2px; background: currentColor; }
+  h2 { font-size: 40px; line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 900px; }
+  .lead b, .txt b { color: var(--fg); font-weight: 600; }
+  .txt { font-size: 21px; line-height: 1.55; color: var(--fg); }
+  .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+  .row2.wide-l { grid-template-columns: 1.05fr 1fr; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .grow { flex: 1; min-height: 0; }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px;
+    box-shadow: var(--shadow); min-width: 0;
+  }
+  .card h3 { font-size: 26px; margin-bottom: 8px; }
+  .card p { font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .chartbox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 14px 14px 8px; box-shadow: var(--shadow); }
+  .chartbox .cap { font-size: 16px; color: var(--muted); padding: 4px 10px 8px; line-height: 1.4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart .gr { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--axis); stroke-width: 1.6; }
+  .chart text { font-family: var(--text); }
+  .chart .tk { fill: var(--muted); font-size: 16px; font-weight: 500; }
+  .chart .lb { fill: var(--fg); font-size: 18px; font-weight: 500; }
+  .chart .lg { fill: var(--fg); font-size: 17px; font-weight: 500; }
+  .chart .an { fill: var(--fg); font-size: 18px; font-weight: 600; }
+  .chart .an-teal { fill: var(--teal); font-size: 18px; font-weight: 700; }
+  .chart .lgbg { fill: var(--paper); stroke: var(--line); }
+  .s-indigo { stroke: var(--indigo); } .s-teal { stroke: var(--teal); } .s-amber { stroke: var(--amber); }
+  .s-coral { stroke: var(--coral); } .s-muted { stroke: var(--axis); }
+  .f-indigo { fill: var(--indigo); } .f-teal { fill: var(--teal); } .f-amber { fill: var(--amber); } .f-coral { fill: var(--coral); }
+  .chart circle.f-teal, .chart circle.f-coral, .chart circle.f-amber { stroke: var(--paper); stroke-width: 2; }
+
+  /* ecuaciones */
+  .eq {
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--indigo);
+    border-radius: 16px; padding: 14px 26px 16px; box-shadow: var(--shadow);
+  }
+  .eq .lbl { font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 2px; }
+  .eq .math { font-size: 27px; text-align: center; color: var(--fg); overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .eq .note { font-size: 18px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+  .eq .note .katex { font-size: 1.05em; }
+  .katex { color: inherit; }
+  .katex-display { margin: .15em 0 !important; }
+  .defs3 { display: grid; gap: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .defs3 div { padding: 11px 22px; font-size: 18px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+  .defs3 div:first-child { border-top: none; }
+  .defs3 b { font-family: var(--display); font-size: 21px; color: var(--fg); margin-right: 6px; }
+  .defs3 i { font-size: 15px; }
+  .hl-c { color: var(--coral); } .hl-t { color: var(--teal); } .hl-a { color: var(--amber); } .hl-i { color: var(--indigo); }
+  .tag {
+    display: inline-block; font: 700 14px var(--text); letter-spacing: .09em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .t-teal { background: var(--teal-soft); color: var(--teal); } .t-coral { background: var(--coral-soft); color: var(--coral); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); } .t-indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+  /* piezas específicas */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .big-num { font-family: var(--display); font-size: 54px; line-height: 1; font-weight: 600; }
+  sub { font-size: 0.6em; line-height: 0; vertical-align: -0.35em; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 22px; box-shadow: var(--shadow); }
+  .kpi .k { font: 700 13px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-family: var(--display); font-size: 36px; font-weight: 600; margin-top: 4px; line-height: 1.1; }
+  .kpi .s { font-size: 16px; color: var(--muted); margin-top: 4px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover h1 { font-size: 84px; line-height: 1.02; letter-spacing: -.02em; max-width: 700px; }
+  .cover h1 em { font-style: italic; color: var(--teal); font-weight: 500; }
+  .cover .lead { margin-top: 26px; max-width: 600px; font-size: 25px; }
+  .cover .meta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cover .meta span { font: 600 16px var(--text); padding: 8px 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+  svg.chart.cover-art { position: absolute; right: 0; bottom: 0; width: 720px; height: auto; opacity: .95;
+    -webkit-mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); }
+
+  /* agenda */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 16px 24px; flex: 1; margin-bottom: 8px; }
+  .ag { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; box-shadow: var(--shadow); }
+  .ag .n { font-family: var(--display); font-size: 44px; color: var(--amber); width: 38px; text-align: center; font-weight: 600; }
+  .ag b { display: block; font-size: 23px; font-weight: 600; margin-bottom: 2px; }
+  .ag span { font-size: 18px; color: var(--muted); }
+
+  /* idea central */
+  .big-idea { font-family: var(--display); font-size: 50px; line-height: 1.18; max-width: 1000px; font-weight: 500; }
+  .big-idea span { color: var(--teal); }
+  .steps-v { display: flex; gap: 14px; align-items: stretch; }
+  .steps-v .card { flex: 1; padding: 18px 22px; }
+  .steps-v .arrow { align-self: center; font-size: 28px; color: var(--amber); }
+
+  /* ciclo */
+  .cycle { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; }
+  .cycle .link { align-self: center; text-align: center; font-size: 28px; color: var(--amber); }
+  .cycle .card { padding: 22px 20px; display: flex; flex-direction: column; }
+  .cycle .card p { margin-bottom: 14px; }
+  .cycle .n { font-family: var(--display); font-size: 46px; line-height: 1; color: var(--amber); display: block; margin-bottom: 8px; }
+  .loopback { width: 100%; height: 60px; display: block; margin-top: -6px; }
+  .loopback path { stroke: var(--teal); }
+  .loopback text { fill: var(--teal); font: 600 18px var(--text); }
+
+  /* lr */
+  .lrcard { padding: 16px 20px 18px; }
+  .lrcard .tag { margin-bottom: 8px; }
+  .lrcard h3 { font-size: 24px; margin-bottom: 6px; }
+  .lrcard p { font-size: 17px; }
+  .lrcard svg.chart { margin: 2px 0 8px; }
+
+  /* batches */
+  .blocks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .blocks div {
+    border-radius: 12px; padding: 16px 0 12px; text-align: center; background: var(--teal-soft); color: var(--teal);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  }
+  .blocks div:nth-child(even) { background: var(--indigo-soft); color: var(--indigo); border-color: color-mix(in srgb, var(--indigo) 35%, transparent); }
+  .blocks b { display: block; font: 700 22px var(--text); }
+  .blocks small { font: 500 13px var(--text); opacity: .85; }
+  .epoch-br { height: 16px; border: 2px solid var(--amber); border-top: none; border-radius: 0 0 12px 12px; margin: 0 2px; }
+  .epoch-cap { text-align: center; font-size: 19px; color: var(--amber); font-weight: 600; margin-top: 8px; }
+  .def { border-left: 5px solid var(--amber); padding: 4px 0 4px 18px; }
+  .def h3 { font-size: 28px; margin-bottom: 6px; }
+  .def p { font-size: 19px; line-height: 1.45; color: var(--muted); }
+
+  /* tabla */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  th { text-align: left; font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 12px 22px; background: var(--paper-2); }
+  td { padding: 9px 22px; border-top: 1px solid var(--line); line-height: 1.35; color: var(--fg); }
+  td:first-child { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--amber); white-space: nowrap; width: 250px; }
+
+  /* preguntas */
+  .qs { display: grid; gap: 10px; counter-reset: q; padding: 0; margin: 0; list-style: none; }
+  .qs li {
+    counter-increment: q; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 12px 24px 12px 78px; position: relative; font-size: 21px; line-height: 1.45;
+  }
+  .qs details { margin-top: 8px; }
+  .qs summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 17px; }
+  .qs details p { font-size: 17px; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+  .qs li::before { content: counter(q); position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-family: var(--display); font-size: 40px; color: var(--teal); font-weight: 600; }
+
+  .ctl { padding: 12px 20px; display: grid; gap: 8px; }
+  .ctl label { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; font: 600 20px var(--display); }
+  .ctl label small { font: 500 13px var(--text); color: var(--muted); display: block; }
+  .ctl output { font: 600 18px var(--text); text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--amber); height: 26px; }
+  .btns { display: flex; gap: 10px; margin-top: 2px; }
+  .btns button { flex: 1; font: 600 16px var(--text); padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); cursor: pointer; }
+  .btns button:hover { border-color: var(--amber); } .btns button.on { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btns button:focus-visible, .ctl input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  /* pie, controles */
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 22px; display: flex; justify-content: space-between; font: 500 14px var(--text); color: var(--muted); }
+  .foot .pg { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { position: absolute; left: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--teal), var(--indigo), var(--amber)); transition: width .35s ease; z-index: 5; }
+  .ui { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; opacity: .0; transition: opacity .25s; }
+  body:hover .ui, .ui:focus-within { opacity: 1; }
+  .ui button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); border-radius: 999px; height: 38px; min-width: 38px;
+    padding: 0 14px; font: 600 14px var(--text); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .ui button:hover { border-color: var(--amber); }
+  .ui button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  /* animación de entrada */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active .hd, .slide.active .bd > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    .slide.active .bd > *:nth-child(2) { animation-delay: .07s; }
+    .slide.active .bd > *:nth-child(3) { animation-delay: .14s; }
+    .slide.active .bd > *:nth-child(4) { animation-delay: .21s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* impresión / PDF: una diapositiva por página */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: none; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; overflow: visible; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide .hd, .slide .bd > * { animation: none !important; }
+    .ui, .bar { display: none; }
+  }
+
+  /* laboratorio 2 */
+  .pg-bar { display: flex; gap: 16px; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 14px; }
+  .pg-bar .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pg-bar .f > span { font: 600 13px var(--text); color: var(--muted); height: 20px; line-height: 20px; white-space: nowrap; }
+  .pg-bar select { width: 100%; height: 38px; font: 600 15px var(--text); padding: 5px 4px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .pg-bar .rb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); font: 600 16px var(--text); cursor: pointer; padding: 0; }
+  .pg-bar .rb.play { background: var(--amber); color: #fff; border-color: var(--amber); width: 46px; height: 46px; }
+  .pg-bar .rb:hover { border-color: var(--amber); }
+  .pg-bar .ep { font: 600 26px var(--display); min-width: 74px; line-height: 1.1; }
+  .pg-mini { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; font: 600 15px var(--text); color: var(--fg); }
+  .pg-mini button, .pg-lay button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font: 700 15px var(--text); color: var(--fg); line-height: 1; padding: 0; }
+  .pg-mini button:hover, .pg-lay button:hover { border-color: var(--amber); }
+  .pg-lay { display: flex; align-items: center; gap: 6px; font: 600 15px var(--text); }
+  .pg-thumb { width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; background: var(--paper); }
+  .pg-thumb.on { border-color: var(--amber); }
+  .pg-side label { font: 600 13px var(--text); color: var(--muted); display: block; }
+  .pg-side input[type=range] { width: 100%; accent-color: var(--amber); }
+  .pg-bar .ep input { width: 78px; height: 34px; font: 600 18px var(--text); padding: 2px 6px; border-radius: 9px; border: 2px solid var(--amber); background: var(--paper-2); color: var(--fg); vertical-align: middle; }
+  /* guía de preguntas */
+  .hint summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 16px; }
+  .hint p { font-size: 16px; line-height: 1.45; color: var(--muted); margin-top: 4px; }
+  .cycle .card.cs { transition: border-color .25s, box-shadow .25s, background .25s; }
+  .cycle .card.cs.hot { border-color: var(--amber); background: var(--amber-soft); }
+  .qz { width: 100%; font-size: 14px; background: transparent; border: none; box-shadow: none; border-radius: 0; }
+  .qz th { padding: 4px 6px; background: transparent; font-size: 12px; }
+  .qz td { padding: 6px; border-top: 1px solid var(--line); font-family: var(--text); font-size: 14px; font-weight: 500; color: var(--fg); width: auto; white-space: normal; vertical-align: middle; }
+  .qz td:first-child { font-family: var(--text); font-size: 14px; color: var(--fg); width: 30%; }
+  .qz td:first-child b { font-family: var(--display); color: var(--amber); font-size: 18px; margin-right: 4px; }
+  .qz select { width: 100%; font: 500 13px var(--text); padding: 5px 3px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .qz select.ok { border-color: var(--teal); background: var(--teal-soft); }
+  .qz select.bad { border-color: var(--coral); background: var(--coral-soft); }
+  .runs { font-size: 14px; }
+  .runs th { padding: 5px 10px; font-size: 11px; }
+  .runs td { padding: 4px 10px; font-size: 14px; font-family: var(--text); font-weight: 500; color: var(--fg); width: auto; }
+  .runs td:first-child { font-family: var(--text); font-size: 14px; color: var(--fg); width: auto; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+<section class="slide cover" data-title="Portada">
+  <div class="hd" style="position:relative">
+    <p class="eyebrow">Unidad 1 · Experiencia 3 · Momento individual</p>
+    <h1>Preguntas sobre <em>redes neuronales</em></h1>
+    <p class="lead">Siete preguntas para pensar con lo que ya viste. Cada una trae una actividad para explorar antes de responder.</p>
+    <div class="meta"><span>Deep Learning</span><span>7 preguntas</span><span>Actividades interactivas</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo responder">
+  <div class="hd"><p class="eyebrow">Antes de empezar</p><h2>Preguntas de profundización</h2>
+    <p class="lead" style="font-size:20px">Resuelve cada ítem de forma individual. La actividad sirve para observar; la respuesta la construyes tú, con tus palabras.</p></div>
+  <div class="bd">
+    <div class="grid3">
+      <div class="card"><span class="tag t-teal">1 · Lee</span><p style="font-size:18px">Cada diapositiva plantea una pregunta a la izquierda. Léela completa antes de tocar nada.</p></div>
+      <div class="card"><span class="tag t-amber">2 · Explora</span><p style="font-size:18px">A la derecha hay una actividad. Sigue las instrucciones de «Prueba» y anota qué ves cambiar.</p></div>
+      <div class="card"><span class="tag t-indigo">3 · Responde</span><p style="font-size:18px">Formula tu respuesta con tus palabras. Si te atascas, abre «Pista».</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1 -->
+<section class="slide" data-title="Pregunta 1">
+  <div class="hd"><p class="eyebrow">Pregunta 1 de 7 · La neurona</p><h2>La neurona y la recta</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.95fr 1.05fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">Una neurona calcula \(\hat{y} = w_0 + w_1 x_1 + \dots + w_n x_n\). Explica con tus palabras <b>qué hace cada peso</b> y <b>qué hace el sesgo</b>. ¿En qué caso la neurona es exactamente la recta de la regresión lineal?</p></div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> 1. Mueve \(w_1\) y mira qué cambia. 2. Mueve \(w_0\) y compara. 3. Pon \(w_1 = 0\).</p>
+        <details class="hint"><summary>Pista</summary><p>Fíjate en qué parte de la recta se inclina y qué parte solo la desplaza hacia arriba o abajo.</p></details>
+        <div class="grid3" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Predicción</div><div class="v" id="n1Y" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Pendiente</div><div class="v" id="n1S" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Corte con el eje</div><div class="v" id="n1C" style="font-size:24px">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 14px"><div class="cap">Neurona con una entrada: \(\hat{y} = w_0 + w_1 x\). El punto ámbar es la entrada \(x\) elegida.</div>
+          <svg class="chart" id="n1Svg" viewBox="0 0 520 215" role="img" aria-label="Recta de una neurona con una entrada"></svg></div>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:120px 1fr 52px"><span>\(w_1\) <small>peso</small></span><input type="range" id="n1W1" min="-2" max="2" step="0.1" value="1"><output id="n1OW1">1.0</output></label>
+          <label style="grid-template-columns:120px 1fr 52px"><span>\(w_0\) <small>sesgo</small></span><input type="range" id="n1W0" min="-2" max="2" step="0.1" value="0.5"><output id="n1OW0">0.5</output></label>
+          <label style="grid-template-columns:120px 1fr 52px"><span>\(x\) <small>entrada</small></span><input type="range" id="n1X" min="-3" max="3" step="0.1" value="1"><output id="n1OX">1.0</output></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-title="Pregunta 2">
+  <div class="hd"><p class="eyebrow">Pregunta 2 de 7 · Capas</p><h2>¿Más capas lineales, más curvas?</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.95fr 1.05fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">Una red tiene <b>10 capas y todas son lineales</b>. Un compañero dice que, con tantos parámetros, ya puede ajustar curvas complejas. ¿Tiene razón? Justifica <b>sustituyendo</b> la salida de una neurona en la siguiente.</p></div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> 1. Mueve los cuatro pesos. 2. Mira si la salida deja de ser recta. 3. Compara con la recta equivalente.</p>
+        <details class="hint"><summary>Pista</summary><p>Escribe \(\hat{y}\) en función de \(x\) reemplazando \(h\). ¿Qué forma tiene el resultado? ¿Cambia con diez capas?</p></details>
+        <div class="grid2" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Pendiente equivalente</div><div class="v" id="n2S" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Sesgo equivalente</div><div class="v" id="n2C" style="font-size:24px">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 14px"><div class="cap">Dos neuronas lineales en fila. Índigo: salida \(\hat{y}\). Verde punteada: recta equivalente. Gris: salida \(h\) de la primera.</div>
+          <svg class="chart" id="n2Svg" viewBox="0 0 520 175" role="img" aria-label="Dos neuronas lineales en fila equivalen a una recta"></svg></div>
+        <div class="card ctl" style="padding:8px 18px;gap:5px">
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[1]}_{1,1}\) <small>peso capa 1</small></span><input type="range" id="n2A1" min="-2" max="2" step="0.1" value="1.5"><output id="n2OA1">1.5</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[1]}_{1,0}\) <small>sesgo capa 1</small></span><input type="range" id="n2B1" min="-2" max="2" step="0.1" value="-0.5"><output id="n2OB1">-0.5</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[2]}_{1,1}\) <small>peso capa 2</small></span><input type="range" id="n2A2" min="-2" max="2" step="0.1" value="-1"><output id="n2OA2">-1.0</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[2]}_{1,0}\) <small>sesgo capa 2</small></span><input type="range" id="n2B2" min="-2" max="2" step="0.1" value="1"><output id="n2OB2">1.0</output></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-title="Pregunta 3">
+  <div class="hd"><p class="eyebrow">Pregunta 3 de 7 · Activación</p><h2>El papel de la activación</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.95fr 1.05fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">¿Qué cambia en la fórmula de una neurona al incluir una <b>función de activación</b> \(g(z)\)? Explica <b>por qué ese cambio permite formar curvas</b> y por qué se aplica entre capas.</p></div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> 1. Deja la activación en «Ninguna» y mueve los pesos de salida. 2. Cambia a ReLU o tanh y repite. 3. Mira el indicador.</p>
+        <details class="hint"><summary>Pista</summary><p>Con la activación, la salida de cada neurona oculta es \(h_k = g(z_k)\). Observa las curvas individuales: ¿qué forma tiene cada una?</p></details>
+        <div class="grid2" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Activación</div><div class="v" id="n3G" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">¿La salida es una recta?</div><div class="v" id="n3L" style="font-size:24px">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 14px"><div class="cap">Red con 3 neuronas ocultas. Índigo: salida \(\hat{y}\). Líneas finas: aporte de cada neurona oculta.</div>
+          <svg class="chart" id="n3Svg" viewBox="0 0 520 200" role="img" aria-label="Salida de una red con tres neuronas ocultas según la activación"></svg></div>
+        <div class="card ctl" style="padding:8px 18px;gap:5px">
+          <div class="btns" id="n3Btns"><button type="button" data-g="lin" class="on">Ninguna</button><button type="button" data-g="relu">ReLU</button><button type="button" data-g="tanh">Tanh</button><button type="button" data-g="sig">Sigmoide</button></div>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[2]}_{1,1}\)</span><input type="range" id="n3V1" min="-2" max="2" step="0.1" value="1"><output id="n3OV1">1.0</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[2]}_{1,2}\)</span><input type="range" id="n3V2" min="-2" max="2" step="0.1" value="-1"><output id="n3OV2">-1.0</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(w^{[2]}_{1,3}\)</span><input type="range" id="n3V3" min="-2" max="2" step="0.1" value="1.2"><output id="n3OV3">1.2</output></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-title="Pregunta 4">
+  <div class="hd"><p class="eyebrow">Pregunta 4 de 7 · Activación</p><h2>Saturación y gradiente</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.95fr 1.05fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">Una red usa <b>sigmoide en todas sus capas ocultas</b> y aprende muy lento. Usa las ideas de <b>saturación</b> y <b>gradiente</b> para explicar la causa probable. ¿Qué activación probarías primero y por qué?</p></div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> 1. Elige sigmoide y lleva \(z\) a un extremo. 2. Sube el número de capas. 3. Repite con ReLU.</p>
+        <details class="hint"><summary>Pista</summary><p>El indicador de abajo multiplica la pendiente de la activación una vez por capa. ¿Qué le pasa a un número menor que 1 al multiplicarlo muchas veces?</p></details>
+        <div class="grid3" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">\(g(z)\)</div><div class="v" id="n4G" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Pendiente \(g'(z)\)</div><div class="v" id="n4D" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Producto en las capas</div><div class="v" id="n4P" style="font-size:24px">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 14px"><div class="cap">Índigo: \(g(z)\). Ámbar: su pendiente \(g'(z)\). El punto marca el \(z\) elegido.</div>
+          <svg class="chart" id="n4Svg" viewBox="0 0 520 200" role="img" aria-label="Activación y su pendiente"></svg></div>
+        <div class="card ctl" style="padding:8px 18px;gap:5px">
+          <div class="btns" id="n4Btns"><button type="button" data-g="sig" class="on">Sigmoide</button><button type="button" data-g="tanh">Tanh</button><button type="button" data-g="relu">ReLU</button></div>
+          <label style="grid-template-columns:150px 1fr 52px"><span>\(z\) <small>suma ponderada</small></span><input type="range" id="n4Z" min="-8" max="8" step="0.1" value="0"><output id="n4OZ">0.0</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>Capas <small>ocultas</small></span><input type="range" id="n4L" min="1" max="20" step="1" value="5"><output id="n4OL">5</output></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-title="Pregunta 5">
+  <div class="hd"><p class="eyebrow">Pregunta 5 de 7 · Capa de salida</p><h2>Diseña la capa de salida</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">Para cada problema, elige <b>neuronas de salida</b>, <b>activación</b> y <b>pérdida</b>. Luego explica la diferencia entre el caso <b>c</b> y el caso <b>d</b>.</p></div>
+        <details class="hint"><summary>Pista</summary><p>En c solo una clase es correcta; en d pueden serlo varias a la vez. ¿Las probabilidades deben sumar 1 en cada caso?</p></details>
+      </div>
+      <div class="col" style="gap:8px">
+        <div class="card" style="padding:12px 16px">
+          <table class="qz" id="n5Tab"></table>
+          <div class="btns" style="margin-top:10px"><button type="button" id="n5Check">Comprobar</button><button type="button" id="n5Reset">Reiniciar</button></div>
+          <p class="txt" id="n5Msg" style="font-size:16px;margin-top:8px;color:var(--muted)">Elige las tres opciones de cada fila y pulsa «Comprobar». \(C\) es el número de clases o etiquetas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-title="Pregunta 6">
+  <div class="hd"><p class="eyebrow">Pregunta 6 de 7 · Entrenamiento</p><h2>De la recta a la red</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.95fr 1.05fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><p style="font-size:18px;line-height:1.45;color:var(--fg)">Compara el entrenamiento de una <b>regresión lineal</b> con el de una <b>red profunda</b>: qué <b>se mantiene</b> (pérdida, optimizador, ciclo) y qué <b>cambia</b> (parámetros, gradiente). ¿Qué hace el <b>backward</b>?</p></div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> 1. Pulsa «Animar» y sigue el ciclo. 2. Cambia capas y neuronas y mira los parámetros.</p>
+        <details class="hint"><summary>Pista</summary><p>Piensa en qué pieza del ciclo se repite igual y en cuántos números debe mover el step.</p></details>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="cycle" id="n6Cyc" style="grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr">
+          <div class="card cs" style="padding:12px 10px"><span class="tag t-teal" style="margin-bottom:6px">1</span><h3 style="font-size:20px;margin-bottom:4px">Forward</h3><p style="font-size:15px;line-height:1.35">Calcula \(\hat{y}\) capa por capa.</p></div>
+          <div class="link" style="font-size:22px">→</div>
+          <div class="card cs" style="padding:12px 10px"><span class="tag t-coral" style="margin-bottom:6px">2</span><h3 style="font-size:20px;margin-bottom:4px">Pérdida</h3><p style="font-size:15px;line-height:1.35">Resume el error en \(L\).</p></div>
+          <div class="link" style="font-size:22px">→</div>
+          <div class="card cs" style="padding:12px 10px"><span class="tag t-indigo" style="margin-bottom:6px">3</span><h3 style="font-size:20px;margin-bottom:4px">Backward</h3><p style="font-size:15px;line-height:1.35">Calcula \(\nabla L\) de salida a entrada.</p></div>
+          <div class="link" style="font-size:22px">→</div>
+          <div class="card cs" style="padding:12px 10px"><span class="tag t-amber" style="margin-bottom:6px">4</span><h3 style="font-size:20px;margin-bottom:4px">Step</h3><p style="font-size:15px;line-height:1.35">Mueve todos los parámetros.</p></div>
+        </div>
+        <div class="card ctl" style="padding:8px 18px;gap:5px">
+          <label style="grid-template-columns:150px 1fr 52px"><span>Capas <small>ocultas</small></span><input type="range" id="n6L" min="0" max="5" step="1" value="2"><output id="n6OL">2</output></label>
+          <label style="grid-template-columns:150px 1fr 52px"><span>Neuronas <small>por capa</small></span><input type="range" id="n6N" min="1" max="32" step="1" value="8"><output id="n6ON">8</output></label>
+          <div class="btns"><button type="button" id="n6Play">▶ Animar</button><button type="button" id="n6Reset">Reiniciar</button></div>
+        </div>
+        <div class="grid3" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Parámetros recta</div><div class="v" style="font-size:24px">2</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Parámetros red</div><div class="v" id="n6P" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Veces más</div><div class="v" id="n6R" style="font-size:24px">–</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-title="Pregunta 7">
+  <div class="hd"><p class="eyebrow">Pregunta 7 de 7 · Laboratorio</p><h2>Capas ocultas y minibatch</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.88fr 1.12fr;align-items:stretch;gap:20px">
+      <div class="col" style="gap:8px;justify-content:flex-start">
+        <div class="card" style="padding:10px 18px"><p style="font-size:16px;line-height:1.4;color:var(--fg)">Los datos no siguen una recta. Entrena con <b>0</b> y con <b>2 capas ocultas</b>, luego con <b>minibatch</b> de \(m=1\) y de \(m=50\). Pulsa «Guardar» al terminar cada corrida y explica <b>qué aportan las capas ocultas</b> y <b>cómo cambia la curva de pérdida con \(m\)</b>.</p></div>
+        <table class="runs"><thead><tr><th>Capas</th><th>Batch</th><th>Tasa</th><th>Entren.</th><th>Prueba</th></tr></thead><tbody id="n7Runs"><tr><td colspan="5" style="color:var(--muted);font-size:14px">Sin corridas guardadas.</td></tr></tbody></table>
+        <div class="grid3" style="gap:8px">
+          <div class="kpi" style="padding:4px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Época</div><div class="v" id="n7Ep" style="font-size:22px">0</div></div>
+          <div class="kpi" style="padding:4px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Pérdida entren.</div><div class="v" id="n7Tr" style="font-size:22px">–</div></div>
+          <div class="kpi" style="padding:4px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Pérdida prueba</div><div class="v" id="n7Te" style="font-size:22px">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:8px">
+        <div class="chartbox" style="padding:8px 12px"><div class="cap" style="padding:2px 8px 4px;font-size:14px">Puntos: entrenamiento (índigo) y prueba (coral). Curva ámbar: predicción \(\hat{y}\).</div>
+          <svg class="chart" id="n7Fit" viewBox="0 0 520 150" role="img" aria-label="Datos y curva ajustada por la red"></svg></div>
+        <div class="chartbox" style="padding:8px 12px">
+          <svg class="chart" id="n7Loss" viewBox="0 0 520 112" role="img" aria-label="Pérdida por época"></svg></div>
+        <div class="card ctl" style="padding:6px 14px;gap:5px">
+          <div class="pg-bar" style="box-shadow:none;border:none;padding:0;gap:10px">
+            <div class="f"><span>Capas ocultas</span><select id="n7L"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option></select></div>
+            <div class="f"><span>Batch size \(m\)</span><select id="n7M"><option value="1">1</option><option value="10">10</option><option value="50" selected>50</option></select></div>
+            <div class="f"><span>Tasa \(\eta\)</span><select id="n7E"><option value="0.003">0.003</option><option value="0.01">0.01</option><option value="0.03" selected>0.03</option><option value="0.1">0.1</option></select></div>
+          </div>
+          <div class="btns"><button type="button" id="n7Play">▶ Entrenar</button><button type="button" id="n7Reset">Reiniciar</button><button type="button" id="n7Save">Guardar corrida</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="foot"><span>Deep Learning · Unidad 1 · Preguntas sobre redes neuronales</span><span class="pg" id="pg"></span></div>
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="ui">
+  <button id="bPrev" type="button" aria-label="Diapositiva anterior">←</button>
+  <button id="bNext" type="button" aria-label="Diapositiva siguiente">→</button>
+  <button id="bFs" type="button" aria-label="Pantalla completa (F)">Pantalla</button>
+  <button id="bTheme" type="button" aria-label="Cambiar tema (T)">Tema</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  var stage = document.getElementById("stage"), slides = [].slice.call(document.querySelectorAll(".slide"));
+  var pg = document.getElementById("pg"), bar = document.getElementById("bar"), cur = 0;
+  var root = document.documentElement;
+
+  try { var t = localStorage.getItem("deck-theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(i, noHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); });
+    pg.textContent = (cur + 1) + " / " + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    document.querySelector(".foot").style.display = cur === 0 ? "none" : "flex";
+    if (!noHash) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function go(d) { show(cur + d); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (e.target && e.target.tagName === "INPUT" && k.indexOf("Arrow") === 0) return;
+    if (e.target && e.target.tagName === "BUTTON" && (k === " " || k === "Enter")) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].indexOf(k) > -1) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].indexOf(k) > -1) { e.preventDefault(); go(-1); }
+    else if (k === "Home") show(0); else if (k === "End") show(slides.length - 1);
+    else if (k === "f" || k === "F") toggleFs(); else if (k === "t" || k === "T") toggleTheme();
+  });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a,button,input,summary,.noclick")) return;
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left) / r.width < 0.25 ? go(-1) : go(1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen && root.requestFullscreen(); }
+  function toggleTheme() {
+    var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", n); try { localStorage.setItem("deck-theme", n); } catch (e) {}
+  }
+  document.getElementById("bPrev").onclick = function (e) { e.stopPropagation(); go(-1); };
+  document.getElementById("bNext").onclick = function (e) { e.stopPropagation(); go(1); };
+  document.getElementById("bFs").onclick = toggleFs;
+  document.getElementById("bTheme").onclick = toggleTheme;
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) show(n - 1, true); });
+
+  function typeset() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, { delimiters: [
+        { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }
+      ], throwOnError: false });
+    }
+  }
+
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, true);
+  window.addEventListener("load", typeset);
+  if (document.readyState === "complete") typeset();
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
+  function f1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+  function f2(v) { return (Math.round(v * 100) / 100).toFixed(2); }
+  function tex(t) { try { return katex.renderToString(t, { throwOnError: false }); } catch (e) { return t; } }
+
+  /* ---- gráfico genérico ---- */
+  function Plot(id, W, H, ml, mr, mt, mb, xr, yr, xt, yt) {
+    var P = { id: id, W: W, H: H, ml: ml, mr: mr, mt: mt, mb: mb, xr: xr, yr: yr, xt: xt, yt: yt };
+    P.sx = function (v) { return ml + (v - xr[0]) / (xr[1] - xr[0]) * (W - ml - mr); };
+    P.sy = function (v) { return H - mb - (v - yr[0]) / (yr[1] - yr[0]) * (H - mt - mb); };
+    P.base = function () {
+      var s = '<defs><clipPath id="' + id + 'c"><rect x="' + ml + '" y="' + mt + '" width="' + (W - ml - mr) + '" height="' + (H - mt - mb) + '"/></clipPath></defs>', i;
+      xt.forEach(function (v) { s += '<line class="gr" x1="' + P.sx(v) + '" y1="' + mt + '" x2="' + P.sx(v) + '" y2="' + (H - mb) + '"/><text class="tk" x="' + P.sx(v) + '" y="' + (H - mb + 18) + '" text-anchor="middle">' + v + '</text>'; });
+      yt.forEach(function (v) { s += '<line class="gr" x1="' + ml + '" y1="' + P.sy(v) + '" x2="' + (W - mr) + '" y2="' + P.sy(v) + '"/><text class="tk" x="' + (ml - 8) + '" y="' + (P.sy(v) + 5) + '" text-anchor="end">' + v + '</text>'; });
+      s += '<line class="ax" x1="' + ml + '" y1="' + (H - mb) + '" x2="' + (W - mr) + '" y2="' + (H - mb) + '"/><line class="ax" x1="' + ml + '" y1="' + mt + '" x2="' + ml + '" y2="' + (H - mb) + '"/>';
+      return s;
+    };
+    P.curve = function (f, cls, w, dash, n) {
+      n = n || 120; var d = "", i, x;
+      for (i = 0; i <= n; i++) { x = xr[0] + (xr[1] - xr[0]) * i / n; d += (i ? "L" : "M") + P.sx(x).toFixed(1) + " " + P.sy(f(x)).toFixed(1); }
+      return '<path d="' + d + '" fill="none" class="' + cls + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round" stroke-linejoin="round" clip-path="url(#' + id + 'c)"/>';
+    };
+    P.pts = function (arr, cls, r) { return arr.map(function (p) { return '<circle class="' + cls + '" cx="' + P.sx(p[0]).toFixed(1) + '" cy="' + P.sy(p[1]).toFixed(1) + '" r="' + (r || 4) + '" clip-path="url(#' + id + 'c)"/>'; }).join(""); };
+    P.text = function (x, y, t, cls, anchor) { return '<text class="' + cls + '" x="' + x + '" y="' + y + '" text-anchor="' + (anchor || "start") + '">' + t + '</text>'; };
+    P.set = function (inner) { $(id).innerHTML = inner; };
+    return P;
+  }
+  function out(id, v, fmt) { $(id).textContent = fmt(v); }
+  function bind(ids, fn) { ids.forEach(function (id) { $(id).addEventListener("input", fn); }); }
+
+  /* ---- 1: la neurona ---- */
+  (function () {
+    var P = Plot("n1Svg", 520, 215, 44, 14, 12, 34, [-3, 3], [-4, 4], [-3, -2, -1, 0, 1, 2, 3], [-4, -2, 0, 2, 4]);
+    function draw() {
+      var w1 = +$("n1W1").value, w0 = +$("n1W0").value, x = +$("n1X").value, y = w0 + w1 * x;
+      out("n1OW1", w1, f1); out("n1OW0", w0, f1); out("n1OX", x, f1);
+      $("n1Y").textContent = f2(y); $("n1S").textContent = f2(w1); $("n1C").textContent = f2(w0);
+      P.set(P.base() + P.curve(function (t) { return w0 + w1 * t; }, "s-indigo", 3.5) +
+        '<line x1="' + P.sx(x) + '" y1="' + P.sy(0) + '" x2="' + P.sx(x) + '" y2="' + P.sy(y) + '" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 4" clip-path="url(#n1Svgc)"/>' +
+        P.pts([[0, w0]], "f-teal", 6) + P.pts([[x, y]], "f-amber", 7) +
+        P.text(P.sx(0) + 10, P.sy(w0) - 10, "w₀", "an-teal"));
+    }
+    bind(["n1W1", "n1W0", "n1X"], draw); draw();
+  })();
+
+  /* ---- 2: apilar capas lineales ---- */
+  (function () {
+    var P = Plot("n2Svg", 520, 175, 44, 14, 12, 34, [-3, 3], [-6, 6], [-3, -2, -1, 0, 1, 2, 3], [-6, -3, 0, 3, 6]);
+    function draw() {
+      var a1 = +$("n2A1").value, b1 = +$("n2B1").value, a2 = +$("n2A2").value, b2 = +$("n2B2").value;
+      out("n2OA1", a1, f1); out("n2OB1", b1, f1); out("n2OA2", a2, f1); out("n2OB2", b2, f1);
+      var s = a2 * a1, c = a2 * b1 + b2;
+      $("n2S").textContent = f2(s); $("n2C").textContent = f2(c);
+      P.set(P.base() + P.curve(function (t) { return a1 * t + b1; }, "s-muted", 2, "4 5") +
+        P.curve(function (t) { return a2 * (a1 * t + b1) + b2; }, "s-indigo", 4.5) +
+        P.curve(function (t) { return s * t + c; }, "s-teal", 2, "7 6") +
+        P.text(P.W - 24, 30, "Siempre una recta", "an-teal", "end"));
+    }
+    bind(["n2A1", "n2B1", "n2A2", "n2B2"], draw); draw();
+  })();
+
+  /* ---- 3: activación ---- */
+  var ACT = {
+    lin: { n: "Ninguna", f: function (z) { return z; }, d: function () { return 1; } },
+    relu: { n: "ReLU", f: function (z) { return Math.max(0, z); }, d: function (z) { return z > 0 ? 1 : 0; } },
+    tanh: { n: "Tanh", f: Math.tanh, d: function (z) { var t = Math.tanh(z); return 1 - t * t; } },
+    sig: { n: "Sigmoide", f: function (z) { return 1 / (1 + Math.exp(-z)); }, d: function (z) { var s = 1 / (1 + Math.exp(-z)); return s * (1 - s); } }
+  };
+  (function () {
+    var P = Plot("n3Svg", 520, 200, 44, 14, 12, 34, [-3, 3], [-3, 3], [-3, -2, -1, 0, 1, 2, 3], [-3, -1.5, 0, 1.5, 3]);
+    var A = [1.5, -1.2, 2], B = [-0.5, 0.8, 1.0], g = "lin", cols = ["s-teal", "s-amber", "s-coral"];
+    function net(x, v) { var y = 0; for (var k = 0; k < 3; k++) y += v[k] * ACT[g].f(A[k] * x + B[k]); return y; }
+    function draw() {
+      var v = [+$("n3V1").value, +$("n3V2").value, +$("n3V3").value];
+      out("n3OV1", v[0], f1); out("n3OV2", v[1], f1); out("n3OV3", v[2], f1);
+      var s = "", k, xs = [-3, 0, 3], y0 = net(-3, v), y1 = net(3, v), dev = 0, i, t;
+      for (i = 0; i <= 40; i++) { t = -3 + 6 * i / 40; dev = Math.max(dev, Math.abs(net(t, v) - (y0 + (y1 - y0) * (t + 3) / 6))); }
+      for (k = 0; k < 3; k++) (function (k) { s += P.curve(function (x) { return v[k] * ACT[g].f(A[k] * x + B[k]); }, cols[k], 1.8, "", 90); })(k);
+      s += P.curve(function (x) { return net(x, v); }, "s-indigo", 4.5, "", 160);
+      P.set(P.base() + s);
+      $("n3G").textContent = ACT[g].n;
+      var el = $("n3L"); el.textContent = dev < 0.05 ? "Sí" : "No: es curva"; el.style.color = dev < 0.05 ? "var(--coral)" : "var(--teal)";
+    }
+    [].forEach.call($("n3Btns").children, function (b) { b.addEventListener("click", function () {
+      g = b.dataset.g; [].forEach.call($("n3Btns").children, function (c) { c.classList.toggle("on", c === b); }); draw(); }); });
+    bind(["n3V1", "n3V2", "n3V3"], draw); draw();
+  })();
+
+  /* ---- 4: saturación ---- */
+  (function () {
+    var P = Plot("n4Svg", 520, 200, 44, 14, 12, 34, [-8, 8], [-1.2, 1.2], [-8, -4, 0, 4, 8], [-1, -0.5, 0, 0.5, 1]);
+    var g = "sig";
+    function draw() {
+      var z = +$("n4Z").value, L = +$("n4L").value, G = ACT[g], d = G.d(z), p = Math.pow(d, L);
+      out("n4OZ", z, f1); $("n4OL").textContent = L;
+      $("n4G").textContent = f2(G.f(z)); $("n4D").textContent = f2(d);
+      var pe = $("n4P"); pe.textContent = p < 0.0005 && p > 0 ? p.toExponential(0).replace("e-", "e−") : (p === 0 ? "0" : (p < 1 ? f2(p) : "1.00"));
+      pe.style.color = p < 0.01 ? "var(--coral)" : "var(--teal)";
+      P.set(P.base() + P.curve(G.f, "s-indigo", 3.5, "", 200) + P.curve(G.d, "s-amber", 3, "", 200) +
+        P.pts([[z, G.f(z)]], "f-teal", 6) + P.pts([[z, d]], "f-amber", 6) +
+        P.text(P.W - 24, 30, d < 0.05 ? "Saturada: pendiente casi cero" : "Pendiente útil", d < 0.05 ? "an" : "an-teal", "end"));
+    }
+    [].forEach.call($("n4Btns").children, function (b) { b.addEventListener("click", function () {
+      g = b.dataset.g; [].forEach.call($("n4Btns").children, function (c) { c.classList.toggle("on", c === b); }); draw(); }); });
+    bind(["n4Z", "n4L"], draw); draw();
+  })();
+
+  /* ---- 5: capa de salida (test) ---- */
+  (function () {
+    var rows = [
+      { t: "Precio de una vivienda", a: ["1", "Ninguna (lineal)", "Error cuadrático medio"] },
+      { t: "¿Es spam o no?", a: ["1", "Sigmoide", "Entropía cruzada binaria"] },
+      { t: "Una especie entre 10", a: ["C", "Softmax", "Entropía cruzada"] },
+      { t: "Varios objetos en una foto", a: ["C", "Sigmoide en cada una", "Entropía cruzada binaria"] }
+    ];
+    var opts = [["1", "C (una por clase o etiqueta)"], ["Ninguna (lineal)", "Sigmoide", "Sigmoide en cada una", "Softmax"], ["Error cuadrático medio", "Entropía cruzada binaria", "Entropía cruzada"]];
+    var vals = [["1", "C"], null, null];
+    function build() {
+      var h = '<thead><tr><th>Problema</th><th>Neuronas</th><th>Activación</th><th>Pérdida</th></tr></thead><tbody>';
+      rows.forEach(function (r, i) {
+        h += '<tr><td><b>' + "abcd"[i] + '</b>' + r.t + '</td>';
+        for (var j = 0; j < 3; j++) {
+          h += '<td><select data-r="' + i + '" data-c="' + j + '"><option value="">Elige…</option>';
+          (j === 0 ? [["1", "1"], ["C", "C"]] : opts[j].map(function (o) { return [o, o]; })).forEach(function (o) { h += '<option value="' + o[0] + '">' + o[1] + '</option>'; });
+          h += '</select></td>';
+        }
+        h += '</tr>';
+      });
+      $("n5Tab").innerHTML = h + '</tbody>';
+    }
+    function sels() { return [].slice.call($("n5Tab").querySelectorAll("select")); }
+    $("n5Check").addEventListener("click", function () {
+      var ok = 0, empty = 0;
+      sels().forEach(function (s) {
+        var r = +s.dataset.r, c = +s.dataset.c; s.classList.remove("ok", "bad");
+        if (!s.value) { empty++; return; }
+        if (s.value === rows[r].a[c]) { s.classList.add("ok"); ok++; } else s.classList.add("bad");
+      });
+      $("n5Msg").textContent = empty ? "Faltan " + empty + " opciones por elegir. Aciertos hasta ahora: " + ok + " de 12." : (ok === 12 ? "¡Los 12 aciertos! Ahora explica por qué c y d usan activaciones distintas." : "Aciertos: " + ok + " de 12. Revisa las marcadas en rojo y vuelve a comprobar.");
+    });
+    $("n5Reset").addEventListener("click", function () { sels().forEach(function (s) { s.value = ""; s.classList.remove("ok", "bad"); }); $("n5Msg").textContent = "Elige las tres opciones de cada fila y pulsa «Comprobar»."; });
+    build();
+  })();
+
+  /* ---- 6: ciclo y parámetros ---- */
+  (function () {
+    var cards = [].slice.call($("n6Cyc").querySelectorAll(".card.cs")), timer = null, stage = 0, acc = 0, ticks = 0;
+    function params(L, N) { return L === 0 ? 2 : 2 * N + (L - 1) * (N + 1) * N + (N + 1); }
+    function paint() { cards.forEach(function (c, i) { c.classList.toggle("hot", timer !== null || ticks > 0 ? i === stage : false); }); }
+    function upd() {
+      var L = +$("n6L").value, N = +$("n6N").value, p = params(L, N);
+      $("n6OL").textContent = L; $("n6ON").textContent = N; $("n6P").textContent = p; $("n6R").textContent = L === 0 ? "1×" : Math.round(p / 2) + "×";
+    }
+    function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("n6Play").textContent = "▶ Animar"; }
+    $("n6Play").addEventListener("click", function () {
+      if (timer) { stop(); return; }
+      $("n6Play").textContent = "❚❚ Pausa"; var last = null; if (ticks >= 8) { ticks = 0; stage = 0; }
+      function frame(now) {
+        if (last === null) last = now; acc += Math.min((now - last) / 1000, 0.05); last = now;
+        if (acc > 1.1) { acc = 0; ticks++; stage = ticks % 4; }
+        paint();
+        if (ticks < 8) timer = requestAnimationFrame(frame); else { timer = null; stop(); cards.forEach(function (c) { c.classList.remove("hot"); }); }
+      }
+      timer = requestAnimationFrame(frame);
+    });
+    $("n6Reset").addEventListener("click", function () { stop(); ticks = 0; stage = 0; acc = 0; cards.forEach(function (c) { c.classList.remove("hot"); }); });
+    ["n6L", "n6N"].forEach(function (id) { $(id).addEventListener("input", upd); }); upd();
+  })();
+
+  /* ---- 7: laboratorio (red pequeña real) ---- */
+  (function () {
+    function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+    var R = rng(7), data = [], i;
+    for (i = 0; i < 100; i++) { var x = -1 + 2 * R(), y = Math.sin(3 * x) + 0.4 * x + (R() - 0.5) * 0.3; data.push([x, y]); }
+    var train = data.slice(0, 80), test = data.slice(80), WIDTH = 8, MAXE = 200;
+    var Pf = Plot("n7Fit", 520, 150, 40, 12, 10, 30, [-1, 1], [-1.6, 1.6], [-1, -0.5, 0, 0.5, 1], [-1, 0, 1]);
+    var Pl = Plot("n7Loss", 520, 112, 52, 12, 8, 28, [0, MAXE], [0, 0.8], [0, 50, 100, 150, 200], [0, 0.4, 0.8]);
+    var net, hist, epoch, timer = null, acc = 0;
+    function init() {
+      var L = +$("n7L").value, sizes = [1], r = rng(11), k;
+      for (k = 0; k < L; k++) sizes.push(WIDTH); sizes.push(1);
+      net = { sizes: sizes, W: [], b: [] };
+      for (k = 0; k < sizes.length - 1; k++) {
+        var fi = sizes[k], fo = sizes[k + 1], lim = Math.sqrt(6 / (fi + fo)), W = [], b = [], j, q;
+        for (j = 0; j < fo; j++) { var row = []; for (q = 0; q < fi; q++) row.push((r() * 2 - 1) * lim); W.push(row); b.push(0); }
+        net.W.push(W); net.b.push(b);
+      }
+      hist = []; epoch = 0; acc = 0; record();
+    }
+    function forward(x) {
+      var a = [x], acts = [[x]], k, j, q, z;
+      for (k = 0; k < net.W.length; k++) {
+        var out = [], last = k === net.W.length - 1;
+        for (j = 0; j < net.W[k].length; j++) { z = net.b[k][j]; for (q = 0; q < a.length; q++) z += net.W[k][j][q] * a[q]; out.push(last ? z : Math.tanh(z)); }
+        a = out; acts.push(a);
+      }
+      return acts;
+    }
+    function loss(set) { var s = 0; set.forEach(function (p) { var e = forward(p[0])[net.W.length][0] - p[1]; s += e * e; }); return s / set.length; }
+    function record() { hist.push([loss(train), loss(test)]); }
+    function stepBatch(batch, eta) {
+      var nl = net.W.length, gW = [], gb = [], k, j, q;
+      for (k = 0; k < nl; k++) { gW.push(net.W[k].map(function (r) { return r.map(function () { return 0; }); })); gb.push(net.b[k].map(function () { return 0; })); }
+      batch.forEach(function (p) {
+        var acts = forward(p[0]), delta = [2 * (acts[nl][0] - p[1])];
+        for (k = nl - 1; k >= 0; k--) {
+          var prev = acts[k], nd = prev.map(function () { return 0; });
+          for (j = 0; j < delta.length; j++) { gb[k][j] += delta[j]; for (q = 0; q < prev.length; q++) { gW[k][j][q] += delta[j] * prev[q]; nd[q] += delta[j] * net.W[k][j][q]; } }
+          if (k > 0) for (q = 0; q < nd.length; q++) nd[q] *= 1 - prev[q] * prev[q];
+          delta = nd;
+        }
+      });
+      var m = batch.length;
+      for (k = 0; k < nl; k++) for (j = 0; j < net.W[k].length; j++) { net.b[k][j] -= eta * gb[k][j] / m; for (q = 0; q < net.W[k][j].length; q++) net.W[k][j][q] -= eta * gW[k][j][q] / m; }
+    }
+    function runEpoch() {
+      var m = +$("n7M").value, eta = +$("n7E").value, idx = train.map(function (_, i) { return i; }), s, i;
+      for (i = idx.length - 1; i > 0; i--) { s = Math.floor(Math.random() * (i + 1)); var t = idx[i]; idx[i] = idx[s]; idx[s] = t; }
+      for (s = 0; s < idx.length; s += m) stepBatch(idx.slice(s, s + m).map(function (k) { return train[k]; }), eta);
+      epoch++; record();
+    }
+    function fmt(v) { return v < 10 ? v.toFixed(3) : "> 10"; }
+    function draw() {
+      var s = Pf.base() + Pf.pts(train, "f-indigo", 3.5) + Pf.pts(test, "f-coral", 3.5) + Pf.curve(function (x) { return forward(x)[net.W.length][0]; }, "s-amber", 3.5, "", 100);
+      Pf.set(s);
+      var d = "", d2 = "", h = hist.length;
+      hist.forEach(function (v, i) { d += (i ? "L" : "M") + Pl.sx(i).toFixed(1) + " " + Pl.sy(Math.min(v[0], 0.8)).toFixed(1); d2 += (i ? "L" : "M") + Pl.sx(i).toFixed(1) + " " + Pl.sy(Math.min(v[1], 0.8)).toFixed(1); });
+      Pl.set(Pl.base() + '<path d="' + d + '" fill="none" class="s-indigo" stroke-width="3" clip-path="url(#n7Lossc)"/><path d="' + d2 + '" fill="none" class="s-coral" stroke-width="3" clip-path="url(#n7Lossc)"/>' + Pl.text(Pl.W - 20, 24, 'Entrenamiento', 'an', 'end').replace('class="an"','class="an" style="fill:var(--indigo)"') + Pl.text(Pl.W - 20, 44, 'Prueba', 'an', 'end').replace('class="an"','class="an" style="fill:var(--coral)"'));
+      var last = hist[h - 1];
+      $("n7Ep").textContent = epoch + " / " + MAXE; $("n7Tr").textContent = fmt(last[0]); $("n7Te").textContent = fmt(last[1]);
+    }
+    function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("n7Play").textContent = "▶ Entrenar"; }
+    function reset() { stop(); init(); draw(); }
+    $("n7Play").addEventListener("click", function () {
+      if (timer) { stop(); return; }
+      if (epoch >= MAXE) reset();
+      $("n7Play").textContent = "❚❚ Pausa"; var last = null;
+      function frame(now) {
+        if (last === null) last = now; acc += Math.min((now - last) / 1000, 0.05) * 30; last = now;
+        while (acc >= 1 && epoch < MAXE) { runEpoch(); acc -= 1; }
+        draw();
+        if (epoch < MAXE) timer = requestAnimationFrame(frame); else stop();
+      }
+      timer = requestAnimationFrame(frame);
+    });
+    $("n7Reset").addEventListener("click", reset);
+    ["n7L", "n7M", "n7E"].forEach(function (id) { $(id).addEventListener("change", reset); });
+    var runs = [];
+    $("n7Save").addEventListener("click", function () {
+      if (epoch === 0) return; var last = hist[hist.length - 1];
+      runs.push({ L: $("n7L").value, m: $("n7M").value, e: $("n7E").value, tr: last[0], te: last[1], ep: epoch }); if (runs.length > 4) runs.shift();
+      $("n7Runs").innerHTML = runs.map(function (r) { return "<tr><td>" + r.L + "</td><td>" + r.m + "</td><td>" + r.e + "</td><td>" + fmt(r.tr) + "</td><td>" + fmt(r.te) + "</td></tr>"; }).join("");
+    });
+    init(); draw();
+  })();
+
+})();
+[].forEach.call(document.querySelectorAll("select"), function (s) { s.addEventListener("keydown", function (e) { e.stopPropagation(); }); });
+</script>
+</body>
+</html>
