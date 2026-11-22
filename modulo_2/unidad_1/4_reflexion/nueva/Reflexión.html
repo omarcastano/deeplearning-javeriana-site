@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflexión · M2 U1</title>
+      <script src="https://kit.fontawesome.com/43bc24b73f.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="../../../../archivos_web/css/estilos_contenidos_local_m2.css">
+</head><body style="font-family: verdana, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px;"><p class="titulo_contenido">Reflexión<span class="icono_momento" id="reflexion"></span></p>
+<div class="separa_titulo"></div>
+<p class="btn_recurso"><span class="num_recurso"><i class="fa-regular fa-comment-dots"></i></span>Captcha</p>
+<div id="recurso_1" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Hasta este punto hemos analizado los conceptos principales de las redes convolucionales y sus principales arquitecturas, donde las aplicaciones que hemos estudiado se enfocan principalmente en la clasificación de imágenes. Ahora se nos pide plantear una solución para un problema de reconocimiento de captcha en imágenes (ver un ejemplo en el siguiente enlace)."><span class="subtitulo_conte"></span>Hasta ahora, en las aplicaciones que hemos estudiado, la red recibía una imagen y respondía <strong>una sola cosa</strong>: por ejemplo, "gato" o "perro". Ahora nos enfrentamos a un problema un poco distinto: el <strong>reconocimiento de captchas</strong>. Un captcha es una imagen con unos pocos caracteres (letras y números) deformados, que una persona lee sin esfuerzo pero que a un programa le resulta difícil. Nuestro objetivo es construir una red que <strong>lea el texto escrito en el captcha</strong>.</p>
+<a href="https://www.okta.com/sites/default/files/media/image/2021-04/Okta-Captcha.png" target="_blank" class="btn_03" rel="noopener">Ejemplo captcha</a>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>El problema en concreto.</strong> Trabajaremos con captchas como el de la imagen de ejemplo:</p>
+<ul class="items_curso" data-cambio="nuevo">
+<li><strong>Entrada:</strong> una imagen en escala de grises de 50 × 200 píxeles.</li>
+<li><strong>Salida esperada:</strong> el texto del captcha, que siempre tiene <strong>5 caracteres</strong>. Por ejemplo, para la imagen del captcha <code>226md</code> la red debe responder <code>226md</code>.</li>
+<li><strong>Posibilidades:</strong> cada carácter puede ser una de las 26 letras minúsculas o uno de los 10 dígitos, es decir, <strong>36 símbolos posibles</strong>.</li>
+</ul>
+<p class="cuerpo_txt" data-cambio="nuevo">Fíjense en la diferencia con la clasificación de gatos y perros: allí había <em>una</em> pregunta con 2 respuestas posibles; aquí hay <strong>5 preguntas</strong> (una por cada posición del captcha) y cada una tiene <strong>36 respuestas posibles</strong>. La red debe contestar las 5 a la vez, y acierta el captcha solo si acierta los 5 caracteres.</p>
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="En los grupos de trabajo ya establecidos crearán un documento en el cual describan, de forma detallada, una hipótesis para solucionar la problemática planteada. Se debe tener en cuenta los siguientes aspectos al momento de definir una solución:"><strong>Su tarea.</strong> En los grupos de trabajo ya establecidos, redacten un documento con una <strong>hipótesis</strong>: una propuesta, explicada paso a paso, de cómo resolverían este problema. Todavía no se trata de programar, sino de decidir y justificar. Para ello, respondan estas tres preguntas:</p>
+<ol class="items_curso" data-cambio="modificado" data-antes="Usar exclusivamente la información suministrada durante el curso (no se aceptan otras arquitecturas o técnicas). | Definir qué tipo de información deben contener las bases de datos usadas para este tipo de aplicación. | Definir el tipo de red que usarán (recuerden, únicamente las vistas en el curso) y como la configurarán para resolver el problema de reconocimiento de captcha.">
+<li><strong>¿Con qué datos entrenamos?</strong> ¿Qué debe contener la base de datos (qué es cada ejemplo y qué etiqueta lo acompaña) y cuántos ejemplos creen que se necesitan? ¿Cómo prepararían las imágenes antes de entrar a la red?</li>
+<li><strong>¿Qué red usamos?</strong> Elijan el tipo de red entre las vistas en el curso y expliquen por qué es adecuada para imágenes.</li>
+<li><strong>¿Cómo la configuramos para este problema?</strong> ¿Qué capas tendría, y cómo haría que la red entregue sus 5 respuestas de 36 posibilidades cada una (cómo sería la salida y qué función de pérdida usarían)?</li>
+</ol>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>Condición:</strong> usen únicamente lo que hemos visto en el curso (no se aceptan otras arquitecturas ni técnicas). La hipótesis que planteen aquí es la que implementarán en la Acción.</p>
+<p class="cuerpo_txt">El documento que contiene la propuesta debe ser entregado a través de la actividad "<strong> Hipótesis </strong>”.<br><br>Para acceder a la actividad, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=dropbox&amp;rcode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-1007117" target="_blank" rel="noopener">aquí. </a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></p>
+</div>
+
+<!-- Modo revisión: solo se activa con ?revision=1 (lo agrega index.html al abrir la versión nueva). Marca lo que cambió frente a la versión anterior. -->
+<style>
+body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
+body.rev [data-cambio=nuevo]{--c:#1a9b6b} body.rev [data-cambio=modificado]{--c:#d98a00}
+body.rev .rev-b{position:absolute;top:-13px;right:-6px;z-index:5;font:700 11px/1 verdana,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--c);border:0;border-radius:10px;padding:5px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+body.rev .rev-b::after{content:" ▾"}
+body.rev .rev-p{display:none;position:absolute;top:10px;right:-6px;z-index:6;width:min(420px,90vw);max-height:260px;overflow:auto;background:#fffdf5;color:#222;border:2px solid var(--c);border-radius:8px;padding:10px 12px;font:13px/1.45 verdana,sans-serif;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.rev .rev-p b{display:block;margin-bottom:4px;color:var(--c)} body.rev .rev-p.on{display:block}
+#rev-t{display:none}
+body.rev-ok #rev-t{display:block;position:fixed;top:10px;left:10px;z-index:9;font:700 12px verdana,sans-serif;background:#2f2f2f;color:#fff;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
+body:not(.rev) .rev-b,body:not(.rev) .rev-p{display:none!important}
+</style>
+<button id="rev-t" type="button">Ocultar marcas de cambios</button>
+<script>
+(function(){
+  if(!/[?&]revision=1/.test(location.search))return;
+  var b=document.body; b.classList.add("rev","rev-ok");
+  document.querySelectorAll("[data-cambio]").forEach(function(el){
+    var nuevo=el.getAttribute("data-cambio")==="nuevo", antes=el.getAttribute("data-antes");
+    var bt=document.createElement("button"); bt.type="button"; bt.className="rev-b";
+    bt.textContent=nuevo?"Nuevo":"Modificado";
+    var p=document.createElement("div"); p.className="rev-p";
+    p.innerHTML=nuevo?"<b>Nuevo</b>Este texto no estaba en la versión anterior."
+                     :"<b>Modificado. Antes decía:</b>"+(antes||"");
+    bt.onclick=function(e){e.preventDefault();e.stopPropagation();p.classList.toggle("on");};
+    el.appendChild(bt); el.appendChild(p);
+  });
+  var t=document.getElementById("rev-t");
+  t.onclick=function(){var on=b.classList.toggle("rev");t.textContent=on?"Ocultar marcas de cambios":"Mostrar marcas de cambios";};
+})();
+</script>
+</body></html>

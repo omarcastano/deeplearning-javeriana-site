@@ -42,6 +42,13 @@
   .cambios-sec li { margin: 6px 0; }
   .cambios-sec ol { margin: 6px 0; padding-left: 22px; }
   .cambios-sec code { background:#fdecc8; padding:0 4px; border-radius:3px; }
+  /* cambios de una sección desplegables */
+  details.cam { margin:0; } details.cam > summary { cursor:pointer; list-style:none; }
+  details.cam > summary::-webkit-details-marker { display:none; }
+  details.cam > summary::before { content:"▶ "; font-size:.7rem; color:#b57a1c; }
+  details.cam[open] > summary::before { content:"▼ "; }
+  details.cam .cam-body { margin:6px 0 4px 6px; padding-left:12px; border-left:2px solid #f0d49a; }
+  details.cam .cam-body p { margin:8px 0 2px; } details.cam .cam-body ul { margin:2px 0; padding-left:20px; }
   /* cambios generales */
   #cambios-generales { margin-bottom: 16px; }
   .bloque h3 { font-size: 1.05rem; margin: 0 0 6px; }
@@ -63,7 +70,12 @@
     padding:6px 14px; cursor:pointer; }
   #titulo { flex:1; font-weight:700; }
   #cambiar { background:transparent; color:#fff; border:1px solid #fff; border-radius:6px; padding:6px 12px; cursor:pointer; display:none; }
-  #marco { flex:1; border:0; width:100%; }
+  #cambiar, #siguiente, #anterior { display:none; }
+  #siguiente, #anterior { background:#fff; color:var(--azul); border:0; border-radius:6px; font-weight:700; padding:6px 12px; cursor:pointer; }
+  #marco { flex:1; border:0; width:100%; background:#fff; }
+  /* versión anterior: mismo ancho y márgenes que la nueva (body de 860px + 24px de relleno) */
+  #visor.viejo { background:#eceff4; }
+  #visor.viejo #marco { max-width:908px; margin:0 auto; box-shadow:0 0 0 1px #d5dae3; }
 </style>
 </head>
 <body>
@@ -141,6 +153,8 @@
     <span id="titulo"></span>
     <span id="etiqueta" class="tag" hidden>versión anterior</span>
     <button id="cambiar"></button>
+    <button id="anterior" title="Ir a la sección anterior de esta unidad"></button>
+    <button id="siguiente" title="Ir a la siguiente sección de esta unidad"></button>
   </div>
   <iframe id="marco"></iframe>
 </div>
@@ -172,6 +186,7 @@
  {
   "titulo": "Módulo 1: Conceptos básicos y buenas prácticas dentro del aprendizaje profundo",
   "intro": {
+   "sinCambios": true,
    "anterior": [
     [
      "",
@@ -184,6 +199,7 @@
     "titulo": "Unidad 1: Componentes fundamentales de las redes neuronales",
     "secciones": [
      {
+      "sinCambios": true,
       "anterior": [
        [
         "",
@@ -274,6 +290,7 @@
     "titulo": "Unidad 2: Buenas prácticas para la construcción de modelos de aprendizaje profundo",
     "secciones": [
      {
+      "sinCambios": true,
       "anterior": [
        [
         "",
@@ -328,6 +345,7 @@
  {
   "titulo": "Módulo 2: Aplicaciones a partir de las redes convolucionales y recurrentes con sus principales variaciones",
   "intro": {
+   "sinCambios": true,
    "anterior": [
     [
      "",
@@ -340,6 +358,7 @@
     "titulo": "Unidad 1: Redes neuronales convolucionales",
     "secciones": [
      {
+      "sinCambios": true,
       "anterior": [
        [
         "",
@@ -370,12 +389,10 @@
        ]
       ],
       "cambios": [
-       "<strong>Cambio 1:</strong> reemplazar la <a href=\"https://view.genially.com/6422e7f9c4f1900012d62ea0\">presentación de Genially \"Convolución\"</a> por la presentación interactiva <a href=\"modulo_2/unidad_1/3_experiencia/nueva/redes_convolucionales.html\"><code>redes_convolucionales.html</code></a>.",
-       "<strong>Cambio 2:</strong> reemplazar los notebooks <a href=\"modulo_2/unidad_1/3_experiencia/anterior/3_Script1_M2_U1.ipynb\"><code>3_Script1_M2_U1.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/anterior/4_Script2_M2_U1.ipynb\"><code>4_Script2_M2_U1.ipynb</code></a> (TensorFlow/Keras) por sus versiones en PyTorch: <a href=\"modulo_2/unidad_1/3_experiencia/nueva/3_Script1_M2_U1_pytorch.ipynb\"><code>3_Script1_M2_U1_pytorch.ipynb</code></a>, <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_data_augmentation_pytorch.ipynb\"><code>4_Script2_M2_U1_data_augmentation_pytorch.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_pytorch.ipynb\"><code>4_Script2_M2_U1_transfer_learning_pytorch.ipynb</code></a>.",
-       "<strong>Cambio 3:</strong> agregar el notebook <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_huggingface.ipynb\"><code>4_Script2_M2_U1_transfer_learning_huggingface.ipynb</code></a>: el mismo problema de transfer learning (gatos y perros), pero con un modelo pre-entrenado del Hub de Hugging Face (ResNet-50 con <code>AutoModel</code> y <code>AutoImageProcessor</code>) y entrenamiento en PyTorch puro.",
-       "<strong>Cambio 4:</strong> agregar la presentación nueva <a href=\"modulo_2/unidad_1/3_experiencia/nueva/transfer_learning.html\"><code>transfer_learning.html</code></a> (aparte de las redes convolucionales): 15 diapositivas: la idea de transfer learning, una diapositiva por red icónica con su arquitectura (AlexNet, VGG, GoogLeNet, ResNet) y un bloque sobre congelar y descongelar (por qué, sobreajuste, qué elegir según los datos y receta por fases).",
-       "<strong>Cambio 5:</strong> reemplazar el recurso \"Redes VGG, GooLeNet y ResNet\" (lectura del capítulo 14 del libro con Keras y TensorFlow) por \"Transfer Learning\": la presentación <a href=\"modulo_2/unidad_1/3_experiencia/nueva/transfer_learning.html\"><code>transfer_learning.html</code></a> incrustada en <a href=\"modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html\"><code>Experiencia.html</code></a>, con texto actualizado y la lectura del capítulo de CNN del libro guía <a href=\"https://oreilly.com/library/view/hands-on-machine-learning/9798341607972/\"><em>Hands-On Machine Learning with Scikit-Learn and PyTorch</em></a>.",
-       "<strong>Cambio 6:</strong> actualizar en <a href=\"modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html\"><code>Experiencia.html</code></a> el párrafo que introduce los scripts de aumento de datos y transfer learning (ahora conecta con la presentación, incluye AlexNet y aclara qué es el aumento de datos) y agregar el botón al notebook <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_huggingface.ipynb\"><code>4_Script2_M2_U1_transfer_learning_huggingface.ipynb</code></a>."
+       "<details class=\"cam\"><summary><strong>Recurso 1 · Funcionamiento de las capas convolucionales y de pooling</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li><b>Presentación:</b> se reemplaza el Genially <a href=\"https://view.genially.com/6422e7f9c4f1900012d62ea0\">\"Convolución\"</a> (13 diapositivas) por <a href=\"modulo_2/unidad_1/3_experiencia/nueva/redes_convolucionales.html\"><code>redes_convolucionales.html</code></a>.</li><li><b>Notebook:</b> se reemplaza <a href=\"modulo_2/unidad_1/3_experiencia/anterior/3_Script1_M2_U1.ipynb\"><code>3_Script1_M2_U1.ipynb</code></a> (Keras) por <a href=\"modulo_2/unidad_1/3_experiencia/nueva/3_Script1_M2_U1_pytorch.ipynb\"><code>3_Script1_M2_U1_pytorch.ipynb</code></a> (PyTorch), con el mismo problema (Fashion MNIST).</li></ul><p><b>Textos que cambian en Experiencia</b></p><ul><li>Sin cambios: el título y los dos párrafos son los mismos.</li></ul></div></details>",
+       "<details class=\"cam\"><summary><strong>Recurso 2 · de \"Redes VGG, GooLeNet y ResNet\" a \"Transfer Learning\"</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li><b>Presentación nueva:</b> <a href=\"modulo_2/unidad_1/3_experiencia/nueva/transfer_learning.html\"><code>transfer_learning.html</code></a> (15 diapositivas: la idea de transfer learning, AlexNet, VGG, GoogLeNet y ResNet, y cuándo congelar o descongelar capas). Antes el recurso empezaba con la lectura del libro.</li><li><b>Lectura:</b> pasa a ser de profundización y apunta al capítulo de CNN del libro en su edición con PyTorch, en lugar del capítulo 14 de la edición Keras y TensorFlow.</li><li><b>Notebooks:</b> el único <a href=\"modulo_2/unidad_1/3_experiencia/anterior/4_Script2_M2_U1.ipynb\"><code>4_Script2_M2_U1.ipynb</code></a> (Keras; transferencia y aumento de datos juntos) se divide en dos en PyTorch: <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_data_augmentation_pytorch.ipynb\"><code>4_Script2_M2_U1_data_augmentation_pytorch.ipynb</code></a> y <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_pytorch.ipynb\"><code>4_Script2_M2_U1_transfer_learning_pytorch.ipynb</code></a>.</li></ul><p><b>Textos que cambian en Experiencia</b></p><ul><li><b>Título del recurso:</b> \"Redes VGG, GooLeNet y ResNet\" pasa a \"Transfer Learning\".</li><li><b>Primer párrafo (reescrito):</b> ahora incluye AlexNet, dice que estas redes se pueden descargar ya entrenadas, define <em>transfer learning</em> e invita a ver la presentación, en lugar de invitar a estudiar VGG, GoogLeNet y ResNet con la lectura del capítulo 14.</li><li><b>Párrafo nuevo</b> antes del botón \"CNN Architectures\": presenta la lectura de profundización del libro de Aurélien Géron con PyTorch.</li><li><b>Último párrafo (reescrito):</b> incluye AlexNet, remite al transfer learning \"que acabamos de ver\", aclara que el aumento de datos genera nuevas imágenes a partir de las que ya se tienen y habla de scripts en PyTorch.</li><li><b>Botones:</b> el botón \"Transferencia del Aprendizaje y Aumento de Datos\" pasa a dos: \"Aumento de Datos\" y \"Transferencia del Aprendizaje\".</li><li><b>Sin cambios:</b> la nota de acceso con el usuario de Javeria.</li></ul></div></details>",
+       "<details class=\"cam\"><summary><strong>Recurso 3 · de \"Deep Convolutional Generative Adversarial Network\" a \"Transfer Learning con Hugging Face\"</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li><b>Presentación nueva:</b> <a href=\"modulo_2/unidad_1/3_experiencia/nueva/huggingface.html\"><code>huggingface.html</code></a> (10 diapositivas: qué es el Hub de Hugging Face, por qué es el mayor repositorio de modelos abiertos de visión, texto, audio y multimodales, ejemplos de modelos de visión listos para usar y cómo cargarlos).</li><li><b>Notebook nuevo:</b> <a href=\"modulo_2/unidad_1/3_experiencia/nueva/4_Script2_M2_U1_transfer_learning_huggingface.ipynb\"><code>4_Script2_M2_U1_transfer_learning_huggingface.ipynb</code></a>: el mismo problema de gatos y perros, pero con ResNet-50 descargado del Hub.</li><li><b>Se elimina</b> el tutorial de GANs de TensorFlow (generación de imágenes); el tema sale de la unidad.</li></ul><p><b>Textos que cambian en Experiencia</b></p><ul><li><b>Título del recurso:</b> pasa a \"Transfer Learning con Hugging Face\".</li><li><b>Textos nuevos:</b> un párrafo que presenta Hugging Face y otro que conecta con el notebook de gatos y perros. El texto sobre GANs desaparece.</li></ul></div></details>",
+       "<strong>Formato de la página:</strong> la Experiencia nueva se muestra en una columna centrada de 860 px (la anterior ocupaba todo el ancho) y las presentaciones incrustadas son más grandes (800×450 en lugar de 560×315). <strong>Para revisar:</strong> al abrir la Experiencia nueva desde este panel, cada texto, botón o presentación nuevo o modificado aparece marcado (recuadro punteado y etiqueta \"Nuevo\" o \"Modificado\"; al hacer clic en la etiqueta se ve cómo decía antes), con un botón arriba a la izquierda para ocultar las marcas."
       ]
      },
      {
@@ -384,6 +401,16 @@
         "",
         "modulo_2/unidad_1/4_reflexion/anterior/Reflexión.html"
        ]
+      ],
+      "nueva": [
+       [
+        "",
+        "modulo_2/unidad_1/4_reflexion/nueva/Reflexión.html"
+       ]
+      ],
+      "cambios": [
+       "<details class=\"cam\"><summary><strong>Recurso 1 · Captcha (descripción del problema más clara)</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li>Sin archivos nuevos: el enlace \"Ejemplo captcha\" y la entrega \"Hipótesis\" siguen igual.</li></ul><p><b>Textos que cambian en la sección</b></p><ul><li><b>Párrafo de introducción (reescrito):</b> antes decía que se pedía \"plantear una solución para un problema de reconocimiento de captcha\"; ahora explica qué es un captcha y qué se busca (que la red lea el texto), y contrasta con lo visto hasta ahora (una imagen, una sola respuesta).</li><li><b>\"El problema en concreto\" (nuevo):</b> lista de entrada (imagen en grises de 50×200), salida (5 caracteres, p. ej. <code>226md</code>) y posibilidades (36 símbolos por carácter), y un párrafo que compara con gatos y perros: 5 preguntas con 36 respuestas cada una, y el captcha solo se acierta si se aciertan los 5.</li><li><b>\"Su tarea\" (reescrito):</b> antes pedía \"una hipótesis… de forma detallada\" con tres viñetas generales; ahora aclara que no se programa sino que se decide y justifica, y plantea tres preguntas numeradas (¿con qué datos entrenamos?, ¿qué red usamos?, ¿cómo la configuramos, con qué salida y qué pérdida?).</li><li><b>Condición (nueva):</b> usar solo lo visto en el curso (antes era la primera viñeta) y aviso de que esta hipótesis es la que se implementa en la Acción.</li><li><b>Entrega \"Hipótesis\":</b> sin cambios.</li></ul></div></details>",
+       "<strong>Formato de la página:</strong> la Reflexión nueva se muestra en una columna centrada de 860 px (la anterior ocupaba todo el ancho). <strong>Para revisar:</strong> al abrir la Reflexión nueva desde este panel, cada texto, botón o presentación nuevo o modificado aparece marcado (recuadro punteado y etiqueta \"Nuevo\" o \"Modificado\"; al hacer clic en la etiqueta se ve cómo decía antes), con un botón arriba a la izquierda para ocultar las marcas."
       ]
      },
      {
@@ -392,6 +419,16 @@
         "",
         "modulo_2/unidad_1/5_accion/anterior/Acción.html"
        ]
+      ],
+      "nueva": [
+       [
+        "",
+        "modulo_2/unidad_1/5_accion/nueva/Acción.html"
+       ]
+      ],
+      "cambios": [
+       "<details class=\"cam\"><summary><strong>Recurso 1 · Actividad: Reconocimiento de Captcha</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li><b>Notebook:</b> se reemplaza <a href=\"modulo_2/unidad_1/5_accion/anterior/5_Script3_M2_U1.ipynb\"><code>5_Script3_M2_U1.ipynb</code></a> (Keras, solo carga de datos con OpenCV y descarga con <code>wget</code>) por <a href=\"modulo_2/unidad_1/5_accion/nueva/5_Script3_M2_U1_pytorch.ipynb\"><code>5_Script3_M2_U1_pytorch.ipynb</code></a> (PyTorch). Incluye la carga de los datos, la clase <code>Trainer</code> con entrenamiento y evaluación (exactitud por carácter y por captcha), gráficas, ejemplos de predicción y preguntas para el debate. El estudiante completa la red en la celda marcada <code>TODO</code>.</li><li><b>Botón \"Actividad: Reconocimiento de Captcha\":</b> mismo texto, ahora abre el notebook de PyTorch.</li></ul><p><b>Textos que cambian en la sección</b></p><ul><li><b>Párrafo de la actividad (reescrito):</b> antes decía que el script era de Keras (\"script incompleto\") sin más detalle; ahora indica que el notebook es de PyTorch, qué trae ya hecho y que la labor es definir la red de la Reflexión en las celdas <code>TODO</code>, entrenarla y analizar resultados.</li></ul></div></details>",
+       "<strong>Formato de la página:</strong> la Acción nueva se muestra en una columna centrada de 860 px (la anterior ocupaba todo el ancho). <strong>Para revisar:</strong> al abrir la Acción nueva desde este panel, cada texto, botón o presentación nuevo o modificado aparece marcado (recuadro punteado y etiqueta \"Nuevo\" o \"Modificado\"; al hacer clic en la etiqueta se ve cómo decía antes), con un botón arriba a la izquierda para ocultar las marcas."
       ]
      },
      {
@@ -400,6 +437,16 @@
         "",
         "modulo_2/unidad_1/6_evaluacion/anterior/Evaluación.html"
        ]
+      ],
+      "nueva": [
+       [
+        "",
+        "modulo_2/unidad_1/6_evaluacion/nueva/Evaluación.html"
+       ]
+      ],
+      "cambios": [
+       "<details class=\"cam\"><summary><strong>Recurso 1 · Reconocimiento de Captcha</strong></summary><div class=\"cam-body\"><p><b>Archivos que cambian</b></p><ul><li>Sin archivos nuevos: las actividades, el debate y las listas de chequeo siguen igual (porcentajes 70 % / 15 % / 15 %).</li></ul><p><b>Textos que cambian en la sección</b></p><ul><li><b>Párrafo de entrega (modificado):</b> antes decía \"completemos el script del momento anterior\"; ahora dice \"el notebook de PyTorch\". El resto del texto y el Entregable no cambian.</li></ul></div></details>",
+       "<strong>Formato de la página:</strong> la Evaluación nueva se muestra en una columna centrada de 860 px (la anterior ocupaba todo el ancho). <strong>Para revisar:</strong> al abrir la Evaluación nueva desde este panel, cada texto, botón o presentación nuevo o modificado aparece marcado (recuadro punteado y etiqueta \"Nuevo\" o \"Modificado\"; al hacer clic en la etiqueta se ve cómo decía antes), con un botón arriba a la izquierda para ocultar las marcas."
       ]
      }
     ]
@@ -408,6 +455,7 @@
     "titulo": "Unidad 2: Redes neuronales recurrentes",
     "secciones": [
      {
+      "sinCambios": true,
       "anterior": [
        [
         "",
@@ -515,14 +563,15 @@
 const SECCIONES = ["Introducción","Contexto","Experiencia","Reflexión","Acción","Evaluación"];
 const CURSO = JSON.parse(document.getElementById("datos").textContent);
 
-/* ---------- referencias: todo apunta a GitHub, nunca a rutas locales ---------- */
+/* ---------- referencias: .html -> local si el index se abre desde disco (file://), si no GitHub Pages; .ipynb/.docx/.py siempre a GitHub ---------- */
+const LOCAL = location.protocol === "file:";
 const PAGES = "https://omarcastano.github.io/deeplearning-javeriana-site/";          // .html (renderizado)
 const BLOB  = "https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/"; // .ipynb, .docx
 const BLOB_PRIV = "https://github.com/omarcastano/deeplearning_javeriana_cali/blob/main/"; // .py y demás (repo privado)
 const enc = r => r.split("/").map(encodeURIComponent).join("/");
 function ghUrl(r) {
   if (/^https?:/.test(r)) return r;
-  if (/\.html?$/i.test(r)) return PAGES + enc(r);
+  if (/\.html?$/i.test(r)) return LOCAL ? enc(r) : PAGES + enc(r);
   if (/\.(ipynb|docx)$/i.test(r)) return BLOB + enc(r);
   return BLOB_PRIV + enc(r);
 }
@@ -538,7 +587,7 @@ function fila(nombre, [sub, ruta], viejo) {
 function seccion(s, i) {
   const n = i < 0 ? "Introducción del módulo" : SECCIONES[i], nueva = s.nueva || [], vieja = s.anterior || [];
   const filasNueva = nueva.map(x => fila(n, x, false));
-  if (!nueva.length) filasNueva.unshift(`<span class="sec pend"><span class="nombre">${n} ${s.sinCambios ? "nueva: sin cambios, igual a la anterior" : "(en construcción)"}</span></span>`);
+  if (!nueva.length) filasNueva.unshift(`<span class="sec pend"><span class="nombre">${n}${s.sinCambios ? ": sin cambios" : " (en construcción)"}</span></span>`);
   const filasVieja = vieja.map(x => fila(n, x, true));
   const cam = (s.cambios || []).length ? `<ul class="cambios-sec">${s.cambios.map(c => `<li>${enlazar(c)}</li>`).join("")}</ul>` : "";
   return filasNueva.join("") + filasVieja.join("") + cam;
@@ -566,19 +615,36 @@ document.getElementById("app").innerHTML = CURSO.map(m => `
 /* ---------- visor con flecha de volver (usa el historial: el botón Atrás del navegador también sirve) ---------- */
 const $ = id => document.getElementById(id);
 function abrir(ruta, titulo, viejo) {
-  // abierto desde disco (file://): el visor muestra la copia local de las páginas .html para revisar cambios sin hacer push
-  $("marco").src = (location.protocol === "file:" && /\.html?$/i.test(ruta) && !/^https?:/.test(ruta)) ? enc(ruta) : ghUrl(ruta);
+  // en la versión nueva (.html) se activa el modo revisión: marca lo que cambió frente a la anterior
+  $("marco").src = ghUrl(ruta) + (!viejo && /\.html?$/i.test(ruta) ? "?revision=1" : "");
   $("titulo").textContent = titulo;
   $("etiqueta").hidden = !viejo;
   $("visor").classList.add("on");
+  $("visor").classList.toggle("viejo", !!viejo);
   // botón para saltar a la otra versión de la misma sección
   const otra = [...document.querySelectorAll(".sec[data-titulo]")]
     .find(b => b.dataset.titulo === titulo && b.dataset.ruta !== ruta && (b.dataset.viejo === "1") !== viejo
                && b.closest(".uni-body") === document.querySelector(`.sec[data-ruta="${CSS.escape(ruta)}"]`).closest(".uni-body"));
+  configurarSiguiente(ruta, titulo, viejo);
   const c = $("cambiar");
   c.style.display = otra ? "inline-block" : "none";
   if (otra) { c.textContent = viejo ? "Ver versión nueva" : "Ver versión anterior";
               c.onclick = () => { location.hash = "ver=" + encodeURIComponent(otra.dataset.ruta); }; }
+}
+// botón para saltar a la siguiente sección de la misma unidad (Contexto → Experiencia → Reflexión …)
+function configurarSiguiente(ruta, titulo, viejo) {
+  const cur = document.querySelector(`.sec[data-ruta="${CSS.escape(ruta)}"]`);
+  const btns = [...cur.closest(".uni-body, .mod-body").querySelectorAll(".sec[data-ruta]")], k = btns.indexOf(cur);
+  function destino(lista, id, texto) {
+    const otros = lista.filter(b => b.dataset.titulo !== titulo);
+    const n = otros.length ? otros[0].dataset.titulo : null;
+    const b = n && (otros.find(x => x.dataset.titulo === n && (x.dataset.viejo === "1") === viejo) || otros.find(x => x.dataset.titulo === n));
+    const c = $(id);
+    c.style.display = b ? "inline-block" : "none";
+    if (b) { c.textContent = texto(n); c.onclick = () => { location.hash = "ver=" + encodeURIComponent(b.dataset.ruta); }; }
+  }
+  destino(btns.slice(k + 1), "siguiente", n => "Siguiente: " + n + " →");
+  destino(btns.slice(0, k).reverse(), "anterior", n => "← Anterior: " + n);
 }
 function cerrar() { $("visor").classList.remove("on"); $("marco").src = "about:blank"; }
 function ruteo() {
