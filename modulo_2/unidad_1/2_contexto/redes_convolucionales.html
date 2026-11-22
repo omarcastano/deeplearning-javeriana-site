@@ -946,7 +946,7 @@
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:17px;line-height:1.45">Las convoluciones y el pooling terminan con \(K\) mapas pequeños. Detectan patrones y dónde están, pero <b>no entregan una respuesta</b>. Para eso se añade un clasificador.</p>
+        <p class="lead" style="font-size:17px;line-height:1.45">Ahora que tenemos todas las piezas del extractor (convolución, padding, stride, pooling y capas apiladas), nos falta el <b>final</b>: convertir los \(K\) mapas que salen en una <b>respuesta</b>. Esa parte es el clasificador.</p>
         <div class="card ctl" style="padding:8px 16px;gap:6px">
           <div class="btns"><button type="button" id="clPrev">← Anterior</button><button type="button" id="clNext">Siguiente →</button><button type="button" id="clPlay">▶ Animar</button></div>
         </div>
@@ -957,7 +957,7 @@
           <div class="cap">Cada color es un mapa de características. Se despliegan en un vector, pasan por una capa densa y salen como respuesta.</div>
           <svg class="chart" id="clSvg" viewBox="0 0 600 290" role="img" aria-label="De los mapas finales a la respuesta de la red"></svg>
         </div>
-        <p class="txt" style="font-size:15px;line-height:1.45"><b>Por qué una capa densa:</b> una neurona densa mira <b>todos</b> los patrones detectados en toda la imagen a la vez. Esa visión global es la que permite decidir qué combinación de patrones significa «esta clase» o «este valor», algo que un filtro pequeño, que solo ve un parche, no puede hacer.</p>
+        <p class="txt" style="font-size:15px;line-height:1.45"><b>Por qué una capa densa:</b> una neurona densa mira <b>todos</b> los patrones detectados en toda la imagen a la vez. Esa visión global es la que permite decidir qué combinación de patrones significa «esta clase» o «este valor», algo que un filtro pequeño, que solo ve un parche, no puede hacer. <i>Con el clasificador, la red queda completa: a continuación se ve de punta a punta.</i></p>
       </div>
     </div>
   </div>
@@ -965,7 +965,7 @@
 
 <section class="slide" data-title="Arquitectura completa">
   <div class="hd"><p class="eyebrow">Etapa 7 · Arquitectura</p><h2>La red convolucional completa, de punta a punta</h2>
-    <p class="lead" style="font-size:20px">Así queda la red construida: el <b>extractor</b> convierte la imagen en patrones y el <b>clasificador</b> los convierte en una respuesta.</p></div>
+    <p class="lead" style="font-size:20px">Con el clasificador la red queda completa. Así se ve de punta a punta: el <b>extractor</b> convierte la imagen en patrones y el <b>clasificador</b> los convierte en una respuesta.</p></div>
   <div class="bd noclick">
     <div class="chartbox" style="padding:10px 16px">
       <div class="cap">Recorre la red bloque por bloque. El tamaño baja con el pooling y los canales suben con los filtros.</div>
@@ -1030,35 +1030,6 @@
       <div class="card"><span class="n">4</span><h3>Step</h3><p>El optimizador actualiza los pesos con \(\eta\) y \(\nabla L\); los filtros se ajustan solos.</p></div>
     </div>
     <div class="card" style="padding:12px 22px"><span class="tag t-indigo">Detalle del backward</span><p style="font-size:17px;line-height:1.5;color:var(--fg);margin-top:2px">Como un mismo peso se usa en todas las posiciones, su gradiente es la suma de las contribuciones de cada posición. En el max pooling, el gradiente pasa solo a la posición que tuvo el valor máximo; en el average pooling se reparte por igual. Al repetirlo con muchos batches, cada filtro termina detectando el patrón que más ayuda a reducir la pérdida.</p></div>
-  </div>
-</section>
-
-<section class="slide" data-title="Laboratorio: entrena una red convolucional">
-  <div class="hd"><p class="eyebrow">Etapa 8 · Parámetros y entrenamiento</p><h2>Laboratorio: entrena una red convolucional</h2></div>
-  <div class="bd noclick">
-    <div class="row2 grow" style="grid-template-columns:.8fr 1.2fr;align-items:stretch;gap:20px">
-      <div class="col" style="gap:8px;justify-content:flex-start">
-        <p class="lead" style="font-size:16px;line-height:1.4">Una red con 4 filtros de \(3\times3\), un máximo global (¿aparece el patrón en algún lugar?) y una capa densa con softmax aprende a distinguir líneas <b>verticales</b>, <b>horizontales</b> y <b>diagonales</b>. Los filtros empiezan al azar.</p>
-        <div class="card ctl" style="padding:8px 16px;gap:4px">
-          <label style="grid-template-columns:120px 1fr 44px"><span>\(\eta\) <small>tasa de aprendizaje</small></span><input type="range" id="tnEta" min="0.05" max="0.5" step="0.05" value="0.3"><output id="tnOEta">0,3</output></label>
-          <label style="grid-template-columns:120px 1fr 44px"><span>ruido <small>de las imágenes</small></span><input type="range" id="tnNoise" min="0" max="8" step="1" value="2"><output id="tnONoise">2 %</output></label>
-          <div class="btns"><button type="button" id="tnPlay">▶ Entrenar</button><button type="button" id="tnStep">1 época</button><button type="button" id="tnReset">Reiniciar</button></div>
-        </div>
-        <div class="grid3" style="gap:8px">
-          <div class="kpi" style="padding:6px 10px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Época</div><div class="v" id="tnEp" style="font-size:22px">0</div></div>
-          <div class="kpi" style="padding:6px 10px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Pérdida</div><div class="v" id="tnLoss" style="font-size:22px">–</div></div>
-          <div class="kpi" style="padding:6px 10px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:13px">Exactitud (prueba)</div><div class="v" id="tnAcc" style="font-size:22px">–</div></div>
-        </div>
-        <p class="txt" style="font-size:14px;line-height:1.4"><b>Objetivo:</b> ver cómo se aprenden los filtros. <b>1.</b> Pulsa «Entrenar» y mira cómo los filtros pasan de ruido a detectores de líneas. <b>2.</b> Prueba otra \(\eta\) o más ruido. <b>3.</b> «Reiniciar» empieza con otros filtros al azar.</p>
-      </div>
-      <div class="col" style="gap:6px;align-self:center">
-        <div class="chartbox" style="padding:8px 12px">
-          <div class="cap" style="font-size:14px;padding:2px 8px 4px">Azul: peso positivo; rojo: negativo. Borde verde: acierto; rojo: error.</div>
-          <svg class="chart" id="tnSvg" viewBox="0 0 620 358" role="img" aria-label="Filtros aprendidos, predicciones y curvas de entrenamiento"></svg>
-        </div>
-        <p class="txt" style="font-size:14px;line-height:1.4"><b>En cada época:</b> forward con cada imagen, pérdida (entropía cruzada), backward (el gradiente llega hasta los pesos de los filtros) y step con \(\eta\). Es el mismo ciclo de siempre.</p>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -1291,6 +1262,7 @@
   (function () {
     var step = 0, timer = null, acc = 0, cols = [["var(--teal-soft)", TEA], ["var(--indigo-soft)", IND], ["var(--amber-soft)", AMB]];
     var TX = [
+      ["D\u00F3nde estamos", "Hasta ahora la imagen pasa por bloques de convoluci\u00F3n (con su padding y stride) y pooling, y salen mapas peque\u00F1os. Pero una red tiene que dar una respuesta, como \u00ABeste d\u00EDgito es un 7\u00BB. Falta convertir esos mapas en esa respuesta."],
       ["Paso 1 \u00B7 Los mapas finales", "Tras las convoluciones y el pooling quedan K mapas peque\u00F1os. Dicen qu\u00E9 patrones hay y d\u00F3nde, pero no qu\u00E9 significan juntos."],
       ["Paso 2 \u00B7 Flatten", "Los mapas se despliegan en un vector: cada valor conserva su color. Una capa densa necesita una lista, no una cuadr\u00EDcula."],
       ["Paso 3 \u00B7 Capa densa", "Cada neurona recibe todos los valores del vector y aprende qu\u00E9 combinaci\u00F3n de patrones es importante."],
@@ -1298,20 +1270,32 @@
     ];
     function circ(x, y, r, fill, stroke, sw) { return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + '"/>'; }
     function draw() {
-      var s = "", m, r, k, i, j, vy = 40, vc = 16, vx = 176, dx = 330, ox = 470, dn = [], on = [];
+      var st = step - 1, s = "", m, r, k, i, j, vy = 40, vc = 16, vx = 176, dx = 330, ox = 470, dn = [], on = [];
+      if (step === 0) {
+        var hs = [90, 84, 60, 56, 40, 44, 44, 44], nm = ["Imagen", "Conv+ReLU", "Pooling", "Conv+ReLU", "Pooling", "K mapas", "?", "respuesta"], xx, hh, ex;
+        for (i = 0; i < 8; i++) {
+          xx = 12 + i * 72; hh = hs[i]; ex = i >= 6;
+          s += '<rect x="' + xx + '" y="' + (150 - hh / 2) + '" width="46" height="' + hh + '" rx="5" style="fill:' + (ex ? "var(--coral-soft)" : i === 0 ? "var(--paper)" : i === 5 ? "var(--teal-soft)" : i % 2 === 1 ? "var(--indigo-soft)" : "var(--teal-soft)") + ';stroke:' + (ex ? COR : i === 0 ? MUT : i % 2 === 1 ? IND : TEA) + ';stroke-width:2.5' + (ex ? ";stroke-dasharray:6 4" : "") + '"/>';
+          s += text(xx + 23, 150 + 44 + 24, nm[i], "tk", "middle", ex ? COR : null, 13);
+          if (i < 7) s += line(xx + 50, 150, xx + 68, 150, ex || i === 6 ? COR : MUT, "Mut", 2);
+        }
+        s += '<path d="M12 70 H350" style="stroke:' + IND + ';stroke-width:2.5;fill:none"/>' + text(180, 62, "Extractor de caracter\u00EDsticas (ya lo tenemos)", "an", "middle", IND, 15);
+        s += '<path d="M372 70 H566" style="stroke:' + COR + ';stroke-width:2.5;fill:none;stroke-dasharray:6 4"/>' + text(469, 62, "Lo que falta", "an", "middle", COR, 15);
+        $("clSvg").innerHTML = s; $("clTag").textContent = TX[0][0]; $("clTxt").textContent = TX[0][1]; return;
+      }
       for (m = 0; m < 3; m++) for (r = 0; r < 2; r++) for (k = 0; k < 2; k++) s += rect(24 + m * 14 + k * 20, 96 + m * 14 + r * 20 - 14, 20, 20, cols[m][0], cols[m][1], 1.5);
       s += text(66, 78, "3 mapas de 2\u00D72", "tk");
-      if (step >= 1) {
+      if (st >= 1) {
         for (i = 0; i < 12; i++) s += rect(vx, vy + i * vc, 28, vc, cols[Math.floor(i / 4)][0], cols[Math.floor(i / 4)][1], 1.5);
         s += line(110, 120, vx - 6, 130, MUT, "Mut", 2.5) + text(vx + 14, vy - 8, "vector de 12", "tk") + text(vx + 14, vy + 12 * vc + 18, "flatten", "an", "middle", MUT, 15);
       }
-      if (step >= 2) {
+      if (st >= 2) {
         for (j = 0; j < 4; j++) dn.push(60 + j * 56);
         for (i = 0; i < 12; i++) for (j = 0; j < 4; j++) s += '<line x1="' + (vx + 28) + '" y1="' + (vy + i * vc + vc / 2) + '" x2="' + (dx - 14) + '" y2="' + dn[j] + '" style="stroke:var(--axis);stroke-width:0.8;opacity:.45"/>';
         for (j = 0; j < 4; j++) s += circ(dx, dn[j], 14, "var(--amber-soft)", AMB, 2);
         s += text(dx, 36, "capa densa", "tk");
       }
-      if (step >= 3) {
+      if (st >= 3) {
         var pr = [0.68, 0.22, 0.10], oyy = [86, 144, 202];
         for (j = 0; j < 3; j++) { on.push(oyy[j]); for (i = 0; i < 4; i++) s += '<line x1="' + (dx + 14) + '" y1="' + dn[i] + '" x2="' + (ox - 14) + '" y2="' + oyy[j] + '" style="stroke:var(--axis);stroke-width:0.8;opacity:.45"/>'; }
         for (j = 0; j < 3; j++) {
@@ -1325,15 +1309,15 @@
       $("clTag").textContent = TX[step][0]; $("clTxt").textContent = TX[step][1];
     }
     function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("clPlay").textContent = "\u25B6 Animar"; }
-    $("clNext").addEventListener("click", function () { stop(); step = (step + 1) % 4; draw(); });
-    $("clPrev").addEventListener("click", function () { stop(); step = (step + 3) % 4; draw(); });
+    $("clNext").addEventListener("click", function () { stop(); step = (step + 1) % 5; draw(); });
+    $("clPrev").addEventListener("click", function () { stop(); step = (step + 4) % 5; draw(); });
     $("clPlay").addEventListener("click", function () {
       if (timer) { stop(); return; }
       step = 0; draw(); acc = 0; $("clPlay").textContent = "\u275A\u275A Pausa"; var last = null;
       function frame(now) {
         if (last === null) last = now;
         var dt = Math.min((now - last) / 1000, 0.05); last = now; acc += dt;
-        if (acc >= 2.4) { acc = 0; if (step >= 3) { stop(); return; } step++; draw(); }
+        if (acc >= 2.4) { acc = 0; if (step >= 4) { stop(); return; } step++; draw(); }
         timer = requestAnimationFrame(frame);
       }
       timer = requestAnimationFrame(frame);
@@ -1844,115 +1828,6 @@
       $(id).addEventListener("change", function () { var q = read(); $("pmF").value = q.f; $("pmC").value = q.C; $("pmK").value = q.K; $("pmH").value = q.H; $("pmW").value = q.W; calc(); });
     });
     calc();
-  })();
-
-  /* ---------- laboratorio: entrenar una red convolucional (JS puro) ---------- */
-  (function () {
-function tcPrng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function tcImage(cls, noise, rnd) {
-  var N = 8, img = [], r, c, i, len, st, d;
-  for (r = 0; r < N; r++) { img.push([]); for (c = 0; c < N; c++) img[r].push(0); }
-  if (cls === 0) { c = Math.floor(rnd() * N); len = 6 + Math.floor(rnd() * 3); st = Math.floor(rnd() * (N - len + 1)); for (i = 0; i < len; i++) img[st + i][c] = 1; }
-  else if (cls === 1) { r = Math.floor(rnd() * N); len = 6 + Math.floor(rnd() * 3); st = Math.floor(rnd() * (N - len + 1)); for (i = 0; i < len; i++) img[r][st + i] = 1; }
-  else { d = Math.floor(rnd() * 5) - 2; for (i = 0; i < N; i++) if (i + d >= 0 && i + d < N && rnd() < 0.95) img[i][i + d] = 1; }
-  for (r = 0; r < N; r++) for (c = 0; c < N; c++) if (rnd() < noise) img[r][c] = 1 - img[r][c];
-  return img;
-}
-function tcData(n, noise, seed) { var rnd = tcPrng(seed), out = [], i; for (i = 0; i < n; i++) { var cls = i % 3; out.push({ x: tcImage(cls, noise, rnd), y: cls }); } return out; }
-function tcNet(seed, K) {
-  var rnd = tcPrng(seed), net = { K: K, W: [], b: [], V: [], d: [0, 0, 0] }, k, a, b, j;
-  for (k = 0; k < K; k++) { net.W.push([]); for (a = 0; a < 3; a++) { net.W[k].push([]); for (b = 0; b < 3; b++) net.W[k][a].push((rnd() - 0.5) * 0.8); } net.b.push(0.05); }
-  for (j = 0; j < 3; j++) { net.V.push([]); for (k = 0; k < K; k++) net.V[j].push((rnd() - 0.5) * 0.8); }
-  return net;
-}
-function tcForward(net, x) {
-  var K = net.K, m = [], pos = [], k, r, c, a, b, z, best, br, bc, logits = [], j, mx, e, sum, p = [];
-  for (k = 0; k < K; k++) {
-    best = -1e9; br = 0; bc = 0;
-    for (r = 0; r < 6; r++) for (c = 0; c < 6; c++) { z = net.b[k]; for (a = 0; a < 3; a++) for (b = 0; b < 3; b++) z += net.W[k][a][b] * x[r + a][c + b]; if (z > best) { best = z; br = r; bc = c; } }
-    m.push(Math.max(0, best)); pos.push([br, bc, best]);
-  }
-  for (j = 0; j < 3; j++) { z = net.d[j]; for (k = 0; k < K; k++) z += net.V[j][k] * m[k]; logits.push(z); }
-  mx = Math.max.apply(null, logits); sum = 0; for (j = 0; j < 3; j++) { e = Math.exp(logits[j] - mx); p.push(e); sum += e; } for (j = 0; j < 3; j++) p[j] /= sum;
-  return { m: m, pos: pos, p: p };
-}
-function tcStep(net, batch, lr) {
-  var K = net.K, gW = [], gb = [], gV = [], gd = [0, 0, 0], k, a, b, j, i, s, f, dl, dm, n = batch.length;
-  for (k = 0; k < K; k++) { gW.push([[0, 0, 0], [0, 0, 0], [0, 0, 0]]); gb.push(0); }
-  for (j = 0; j < 3; j++) gV.push(new Array(K).fill(0));
-  for (i = 0; i < n; i++) {
-    s = batch[i]; f = tcForward(net, s.x);
-    for (j = 0; j < 3; j++) { dl = f.p[j] - (j === s.y ? 1 : 0); gd[j] += dl; for (k = 0; k < K; k++) gV[j][k] += dl * f.m[k]; }
-    for (k = 0; k < K; k++) {
-      dm = 0; for (j = 0; j < 3; j++) dm += net.V[j][k] * (f.p[j] - (j === s.y ? 1 : 0));
-      if (f.pos[k][2] > 0) { for (a = 0; a < 3; a++) for (b = 0; b < 3; b++) gW[k][a][b] += dm * s.x[f.pos[k][0] + a][f.pos[k][1] + b]; gb[k] += dm; }
-    }
-  }
-  for (k = 0; k < K; k++) { for (a = 0; a < 3; a++) for (b = 0; b < 3; b++) net.W[k][a][b] -= lr * gW[k][a][b] / n; net.b[k] -= lr * gb[k] / n; }
-  for (j = 0; j < 3; j++) { net.d[j] -= lr * gd[j] / n; for (k = 0; k < K; k++) net.V[j][k] -= lr * gV[j][k] / n; }
-}
-function tcEval(net, data) { var loss = 0, ok = 0, i, f; for (i = 0; i < data.length; i++) { f = tcForward(net, data[i].x); loss += -Math.log(Math.max(1e-9, f.p[data[i].y])); var am = f.p.indexOf(Math.max.apply(null, f.p)); if (am === data[i].y) ok++; } return { loss: loss / data.length, acc: ok / data.length }; }
-
-    var K = 4, EPOCHS = 40, SEEDS = [3, 6, 2, 5, 8, 4], seedI = -1, net, train, test, hist, ep, timer = null, acc = 0, lr = 0.3, noise = 0.02, brng, CN = ["vertical", "horizontal", "diagonal"];
-    function reset() {
-      stop(); seedI = (seedI + 1) % SEEDS.length; var sd = SEEDS[seedI];
-      noise = +$("tnNoise").value / 100; train = tcData(150, noise, 100 + sd); test = tcData(60, noise, 900 + sd);
-      net = tcNet(sd, K); brng = tcPrng(sd + 5); hist = []; ep = 0; draw();
-    }
-    function epoch() {
-      var idx = train.map(function (_, i) { return i; }), i, j, t, b;
-      for (i = idx.length - 1; i > 0; i--) { j = Math.floor(brng() * (i + 1)); t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
-      for (b = 0; b < idx.length; b += 10) tcStep(net, idx.slice(b, b + 10).map(function (q) { return train[q]; }), lr);
-      ep++; var tr = tcEval(net, train), te = tcEval(net, test); hist.push({ loss: tr.loss, acc: te.acc });
-    }
-    function draw() {
-      var s = "", k, a, b, v, vm = 0.5, i, f, am, x0, y0, ok;
-      for (k = 0; k < K; k++) for (a = 0; a < 3; a++) for (b = 0; b < 3; b++) vm = Math.max(vm, Math.abs(net.W[k][a][b]));
-      s += text(10, 18, "Filtros (pesos que se aprenden)", "lb", "start");
-      for (k = 0; k < K; k++) {
-        s += grid(10 + k * 100, 30, 3, 3, 26, { fill: function (r, c) { v = net.W[k][r][c]; return "color-mix(in srgb, " + (v >= 0 ? "var(--indigo)" : "var(--coral)") + " " + Math.round(Math.min(1, Math.abs(v) / vm) * 85) + "%, var(--paper))"; } });
-        s += text(10 + k * 100 + 39, 124, "filtro " + (k + 1), "tk");
-      }
-      s += text(430, 18, "Salida de la red", "lb", "start");
-      s += text(430, 46, "m\u00E1ximo de cada filtro \u2192", "tk", "start") + text(430, 66, "capa densa + softmax", "tk", "start") + text(430, 86, "\u2192 clase predicha", "tk", "start");
-      s += text(10, 150, "Im\u00E1genes de prueba (predicci\u00F3n de la red)", "lb", "start");
-      for (i = 0; i < 6; i++) {
-        f = tcForward(net, test[i].x); am = f.p.indexOf(Math.max.apply(null, f.p)); ok = am === test[i].y; x0 = 10 + i * 100; y0 = 160;
-        s += grid(x0, y0, 8, 8, 8, { fill: function (r, c) { return test[i].x[r][c] ? "var(--fg)" : "var(--paper)"; } });
-        s += '<rect x="' + (x0 - 2) + '" y="' + (y0 - 2) + '" width="68" height="68" rx="4" style="fill:none;stroke:' + (ok ? TEA : COR) + ';stroke-width:3"/>';
-        s += text(x0 + 32, y0 + 84, CN[am], "tk", "middle", ok ? TEA : COR);
-      }
-      var cx = 40, cy = 270, cw = 560, ch = 60, n = Math.max(1, hist.length);
-      s += '<line x1="' + cx + '" y1="' + (cy + ch) + '" x2="' + (cx + cw) + '" y2="' + (cy + ch) + '" style="stroke:var(--axis);stroke-width:1.5"/><line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + (cy + ch) + '" style="stroke:var(--axis);stroke-width:1.5"/>';
-      s += text(cx + cw / 2, cy + ch + 18, "\u00E9poca (0 a " + EPOCHS + ")", "tk") + text(cx + cw - 120, cy - 2, "p\u00E9rdida", "tk", "start", IND) + text(cx + cw - 60, cy - 2, "exactitud", "tk", "start", TEA);
-      var pl = "", pa = "";
-      for (i = 0; i < hist.length; i++) { pl += (cx + (i + 1) / EPOCHS * cw).toFixed(1) + "," + (cy + ch - Math.min(1, hist[i].loss / 1.2) * ch).toFixed(1) + " "; pa += (cx + (i + 1) / EPOCHS * cw).toFixed(1) + "," + (cy + ch - hist[i].acc * ch).toFixed(1) + " "; }
-      if (hist.length) s += '<polyline points="' + pl + '" style="fill:none;stroke:' + IND + ';stroke-width:3"/><polyline points="' + pa + '" style="fill:none;stroke:' + TEA + ';stroke-width:3"/>';
-      $("tnSvg").innerHTML = s;
-      var h = hist[hist.length - 1];
-      $("tnEp").textContent = ep + " / " + EPOCHS; $("tnLoss").textContent = h ? h.loss.toFixed(2).replace(".", ",") : "\u2013"; $("tnAcc").textContent = h ? Math.round(h.acc * 100) + " %" : "\u2013";
-      $("tnOEta").textContent = lr.toFixed(2).replace(".", ",").replace(/0$/, ""); $("tnONoise").textContent = Math.round(noise * 100) + " %";
-    }
-    function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("tnPlay").textContent = "\u25B6 Entrenar"; }
-    $("tnEta").addEventListener("input", function () { lr = +this.value; draw(); });
-    $("tnNoise").addEventListener("input", function () { seedI = (seedI + SEEDS.length - 1) % SEEDS.length; reset(); });
-    $("tnReset").addEventListener("click", reset);
-    $("tnStep").addEventListener("click", function () { stop(); if (ep < EPOCHS) { epoch(); draw(); } });
-    $("tnPlay").addEventListener("click", function () {
-      if (timer) { stop(); return; }
-      if (ep >= EPOCHS) reset();
-      $("tnPlay").textContent = "\u275A\u275A Pausa"; var last = null; acc = 0;
-      function frame(now) {
-        if (last === null) last = now;
-        var dt = Math.min((now - last) / 1000, 0.05); last = now; acc += dt * 5;
-        while (acc >= 1 && ep < EPOCHS) { acc -= 1; epoch(); }
-        draw();
-        if (ep >= EPOCHS) { stop(); return; }
-        timer = requestAnimationFrame(frame);
-      }
-      timer = requestAnimationFrame(frame);
-    });
-    lr = +$("tnEta").value; reset();
   })();
 
   /* ---------- actividad 1: convolución ---------- */
