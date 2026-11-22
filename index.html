@@ -97,8 +97,8 @@ const CURSO = [
     intro:{ anterior:[["","modulo_2/introduccion/anterior/Introducción.html"]] }, unidades:[
     { titulo:"Unidad 1: Redes neuronales convolucionales", secciones:[
       { anterior:[["","modulo_2/unidad_1/1_introduccion/anterior/Introducción.html"]] },
-      { nueva:[["","modulo_2/unidad_1/2_contexto/redes_convolucionales.html"]], anterior:[["","modulo_2/unidad_1/2_contexto/anterior/Contexto.html"]] },
-      { nueva:[["","modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html"]], anterior:[["","modulo_2/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
+      { sinCambios:true, anterior:[["","modulo_2/unidad_1/2_contexto/anterior/Contexto.html"]] },
+      { nueva:[["Página","modulo_2/unidad_1/3_experiencia/nueva/Experiencia.html"],["Presentación interactiva (reemplaza el Genially)","modulo_2/unidad_1/3_experiencia/nueva/redes_convolucionales.html"]], anterior:[["","modulo_2/unidad_1/3_experiencia/anterior/Experiencia.html"]] },
       { anterior:[["","modulo_2/unidad_1/4_reflexion/anterior/Reflexión.html"]] },
       { anterior:[["","modulo_2/unidad_1/5_accion/anterior/Acción.html"]] },
       { anterior:[["","modulo_2/unidad_1/6_evaluacion/anterior/Evaluación.html"]] } ] },
@@ -126,7 +126,7 @@ function fila(nombre, [sub, ruta], viejo) {
 function seccion(s, i) {
   const n = i < 0 ? "Introducción del módulo" : SECCIONES[i], nueva = s.nueva || [], vieja = s.anterior || [];
   const filas = nueva.map(x => fila(n, x, false)).concat(vieja.map(x => fila(n, x, true)));
-  if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} (en construcción)</span></span>`);
+  if (!nueva.length) filas.unshift(`<span class="sec pend"><span class="nombre">${n} ${s.sinCambios ? "nueva: sin cambios, igual a la anterior" : "(en construcción)"}</span></span>`);
   return filas.join("");
 }
 const arch = r => `<a class="sec arch" href="${esc(r)}" target="_blank" rel="noopener"><span class="nombre">${esc(decodeURIComponent(r.split("/").pop()))}</span></a>`;
