@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluación · M2 U2</title>
+<script src="https://kit.fontawesome.com/43bc24b73f.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../../../../archivos_web/css/estilos_contenidos_local_m2.css">
+</head><body style="font-family: verdana, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px;">
+<p class="titulo_contenido">Evaluación<span class="icono_momento" id="evaluacion"></span></p>
+<div class="separa_titulo"></div>
+<p class="btn_recurso" data-cambio="modificado" data-antes="Análisis de Sentimientos"><span class="num_recurso"><i class="fa-solid fa-paperclip"></i></span>Pronóstico de la temperatura</p>
+<div id="recurso_1" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Una vez completemos el script del momento anterior con la solución planteada, lo compartiremos a través de la actividad “Análisis de Sentimientos”. Además, comentaremos nuestras principales conclusiones como una nueva entrada en el debate “Análisis de Sentimientos”.">Una vez completemos el notebook de PyTorch del momento anterior con la solución planteada, lo compartiremos a través de la actividad “<strong>Pronóstico de la temperatura</strong>”. Además, comentaremos nuestras principales conclusiones como una nueva entrada en el debate “Consolidación del aprendizaje”.<br><br>Para acceder a la actividad “<strong>Pronóstico de la temperatura</strong>”, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=dropbox&amp;rcode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-957530" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup><br><br>Para acceder al debate “<strong>Consolidación del aprendizaje</strong>”, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=discuss&amp;rcode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-957521" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></p>
+</div>
+<p class="btn_recurso"><span class="num_recurso"><i class="fa-solid fa-paperclip"></i></span>Entregable</p>
+<div id="recurso_2" class="contenedor_recurso">
+<ul class="items_curso">
+<li data-cambio="modificado" data-antes="Implementación del sistema de análisis de sentimientos - 70%">Implementación del modelo de pronóstico de la temperatura - <strong>70%</strong><br>Para visualizar la lista de chequeo, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=rubric&amp;rCode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-957539" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></li>
+<li>Formulación de la hipótesis - <strong>15%</strong><br>Para visualizar la lista de chequeo, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=rubric&amp;rCode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-1007120" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></li>
+<li>Participación en el debate - <strong>15%</strong><br>Para visualizar la lista de chequeo, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=rubric&amp;rCode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-957541" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></li>
+</ul>
+</div>
+
+<style>
+body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
+body.rev [data-cambio=nuevo]{--c:#1a9b6b} body.rev [data-cambio=modificado]{--c:#d98a00}
+body.rev .rev-b{position:absolute;top:-13px;right:-6px;z-index:5;font:700 11px/1 verdana,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--c);border:0;border-radius:10px;padding:5px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+body.rev .rev-b::after{content:" ▾"}
+body.rev .rev-p{display:none;position:absolute;top:10px;right:-6px;z-index:6;width:min(420px,90vw);max-height:260px;overflow:auto;background:#fffdf5;color:#222;border:2px solid var(--c);border-radius:8px;padding:10px 12px;font:13px/1.45 verdana,sans-serif;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.rev .rev-p b{display:block;margin-bottom:4px;color:var(--c)} body.rev .rev-p.on{display:block}
+#rev-t{display:none}
+body.rev-ok #rev-t{display:block;position:fixed;top:10px;left:10px;z-index:9;font:700 12px verdana,sans-serif;background:#2f2f2f;color:#fff;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
+body:not(.rev) .rev-b,body:not(.rev) .rev-p{display:none!important}
+</style>
+<button id="rev-t" type="button">Ocultar marcas de cambios</button>
+<script>
+(function(){
+  if(!/[?&]revision=1/.test(location.search))return;
+  var b=document.body; b.classList.add("rev","rev-ok");
+  document.querySelectorAll("[data-cambio]").forEach(function(el){
+    var nuevo=el.getAttribute("data-cambio")==="nuevo", antes=el.getAttribute("data-antes");
+    var bt=document.createElement("button"); bt.type="button"; bt.className="rev-b";
+    bt.textContent=nuevo?"Nuevo":"Modificado";
+    var p=document.createElement("div"); p.className="rev-p";
+    p.innerHTML=nuevo?"<b>Nuevo</b>Este texto no estaba en la versión anterior."
+                     :"<b>Modificado. Antes decía:</b>"+(antes||"");
+    bt.onclick=function(e){e.preventDefault();e.stopPropagation();p.classList.toggle("on");};
+    el.appendChild(bt); el.appendChild(p);
+  });
+  var t=document.getElementById("rev-t");
+  t.onclick=function(){var on=b.classList.toggle("rev");t.textContent=on?"Ocultar marcas de cambios":"Mostrar marcas de cambios";};
+})();
+</script>
+</body></html>

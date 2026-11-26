@@ -1,0 +1,881 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes recurrentes · Parte 3: arquitecturas y práctica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  .ctl select,.ctl input[type=number]{font:600 16px var(--text);padding:5px 8px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg);width:100%}
+  :root {
+    --bg: #EFEADF;
+    --paper: #FFFDF8;
+    --paper-2: #F3EEE2;
+    --fg: #1A1D3B;
+    --muted: #4F5380;
+    --line: rgba(26, 29, 59, .13);
+    --grid: rgba(26, 29, 59, .09);
+    --axis: #7A7EA6;
+    --indigo: #3A47B5;
+    --teal: #0B8570;
+    --amber: #B86A00;
+    --coral: #C03F32;
+    --teal-soft: #D3F0E8;
+    --amber-soft: #F8E5C2;
+    --coral-soft: #F8D9D4;
+    --indigo-soft: #DDE0F7;
+    --shadow: 0 1px 2px rgba(26,29,59,.06), 0 8px 24px rgba(26,29,59,.07);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090B1C;
+    --paper: #151834;
+    --paper-2: #1C2043;
+    --fg: #F3EFE6;
+    --muted: #AEB4E2;
+    --line: rgba(243, 239, 230, .14);
+    --grid: rgba(243, 239, 230, .09);
+    --axis: #8B91C4;
+    --indigo: #8E9BFF;
+    --teal: #4FE3C8;
+    --amber: #FFB547;
+    --coral: #FF7F70;
+    --teal-soft: #103A36;
+    --amber-soft: #3A2B12;
+    --coral-soft: #3F1F23;
+    --indigo-soft: #22275A;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--text); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* escenario 16:9 escalado a la ventana */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: 0 0; background: var(--bg); overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; padding: 50px 80px 70px; display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  .slide.active { display: flex; }
+  .slide::before {            /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
+    background: linear-gradient(180deg, var(--teal), var(--indigo) 55%, var(--amber));
+  }
+
+  h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 600; color: var(--fg); }
+  p { margin: 0; }
+  .eyebrow {
+    font: 700 15px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 30px; height: 3px; border-radius: 2px; background: currentColor; }
+  h2 { font-size: 40px; line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 900px; }
+  .lead b, .txt b { color: var(--fg); font-weight: 600; }
+  .txt { font-size: 21px; line-height: 1.55; color: var(--fg); }
+  .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+  .row2.wide-l { grid-template-columns: 1.05fr 1fr; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .grow { flex: 1; min-height: 0; }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px;
+    box-shadow: var(--shadow); min-width: 0;
+  }
+  .card h3 { font-size: 26px; margin-bottom: 8px; }
+  .card p { font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .chartbox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 14px 14px 8px; box-shadow: var(--shadow); }
+  .chartbox .cap { font-size: 16px; color: var(--muted); padding: 4px 10px 8px; line-height: 1.4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart .gr { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--axis); stroke-width: 1.6; }
+  .chart text { font-family: var(--text); }
+  .chart .tk { fill: var(--muted); font-size: 16px; font-weight: 500; }
+  .chart .lb { fill: var(--fg); font-size: 18px; font-weight: 500; }
+  .chart .lg { fill: var(--fg); font-size: 17px; font-weight: 500; }
+  .chart .an { fill: var(--fg); font-size: 18px; font-weight: 600; }
+  .chart .an-teal { fill: var(--teal); font-size: 18px; font-weight: 700; }
+  .chart .lgbg { fill: var(--paper); stroke: var(--line); }
+  .s-indigo { stroke: var(--indigo); } .s-teal { stroke: var(--teal); } .s-amber { stroke: var(--amber); }
+  .s-coral { stroke: var(--coral); } .s-muted { stroke: var(--axis); }
+  .f-indigo { fill: var(--indigo); } .f-teal { fill: var(--teal); } .f-amber { fill: var(--amber); } .f-coral { fill: var(--coral); }
+  .chart circle.f-teal, .chart circle.f-coral, .chart circle.f-amber { stroke: var(--paper); stroke-width: 2; }
+
+  /* ecuaciones */
+  .eq {
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--indigo);
+    border-radius: 16px; padding: 14px 26px 16px; box-shadow: var(--shadow);
+  }
+  .eq .lbl { font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 2px; }
+  .eq .math { font-size: 27px; text-align: center; color: var(--fg); overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .eq .note { font-size: 18px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+  .eq .note .katex { font-size: 1.05em; }
+  .katex { color: inherit; }
+  .katex-display { margin: .15em 0 !important; }
+  .defs3 { display: grid; gap: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .defs3 div { padding: 11px 22px; font-size: 18px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+  .defs3 div:first-child { border-top: none; }
+  .defs3 b { font-family: var(--display); font-size: 21px; color: var(--fg); margin-right: 6px; }
+  .defs3 i { font-size: 15px; }
+  .hl-c { color: var(--coral); } .hl-t { color: var(--teal); } .hl-a { color: var(--amber); } .hl-i { color: var(--indigo); }
+  .tag {
+    display: inline-block; font: 700 14px var(--text); letter-spacing: .09em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .t-teal { background: var(--teal-soft); color: var(--teal); } .t-coral { background: var(--coral-soft); color: var(--coral); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); } .t-indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+  /* piezas específicas */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .big-num { font-family: var(--display); font-size: 54px; line-height: 1; font-weight: 600; }
+  sub { font-size: 0.6em; line-height: 0; vertical-align: -0.35em; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 22px; box-shadow: var(--shadow); }
+  .kpi .k { font: 700 13px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-family: var(--display); font-size: 36px; font-weight: 600; margin-top: 4px; line-height: 1.1; }
+  .kpi .s { font-size: 16px; color: var(--muted); margin-top: 4px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover h1 { font-size: 84px; line-height: 1.02; letter-spacing: -.02em; max-width: 700px; }
+  .cover h1 em { font-style: italic; color: var(--teal); font-weight: 500; }
+  .cover .lead { margin-top: 26px; max-width: 600px; font-size: 25px; }
+  .cover .meta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cover .meta span { font: 600 16px var(--text); padding: 8px 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+  svg.chart.cover-art { position: absolute; right: 0; bottom: 0; width: 720px; height: auto; opacity: .95;
+    -webkit-mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); }
+
+  /* agenda */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 16px 24px; flex: 1; margin-bottom: 8px; }
+  .ag { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; box-shadow: var(--shadow); }
+  .ag .n { font-family: var(--display); font-size: 44px; color: var(--amber); width: 38px; text-align: center; font-weight: 600; }
+  .ag b { display: block; font-size: 23px; font-weight: 600; margin-bottom: 2px; }
+  .ag span { font-size: 18px; color: var(--muted); }
+
+  /* idea central */
+  .big-idea { font-family: var(--display); font-size: 50px; line-height: 1.18; max-width: 1000px; font-weight: 500; }
+  .big-idea span { color: var(--teal); }
+  .steps-v { display: flex; gap: 14px; align-items: stretch; }
+  .steps-v .card { flex: 1; padding: 18px 22px; }
+  .steps-v .arrow { align-self: center; font-size: 28px; color: var(--amber); }
+
+  /* ciclo */
+  .cycle { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; }
+  .cycle .link { align-self: center; text-align: center; font-size: 28px; color: var(--amber); }
+  .cycle .card { padding: 22px 20px; display: flex; flex-direction: column; }
+  .cycle .card p { margin-bottom: 14px; }
+  .cycle .n { font-family: var(--display); font-size: 46px; line-height: 1; color: var(--amber); display: block; margin-bottom: 8px; }
+  .loopback { width: 100%; height: 60px; display: block; margin-top: -6px; }
+  .loopback path { stroke: var(--teal); }
+  .loopback text { fill: var(--teal); font: 600 18px var(--text); }
+
+  /* lr */
+  .lrcard { padding: 16px 20px 18px; }
+  .lrcard .tag { margin-bottom: 8px; }
+  .lrcard h3 { font-size: 24px; margin-bottom: 6px; }
+  .lrcard p { font-size: 17px; }
+  .lrcard svg.chart { margin: 2px 0 8px; }
+
+  /* batches */
+  .blocks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .blocks div {
+    border-radius: 12px; padding: 16px 0 12px; text-align: center; background: var(--teal-soft); color: var(--teal);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  }
+  .blocks div:nth-child(even) { background: var(--indigo-soft); color: var(--indigo); border-color: color-mix(in srgb, var(--indigo) 35%, transparent); }
+  .blocks b { display: block; font: 700 22px var(--text); }
+  .blocks small { font: 500 13px var(--text); opacity: .85; }
+  .epoch-br { height: 16px; border: 2px solid var(--amber); border-top: none; border-radius: 0 0 12px 12px; margin: 0 2px; }
+  .epoch-cap { text-align: center; font-size: 19px; color: var(--amber); font-weight: 600; margin-top: 8px; }
+  .def { border-left: 5px solid var(--amber); padding: 4px 0 4px 18px; }
+  .def h3 { font-size: 28px; margin-bottom: 6px; }
+  .def p { font-size: 19px; line-height: 1.45; color: var(--muted); }
+
+  /* tabla */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  th { text-align: left; font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 12px 22px; background: var(--paper-2); }
+  td { padding: 9px 22px; border-top: 1px solid var(--line); line-height: 1.35; color: var(--fg); }
+  td:first-child { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--amber); white-space: nowrap; width: 250px; }
+
+  /* preguntas */
+  .qs { display: grid; gap: 10px; counter-reset: q; padding: 0; margin: 0; list-style: none; }
+  .qs li {
+    counter-increment: q; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 12px 24px 12px 78px; position: relative; font-size: 21px; line-height: 1.45;
+  }
+  .qs details { margin-top: 8px; }
+  .qs summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 17px; }
+  .qs details p { font-size: 17px; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+  .qs li::before { content: counter(q); position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-family: var(--display); font-size: 40px; color: var(--teal); font-weight: 600; }
+
+  .ctl { padding: 12px 20px; display: grid; gap: 8px; }
+  .ctl label { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; font: 600 20px var(--display); }
+  .ctl label small { font: 500 13px var(--text); color: var(--muted); display: block; }
+  .ctl output { font: 600 18px var(--text); text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--amber); height: 26px; }
+  .btns { display: flex; gap: 10px; margin-top: 2px; }
+  .btns button { flex: 1; font: 600 16px var(--text); padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); cursor: pointer; }
+  .btns button:hover { border-color: var(--amber); } .btns button.on { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btns button:focus-visible, .ctl input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  /* pie, controles */
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 22px; display: flex; justify-content: space-between; font: 500 14px var(--text); color: var(--muted); }
+  .foot .pg { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { position: absolute; left: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--teal), var(--indigo), var(--amber)); transition: width .35s ease; z-index: 5; }
+  .ui { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; opacity: .0; transition: opacity .25s; }
+  body:hover .ui, .ui:focus-within { opacity: 1; }
+  .ui button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); border-radius: 999px; height: 38px; min-width: 38px;
+    padding: 0 14px; font: 600 14px var(--text); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .ui button:hover { border-color: var(--amber); }
+  .ui button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  /* animación de entrada */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active .hd, .slide.active .bd > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    .slide.active .bd > *:nth-child(2) { animation-delay: .07s; }
+    .slide.active .bd > *:nth-child(3) { animation-delay: .14s; }
+    .slide.active .bd > *:nth-child(4) { animation-delay: .21s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* impresión / PDF: una diapositiva por página */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: none; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; overflow: visible; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide .hd, .slide .bd > * { animation: none !important; }
+    .ui, .bar { display: none; }
+  }
+
+  /* laboratorio 2 */
+  .pg-bar { display: flex; gap: 16px; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 14px; }
+  .pg-bar .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pg-bar .f > span { font: 600 13px var(--text); color: var(--muted); height: 20px; line-height: 20px; white-space: nowrap; }
+  .pg-bar select { width: 100%; height: 38px; font: 600 15px var(--text); padding: 5px 4px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .pg-bar .rb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); font: 600 16px var(--text); cursor: pointer; padding: 0; }
+  .pg-bar .rb.play { background: var(--amber); color: #fff; border-color: var(--amber); width: 46px; height: 46px; }
+  .pg-bar .rb:hover { border-color: var(--amber); }
+  .pg-bar .ep { font: 600 26px var(--display); min-width: 74px; line-height: 1.1; }
+  .pg-mini { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; font: 600 15px var(--text); color: var(--fg); }
+  .pg-mini button, .pg-lay button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font: 700 15px var(--text); color: var(--fg); line-height: 1; padding: 0; }
+  .pg-mini button:hover, .pg-lay button:hover { border-color: var(--amber); }
+  .pg-lay { display: flex; align-items: center; gap: 6px; font: 600 15px var(--text); }
+  .pg-thumb { width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; background: var(--paper); }
+  .pg-thumb.on { border-color: var(--amber); }
+  .pg-side label { font: 600 13px var(--text); color: var(--muted); display: block; }
+  .pg-side input[type=range] { width: 100%; accent-color: var(--amber); }
+  .pg-bar .ep input { width: 78px; height: 34px; font: 600 18px var(--text); padding: 2px 6px; border-radius: 9px; border: 2px solid var(--amber); background: var(--paper-2); color: var(--fg); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide cover" data-title="Portada">
+  <svg class="chart cover-art" id="rnCover" style="opacity:.9" viewBox="0 0 720 520" role="img" aria-label="Ilustración de una red recurrente desenrollada en el tiempo"></svg>
+  <div class="hd" style="position:relative">
+    <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes · Parte 3</p>
+    <h1>Arquitecturas <em>y práctica</em></h1>
+    <p class="lead">Cómo se conectan las entradas y salidas de una red recurrente según el problema, dónde se usan y cómo se arma una paso a paso.</p>
+    <div class="meta"><span>Deep Learning</span><span>Parte 3 · Arquitecturas</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ruta">
+  <div class="hd"><p class="eyebrow">Ruta de la sesión</p><h2>Dos etapas: arquitecturas y práctica</h2>
+    <p class="lead" style="font-size:19px">Ya sabemos cómo funciona una red recurrente y qué celdas usar (simple, LSTM o GRU). Ahora vemos cómo se usa según el problema. Cada etapa responde una pregunta.</p></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Arquitecturas</b><span>¿Qué salidas de la red se usan según el problema?</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>Aplicaciones y práctica</b><span>¿Dónde se usan y cómo se arma una?</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Arquitecturas">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitecturas</p><h2>Cuatro formas de conectar entradas y salidas</h2>
+    <p class="lead" style="font-size:20px">Ya conocemos las tres celdas (simple, LSTM y GRU). Todas producen un \(h_t\) en cada paso; según el problema se usan <b>unas salidas u otras</b>. Si solo queremos el valor de mañana, basta la última; si queremos una predicción en cada paso, se usan todas. A cada forma de conectar entradas y salidas se le llama <b>arquitectura</b>.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:1.15fr .85fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">Índigo: entradas que se usan. Verde: salidas que se usan. Gris: pasos sin entrada o sin salida.</div>
+        <svg class="chart" id="tpSvg" viewBox="0 0 600 300" role="img" aria-label="Esquema de entradas y salidas"></svg>
+      </div>
+      <div class="col" style="gap:12px">
+        <div class="card ctl" style="padding:10px 18px">
+          <label style="grid-template-columns:120px 1fr"><span>Tipo</span>
+            <select id="tpSel" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)">
+              <option value="0">Secuencia → vector</option><option value="1">Secuencia → secuencia</option><option value="2">Vector → secuencia</option><option value="3">Secuencia → otra secuencia</option></select></label>
+        </div>
+        <div class="card" style="padding:14px 20px"><span class="tag t-teal" id="tpTag">Ejemplo</span><p style="font-size:18px" id="tpTxt"></p></div>
+        <p class="txt" style="font-size:16px;color:var(--muted)"><b>Prueba:</b> elige cada tipo. Las siguientes diapositivas explican cada uno en detalle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Solo codificador">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencia → vector</p><h2>Solo codificador: resumir la secuencia en un vector</h2>
+    <p class="lead" style="font-size:20px">La red lee toda la secuencia y se queda con el <b>último estado</b> \(h_T\). Ese vector es un <b>resumen</b> de todo lo leído: por eso a esta parte se le llama <b>codificador</b>. Encima se pone una capa densa que da la respuesta.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">Las salidas intermedias se descartan (gris). Solo \(h_T\) pasa a la capa densa, que produce \(\hat y\).</div>
+        <svg class="chart" id="enSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura solo codificador"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="eq" style="padding:8px 18px"><div class="lbl">Capa de salida</div><div class="math" style="font-size:22px">\[ \hat y = W_y\, h_T + w_{0y} \]</div>
+          <div style="font-size:16px;text-align:left">\(W_y\), \(w_{0y}\): pesos de la capa densa. Sin activación para un valor (regresión); con softmax para elegir una clase.</div></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Regresión</span><p style="font-size:16px">Pronosticar el valor siguiente de una serie, o los \(H\) siguientes a la vez si la capa densa tiene \(H\) salidas. Sirve para cualquier \(T\): \(h_T\) siempre tiene tamaño \(n\).</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Clasificación</span><p style="font-size:16px">Decir si un electrocardiograma es normal, qué actividad hace una persona según el acelerómetro del reloj, o si una serie de transacciones es un fraude.</p></div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Secuencia a secuencia">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencia → secuencia</p><h2>Una salida en cada paso</h2>
+    <p class="lead" style="font-size:20px">Aquí <b>todos</b> los \(h_t\) se usan: en cada paso, una capa densa (la misma para todos los pasos) convierte \(h_t\) en una predicción \(\hat y_t\). La salida es otra secuencia, alineada con la entrada.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">Cada \(\hat y_t\) solo puede usar \(x_1,\dots,x_t\): lo que ya llegó, nunca lo que viene.</div>
+        <svg class="chart" id="ssSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura secuencia a secuencia"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Pronóstico en cada paso</span><p style="font-size:16px">En cada paso \(t\), la red predice el valor siguiente, \(x_{t+1}\). Así, la etiqueta es la misma serie corrida un paso hacia adelante: para la entrada \(x_1,\dots,x_T\) la etiqueta es \(x_2,\dots,x_{T+1}\).</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber">Más señal para aprender</span><p style="font-size:16px">La pérdida suma los errores de <b>todos</b> los pasos, no solo del último. El gradiente llega a cada paso de forma directa y el entrenamiento es más estable y rápido.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Etiquetar cada instante</span><p style="font-size:16px">Marcar en una señal de sensores en qué momentos hay una falla, o en un audio en qué instantes habla alguien.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Solo decodificador">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Vector → secuencia</p><h2>Solo decodificador: generar una secuencia</h2>
+    <p class="lead" style="font-size:20px">El <b>decodificador</b> hace lo contrario del codificador: parte de un vector (un estado inicial) y <b>genera</b> la secuencia paso a paso. Lo usual es que cada salida \(\hat y_t\) se vuelva la entrada del paso siguiente: es una generación <b>autorregresiva</b>.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">Flechas punteadas: la salida de un paso se usa como entrada del siguiente. El primer paso recibe el vector inicial.</div>
+        <svg class="chart" id="deSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura solo decodificador"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Pronóstico de largo alcance</span><p style="font-size:16px">Predecir un valor, agregarlo a la serie como si fuera real y volver a predecir: así se pronostican tantos pasos como se quiera.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Generación</span><p style="font-size:16px">Producir trayectorias, señales sintéticas o melodías nota a nota a partir de un estado inicial.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-coral">El riesgo</span><p style="font-size:16px">Cada predicción tiene algo de error, y ese error entra como dato en el paso siguiente: los errores se <b>acumulan</b>. La actividad siguiente lo muestra.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: pronosticar varios pasos">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Pronosticar varios pasos: uno a uno o todos a la vez</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <p class="lead" style="font-size:17px;line-height:1.45">Dos estrategias para predecir los próximos \(H\) valores: <b style="color:var(--coral)">autorregresiva</b> (un modelo predice un paso, se reinyecta, se repite) y <b style="color:var(--indigo)">directa</b> (la capa de salida da los \(H\) valores de una vez, como un codificador con \(H\) salidas). Para que se vea la idea, los dos usan modelos lineales que miran los últimos \(P\) valores, ajustados a esta serie.</p>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:190px 1fr"><span>\(H\) <small>pasos a pronosticar</small></span>
+            <select id="msH"><option>5</option><option selected>15</option><option>30</option></select></label>
+          <label style="grid-template-columns:190px 1fr"><span>Inicio <small>último valor conocido</small></span><input type="number" id="msS" min="20" max="85" step="1" value="50"></label>
+          <label style="grid-template-columns:190px 1fr"><span>\(P\) <small>valores que mira el modelo</small></span>
+            <select id="msP"><option selected>5</option><option>10</option><option>20</option></select></label>
+        </div>
+        <div class="grid2" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio autorregresivo</div><div class="v" id="msEa" style="font-size:24px;color:var(--coral)">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio directo</div><div class="v" id="msEd" style="font-size:24px;color:var(--indigo)">–</div></div>
+        </div>
+      </div>
+      <div class="col" style="gap:8px">
+        <div class="chartbox" style="padding:10px 16px">
+          <div class="cap">Gris: lo conocido. Verde: lo que de verdad pasó. Rojo discontinuo: autorregresivo. Índigo: directo.</div>
+          <svg class="chart" id="msSvg" viewBox="0 0 580 290" role="img" aria-label="Pronóstico de varios pasos"></svg>
+        </div>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> con \(P=5\) el modelo de un paso es impreciso y, como cada error entra como dato, el autorregresivo se desvía cada vez más. Sube \(P\) a 20: con un buen modelo las dos estrategias se parecen. El directo no reinyecta nada, pero necesita una salida por paso y un \(H\) fijo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Codificador–decodificador">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Codificador–decodificador</p><h2>Codificador–decodificador: dos redes en serie</h2>
+    <p class="lead" style="font-size:20px">Un <b>codificador</b> resume la secuencia de entrada en un vector de <b>contexto</b>; un <b>decodificador</b> parte de ese contexto y genera la salida. Las dos secuencias pueden tener <b>longitudes distintas</b>.</p></div>
+  <div class="bd">
+    <div class="chartbox" style="padding:10px 16px">
+      <div class="cap">Índigo: el codificador lee \(x_1,\dots,x_T\). Ámbar: el contexto (el último estado del codificador). Verde: el decodificador genera \(\hat y_1,\dots,\hat y_H\), reinyectando cada salida.</div>
+      <svg class="chart" id="ecSvg" style="max-height:150px" viewBox="0 0 1100 250" role="img" aria-label="Arquitectura codificador-decodificador"></svg>
+    </div>
+    <div class="grid3">
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal">Aplicaciones</span><p style="font-size:16px">Leer 30 días de demanda de energía y pronosticar los próximos 7; pronosticar la trayectoria de un vehículo.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-amber">Al entrenar</span><p style="font-size:16px">En cada paso el decodificador recibe el valor <b>real</b> anterior, no su predicción (<i>teacher forcing</i>). Al pronosticar de verdad usa sus propias predicciones.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-coral">El cuello de botella</span><p style="font-size:16px">Toda la entrada cabe en un solo vector: con secuencias largas se pierde información. La <b>atención</b> (no se ve en esta unidad) deja al decodificador consultar todos los estados.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: codificar y decodificar">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Seguir la información por el codificador y el decodificador</h2></div>
+  <div class="bd noclick">
+    <div class="chartbox" style="padding:10px 16px">
+      <div class="cap">La celda resaltada es la que trabaja. Barra ámbar bajo cada celda: cuánto queda en el estado del primer valor \(x_1\) (con una celda simple con \(w_h=0{,}8\)). Cuando llega al contexto, ya es poco.</div>
+      <svg class="chart" id="aeSvg" style="max-height:300px" viewBox="0 0 1160 320" role="img" aria-label="Recorrido por un codificador-decodificador"></svg>
+    </div>
+    <div class="row2" style="grid-template-columns:auto 1fr auto;gap:18px;align-items:center">
+      <div class="card ctl" style="padding:8px 18px;gap:6px;width:420px">
+        <label style="grid-template-columns:230px 1fr"><span>\(T\) <small>largo de la entrada</small></span><input type="number" id="aeT" min="2" max="9" step="1" value="6"></label>
+        <label style="grid-template-columns:230px 1fr"><span>\(H\) <small>largo de la salida</small></span><input type="number" id="aeH" min="1" max="6" step="1" value="3"></label>
+      </div>
+      <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> recorre con \(T=6\) y luego con \(T=9\): el aporte de \(x_1\) al contexto baja. Cambia \(H\): el codificador no cambia, solo el decodificador. Con LSTM o GRU la barra bajaría mucho más despacio, pero el contexto sigue siendo un solo vector.</p>
+      <div class="btns" style="width:260px"><button type="button" id="aePlay">▶ Recorrer</button><button type="button" id="aeReset">Reiniciar</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Capas apiladas y bidireccionales">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más elaboradas</p><h2>Apilar capas y leer en los dos sentidos</h2>
+    <p class="lead" style="font-size:20px">Las capas apiladas que viste en la parte 1 sirven en cualquiera de estas arquitecturas y con cualquier celda; además, una capa puede leer la secuencia en los dos sentidos.</p></div>
+  <div class="bd">
+    <div class="grid2">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap"><b>Red recurrente profunda:</b> la secuencia de \(h_t\) de una capa es la entrada de la siguiente.</div>
+        <svg class="chart" id="apSvg" viewBox="0 0 520 250" role="img" aria-label="Dos capas recurrentes apiladas"></svg>
+      </div>
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap"><b>Red bidireccional:</b> una capa lee de izquierda a derecha y otra al revés; en cada paso se juntan las dos.</div>
+        <svg class="chart" id="biSvg" viewBox="0 0 520 250" role="img" aria-label="Capa bidireccional"></svg>
+      </div>
+    </div>
+    <p class="txt" style="font-size:18px;color:var(--muted)">La bidireccional sirve cuando toda la secuencia está disponible desde el inicio (por ejemplo, clasificar un electrocardiograma ya registrado o rellenar un valor que falta en medio de una serie): lo que pasa en un instante se entiende mejor viendo también lo que vino después. No sirve para predecir el futuro, porque ese futuro todavía no se conoce.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Aplicaciones">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Aplicaciones</p><h2>Dónde se usan las redes recurrentes</h2>
+    <p class="lead" style="font-size:20px">Siempre que los datos llegan en orden y lo anterior ayuda a entender lo siguiente. Cada aplicación usa una de las arquitecturas que ya viste.</p></div>
+  <div class="bd">
+    <div class="grid4" style="gap:14px">
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Energía</span><p style="font-size:15px">Pronosticar la demanda eléctrica de las próximas horas para planear la generación. <b>Codificador–decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Finanzas</span><p style="font-size:15px">Pronosticar ventas o flujo de caja; detectar transacciones fraudulentas. <b>Solo codificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Clima</span><p style="font-size:15px">Temperatura y lluvia de los próximos días a partir de varias estaciones (serie multivariada).</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Tráfico</span><p style="font-size:15px">Usuarios por hora de una página, vehículos por vía, pasajeros por estación.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Salud</span><p style="font-size:15px">Clasificar electrocardiogramas; alertar cambios en los signos vitales de un paciente. <b>Solo codificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Industria</span><p style="font-size:15px">Detectar fallas en máquinas a partir de vibración y temperatura; mantenimiento predictivo. <b>Secuencia → secuencia</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Movimiento</span><p style="font-size:15px">Reconocer actividades con el acelerómetro del celular; predecir trayectorias de robots o vehículos.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-amber">Audio y música</span><p style="font-size:15px">Reconocer eventos en un audio; generar música nota a nota. <b>Solo decodificador</b>.</p></div>
+    </div>
+    <p class="txt" style="font-size:18px;color:var(--muted)">Hoy, en secuencias muy largas, muchas de estas tareas también se resuelven con convoluciones 1D o con modelos de atención. Las redes recurrentes siguen siendo una buena opción, más liviana, cuando la secuencia es moderada y llega paso a paso (en tiempo real).</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo armar una red recurrente">
+  <div class="hd"><p class="eyebrow">Etapa 2 · En la práctica</p><h2>Cómo armar una red recurrente, paso a paso</h2>
+    <p class="lead" style="font-size:20px">Las decisiones de diseño, en el orden en que se toman. Lo que no aparece aquí (pérdida, optimizador, entrenamiento) es igual que en las redes que ya conoces.</p></div>
+  <div class="bd">
+    <div class="grid3" style="gap:14px">
+      <div class="card" style="padding:12px 18px"><span class="tag t-amber">1 · Separar en el tiempo</span><p style="font-size:16px">Entrenamiento, validación y prueba son <b>periodos distintos</b>, en orden. Mezclar al azar deja que el modelo vea el futuro.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-amber">2 · Escala y ventanas</span><p style="font-size:16px">Llevar los valores a una escala parecida (restar la media y dividir por la desviación, calculadas solo con el periodo de entrenamiento) y cortar cada periodo en ventanas de \(T\) pasos con su etiqueta.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-amber">3 · Línea base</span><p style="font-size:16px">Compararse con un pronóstico trivial, como decir que mañana será igual que hoy. Si la red no le gana, no vale la pena.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-teal">4 · Arquitectura</span><p style="font-size:16px">Según la tarea: solo codificador, secuencia → secuencia, decodificador o codificador–decodificador.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-teal">5 · Celda y tamaño</span><p style="font-size:16px">Empezar con LSTM o GRU, una o dos capas apiladas y pocas decenas de neuronas; crecer solo si la validación mejora.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-coral">6 · Cuidar el entrenamiento</span><p style="font-size:16px"><b>Gradient clipping</b> contra el gradiente que explota, <b>dropout</b> (apagar neuronas al azar al entrenar) contra el sobreajuste y <b>early stopping</b> (parar cuando la pérdida de validación deja de bajar).</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Resumen">
+  <div class="hd"><p class="eyebrow">Resumen</p><h2>Las dos preguntas, respondidas</h2></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Arquitecturas</b><span>Secuencia → vector (solo el último \(h_T\)), secuencia → secuencia (una salida por paso), vector → secuencia (autorregresivo) y codificador–decodificador (un vector de contexto). Las capas se apilan y pueden leer en los dos sentidos.</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>Aplicaciones y práctica</b><span>Energía, finanzas, clima, salud, industria. Al armar una: separar en el tiempo, escalar y hacer ventanas, compararse con una línea base, empezar con LSTM o GRU, y cuidar el entrenamiento (clipping, dropout, early stopping).</span></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="foot"><span>Deep Learning · Unidad 2 · Redes recurrentes · Parte 3: arquitecturas y práctica</span><span class="pg" id="pg"></span></div>
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="ui">
+  <button id="bPrev" type="button" aria-label="Diapositiva anterior">←</button>
+  <button id="bNext" type="button" aria-label="Diapositiva siguiente">→</button>
+  <button id="bFs" type="button" aria-label="Pantalla completa (F)">Pantalla</button>
+  <button id="bTheme" type="button" aria-label="Cambiar tema (T)">Tema</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var AMB = "var(--amber)", IND = "var(--indigo)", TEA = "var(--teal)", COR = "var(--coral)", MUT = "var(--axis)";
+  var defs = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.style.position = "absolute";
+  defs.innerHTML = ["Amb:var(--amber)", "Mut:var(--axis)", "Tea:var(--teal)", "Ind:var(--indigo)", "Cor:var(--coral)"].map(function (d) {
+    var p = d.split(":");
+    return '<defs><marker id="rk' + p[0] + '" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" style="fill:' + p[1] + '"/></marker></defs>';
+  }).join("");
+  document.body.appendChild(defs);
+  function rect(x, y, w, h, fill, stroke, sw, rx, op) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (rx === undefined ? 8 : rx) + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + (op !== undefined ? ';opacity:' + op : '') + '"/>';
+  }
+  function text(x, y, t, cls, anchor, fill, size, weight) {
+    return '<text x="' + x + '" y="' + y + '" class="' + (cls || "lb") + '" text-anchor="' + (anchor || "middle") + '" style="' + (fill ? 'fill:' + fill + ';' : '') + (size ? 'font-size:' + size + 'px;' : '') + (weight ? 'font-weight:' + weight + ';' : '') + '">' + t + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, mk, w, dash, op) {
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + (op !== undefined ? ';opacity:' + op : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function path(d, color, mk, w, dash) {
+    return '<path d="' + d + '" style="fill:none;stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function circ(x, y, r, fill, stroke, sw) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + '"/>';
+  }
+  function sub(base, s) { return base + '<tspan dy="5" style="font-size:.72em">' + s + '</tspan>'; }
+  function fmt(v, d) { return v.toFixed(d === undefined ? 2 : d).replace(".", ","); }
+
+  /* cadena desenrollada genérica: n celdas */
+  function chain(n, x0, y, dx, opt) {
+    var s = "", k, cw = opt.cw || 70, ch = opt.ch || 50;
+    for (k = 0; k < n; k++) {
+      var x = x0 + k * dx, on = opt.on ? opt.on(k) : false;
+      if (k > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 3);
+      s += rect(x, y, cw, ch, on ? "var(--amber-soft)" : "var(--paper-2)", on ? AMB : "var(--axis)", on ? 3 : 1.5, 10);
+      s += text(x + cw / 2, y + ch / 2 + 6, opt.label ? opt.label(k) : "celda", "lb", "middle", null, 16, 600);
+      if (opt.inp) { var a = opt.inp(k); s += line(x + cw / 2, y + ch + 40, x + cw / 2, y + ch + 3, a ? IND : MUT, a ? "Ind" : "Mut", 2.5, a ? null : "5 5", a ? 1 : .5); if (a) s += text(x + cw / 2, y + ch + 62, a, "lb", "middle", IND, 17, 600); }
+      if (opt.out) { var b = opt.out(k); s += line(x + cw / 2, y - 3, x + cw / 2, y - 40, b ? TEA : MUT, b ? "Tea" : "Mut", 2.5, b ? null : "5 5", b ? 1 : .5); if (b) s += text(x + cw / 2, y - 50, b, "lb", "middle", TEA, 17, 600); }
+    }
+    return s;
+  }
+
+  /* ---------- portada ---------- */
+  (function () {
+    var s = chain(5, 120, 220, 110, { cw: 74, ch: 56, label: function (k) { return "h" + (k + 1); },
+      inp: function (k) { return "x" + (k + 1); }, out: function (k) { return k === 4 ? "ŷ" : ""; }, on: function (k) { return k === 2; } });
+    $("rnCover").innerHTML = s;
+  })();
+
+  /* ---------- serie de tiempo (como en el libro: dos ondas más ruido, semilla fija) ---------- */
+  var SER = (function () {
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var a = [], n = 120, k;
+    for (k = 0; k < n; k++) { var u = k / n; a.push(0.5 * Math.sin((u - 0.3) * 2 * Math.PI * 4.2) + 0.2 * Math.sin((u - 0.1) * 2 * Math.PI * 11.5) + 0.1 * (rnd() - 0.5)); }
+    return a;
+  })();
+
+  /* ---------- tipos de tareas ---------- */
+  (function () {
+    var T = [
+      { tag: "Secuencia → vector", txt: "Lee toda la secuencia y usa <b>solo la última salida</b>. Ejemplos: pronosticar el valor siguiente de una serie o clasificar una señal completa.",
+        inp: function () { return 1; }, out: function (k) { return k === 5; } },
+      { tag: "Secuencia → secuencia", txt: "Produce <b>una salida en cada paso</b>. Ejemplo: recibe los precios de los últimos días y en cada paso predice el del día siguiente (la misma serie, desplazada un día).",
+        inp: function () { return 1; }, out: function () { return 1; } },
+      { tag: "Vector → secuencia", txt: "Recibe <b>una sola entrada</b> al inicio y genera una secuencia. Ejemplo: generar una serie paso a paso a partir de un estado inicial.",
+        inp: function (k) { return k === 0; }, out: function () { return 1; } },
+      { tag: "Secuencia → otra secuencia", txt: "Una red <b>resume</b> la secuencia de entrada en un vector y otra la <b>convierte</b> en una secuencia de salida de otra longitud. Ejemplo: leer 30 días de una serie y pronosticar los 7 siguientes.",
+        inp: function (k) { return k < 3; }, out: function (k) { return k >= 3; } }
+    ];
+    function draw() {
+      var o = T[+$("tpSel").value], s = "", n = 6;
+      s += chain(n, 30, 110, 95, { cw: 70, ch: 54, label: function () { return "celda"; },
+        inp: function (k) { return o.inp(k) ? sub("x", k + 1) : ""; }, out: function (k) { return o.out(k) ? sub("ŷ", k + 1) : ""; } });
+      if (+$("tpSel").value === 3) {
+        s += line(30 + 3 * 95 - 12, 40, 30 + 3 * 95 - 12, 260, COR, null, 2, "6 5");
+        s += text(30 + 1 * 95 + 35, 290, "codificador", "tk", "middle", null, 15);
+        s += text(30 + 4 * 95 + 35, 290, "decodificador", "tk", "middle", null, 15);
+      }
+      $("tpSvg").innerHTML = s;
+      $("tpTag").textContent = o.tag; $("tpTxt").innerHTML = o.txt;
+    }
+    $("tpSel").addEventListener("change", draw);
+    draw();
+  })();
+
+
+  /* ---------- solo codificador ---------- */
+  (function () {
+    var s = chain(5, 30, 120, 105, { cw: 72, ch: 54, label: function (k) { return k === 4 ? "h" + "<tspan dy='5' style='font-size:.72em'>T</tspan>" : "celda"; },
+      inp: function (k) { return k === 4 ? sub("x", "T") : sub("x", k + 1); }, out: function (k) { return ""; }, on: function (k) { return k === 4; } });
+    var xr = 30 + 4 * 105 + 72;
+    s += line(xr + 2, 147, 520, 147, AMB, "Amb", 3);
+    s += rect(522, 118, 70, 58, "var(--teal-soft)", TEA, 2.5, 10);
+    s += text(557, 143, "capa", "lb", "middle", null, 15, 600) + text(557, 162, "densa", "lb", "middle", null, 15, 600);
+    s += line(557, 116, 557, 70, TEA, "Tea", 2.5);
+    s += text(557, 58, "ŷ", "lb", "middle", TEA, 20, 700);
+    s += text(290, 40, "las salidas intermedias no se usan", "tk", "middle", null, 15);
+    $("enSvg").innerHTML = s;
+  })();
+
+  /* ---------- secuencia a secuencia ---------- */
+  (function () {
+    $("ssSvg").innerHTML = chain(5, 40, 120, 112, { cw: 74, ch: 54, label: function () { return "celda"; },
+      inp: function (k) { return sub("x", k + 1); }, out: function (k) { return sub("ŷ", k + 1); } });
+  })();
+
+  /* ---------- solo decodificador ---------- */
+  (function () {
+    var n = 5, x0 = 70, dx = 105, y = 120, cw = 72, ch = 54, s = "", k;
+    s += chain(n, x0, y, dx, { cw: cw, ch: ch, label: function () { return "celda"; },
+      inp: function (k) { return k === 0 ? "vector" : ""; }, out: function (k) { return sub("ŷ", k + 1); } });
+    for (k = 0; k < n - 1; k++) {
+      var xa = x0 + k * dx + cw / 2, xb = x0 + (k + 1) * dx + cw / 2;
+      s += path("M" + (xa + 10) + " 62 C " + (xa + 55) + " 62, " + (xb - 50) + " 250, " + (xb - 4) + " 214", TEA, "Tea", 2, "5 5");
+    }
+    $("deSvg").innerHTML = s;
+  })();
+
+  /* ---------- actividad: pronosticar varios pasos ---------- */
+  (function () {
+    var N = SER.length, P = 5, CACHE = {};
+    function solve(A, b) { /* eliminación gaussiana */
+      var n = b.length, M = A.map(function (r, i) { return r.concat([b[i]]); }), i, j, k;
+      for (i = 0; i < n; i++) {
+        var p = i; for (j = i + 1; j < n; j++) if (Math.abs(M[j][i]) > Math.abs(M[p][i])) p = j;
+        var tmp = M[i]; M[i] = M[p]; M[p] = tmp;
+        for (j = i + 1; j < n; j++) { var f = M[j][i] / M[i][i]; for (k = i; k <= n; k++) M[j][k] -= f * M[i][k]; }
+      }
+      var x = new Array(n);
+      for (i = n - 1; i >= 0; i--) { var s = M[i][n]; for (k = i + 1; k < n; k++) s -= M[i][k] * x[k]; x[i] = s / M[i][i]; }
+      return x;
+    }
+    function fit(h) { /* modelo lineal: últimos P valores + sesgo -> valor h pasos adelante */
+      var m = P + 1, A = [], b = [], i, j, t;
+      for (i = 0; i < m; i++) { A.push(new Array(m).fill(0)); b.push(0); }
+      for (t = P; t + h - 1 < N; t++) {
+        var f = SER.slice(t - P, t).concat([1]), y = SER[t + h - 1];
+        for (i = 0; i < m; i++) { b[i] += f[i] * y; for (j = 0; j < m; j++) A[i][j] += f[i] * f[j]; }
+      }
+      for (i = 0; i < m; i++) A[i][i] += 0.01;
+      return solve(A, b);
+    }
+    function pred(w, win) { var s = w[P], k; for (k = 0; k < P; k++) s += w[k] * win[k]; return s; }
+    function models(H) { /* un modelo de 1 paso y uno por cada horizonte, para el P elegido */
+      var key = P + "-" + H; if (CACHE[key]) return CACHE[key];
+      var m = { one: fit(1), dir: [] }; for (var h = 1; h <= H; h++) m.dir.push(fit(h));
+      return (CACHE[key] = m);
+    }
+    function draw() {
+      var H = +$("msH").value; P = +$("msP").value; var M = models(H);
+      var st = Math.max(P, Math.min(N - H, Math.round(parseFloat($("msS").value) || 50)));
+      var win = SER.slice(st - P, st), ar = [], dr = [], k;
+      for (k = 0; k < H; k++) { var y = pred(M.one, win); ar.push(y); win = win.slice(1).concat([y]); }
+      for (k = 0; k < H; k++) dr.push(pred(M.dir[k], SER.slice(st - P, st)));
+      var ea = 0, ed = 0; for (k = 0; k < H; k++) { ea += Math.abs(ar[k] - SER[st + k]); ed += Math.abs(dr[k] - SER[st + k]); }
+      $("msEa").textContent = fmt(ea / H, 3); $("msEd").textContent = fmt(ed / H, 3);
+      var Wd = 580, Hh = 290, ml = 40, mr = 10, mt = 12, mb = 30, x0 = st - 20, x1 = st + 30, s = "";
+      function sx(t) { return ml + (t - x0) / (x1 - x0) * (Wd - ml - mr); }
+      function sy(v) { v = Math.max(-1.3, Math.min(1.3, v)); return mt + (1 - (v + 1.3) / 2.6) * (Hh - mt - mb); }
+      [-1, -0.5, 0, 0.5, 1].forEach(function (v) { s += line(ml, sy(v), Wd - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 6, sy(v) + 5, fmt(v, 1), "tk", "end"); });
+      s += line(sx(st - 0.5), mt, sx(st - 0.5), Hh - mb, "var(--axis)", null, 1.5, "4 4");
+      s += text(sx(st - 0.5) - 6, Hh - 10, "ahora", "tk", "end");
+      function pl(a, t0, col, w, dash) { return '<polyline points="' + a.map(function (v, k) { return sx(t0 + k) + "," + sy(v); }).join(" ") + '" style="fill:none;stroke:' + col + ';stroke-width:' + w + (dash ? ';stroke-dasharray:' + dash : '') + '"/>'; }
+      s += pl(SER.slice(x0, st), x0, "var(--axis)", 2.5);
+      s += pl(SER.slice(st - 1, Math.min(N, x1 + 1)), st - 1, TEA, 2.5);
+      s += pl([SER[st - 1]].concat(dr), st - 1, IND, 2.8);
+      s += pl([SER[st - 1]].concat(ar), st - 1, COR, 2.8, "7 4");
+      s += text(sx(st + H - 1), Hh - 10, "+" + H, "tk", "middle");
+      $("msSvg").innerHTML = s;
+    }
+    ["msH", "msS", "msP"].forEach(function (id) { $(id).addEventListener("input", draw); $(id).addEventListener("change", draw); });
+    draw();
+  })();
+
+  /* ---------- codificador–decodificador (esquema) ---------- */
+  (function () {
+    var s = "", T = 4, H = 3, cw = 72, ch = 54, y = 95, k;
+    s += chain(T, 20, y, 100, { cw: cw, ch: ch, label: function () { return "cod."; }, inp: function (k) { return k === T - 1 ? sub("x", "T") : sub("x", k + 1); }, out: function () { return ""; } });
+    var xc = 20 + (T - 1) * 100 + cw;
+    s += line(xc + 2, y + ch / 2, 488, y + ch / 2, AMB, "Amb", 3);
+    s += rect(490, y - 6, 120, ch + 12, "var(--amber-soft)", AMB, 3, 12);
+    s += text(550, y + ch / 2 + 6, "contexto", "lb", "middle", null, 17, 700);
+    s += line(612, y + ch / 2, 676, y + ch / 2, AMB, "Amb", 3);
+    var dx0 = 680;
+    s += chain(H, dx0, y, 130, { cw: cw + 10, ch: ch, label: function () { return "dec."; }, inp: function (k) { return k === 0 ? "inicio" : ""; }, out: function (k) { return k === H - 1 ? sub("ŷ", "H") : sub("ŷ", k + 1); } });
+    for (k = 0; k < H - 1; k++) { var xa = dx0 + k * 130 + 41, xb = dx0 + (k + 1) * 130 + 41; s += path("M" + (xa + 12) + " 40 C " + (xa + 70) + " 40, " + (xb - 60) + " 225, " + (xb - 4) + " 192", TEA, "Tea", 2, "5 5"); }
+    s += text(170, 238, "codificador", "tk", "middle", IND, 16);
+    s += text(dx0 + 170, 238, "decodificador", "tk", "middle", TEA, 16);
+    $("ecSvg").innerHTML = s;
+  })();
+
+  /* ---------- actividad: codificar y decodificar ---------- */
+  (function () {
+    var pos = -1, timer = null;
+    function nT() { return Math.max(2, Math.min(9, Math.round(parseFloat($("aeT").value) || 6))); }
+    function nH() { return Math.max(1, Math.min(6, Math.round(parseFloat($("aeH").value) || 3))); }
+    function draw() {
+      var T = nT(), H = nH(), s = "", k, dx = 92, cw = 66, ch = 50, y = 105, x0 = 14;
+      var cur = Math.floor(pos);
+      for (k = 0; k < T; k++) {
+        var x = x0 + k * dx, on = cur === k;
+        if (k > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 3);
+        s += rect(x, y, cw, ch, on ? "var(--indigo-soft)" : "var(--paper-2)", on ? IND : "var(--axis)", on ? 3 : 1.5, 10);
+        s += text(x + cw / 2, y + ch / 2 + 6, "cod.", "lb", "middle", null, 15, 600);
+        s += line(x + cw / 2, y + ch + 36, x + cw / 2, y + ch + 3, IND, "Ind", 2.2);
+        s += text(x + cw / 2, y + ch + 56, sub("x", k + 1), "lb", "middle", IND, 16, 600);
+        var m = Math.pow(0.8, k), done = pos >= k;
+        s += rect(x + 6, y + ch + 66, cw - 12, 10, "var(--paper-2)", "var(--line)", 1, 4);
+        if (done) s += rect(x + 6, y + ch + 66, (cw - 12) * m, 10, AMB, AMB, 1, 4);
+        if (done) s += text(x + cw / 2, y + ch + 96, Math.round(m * 100) + "%", "tk", "middle", null, 13);
+      }
+      var xc = x0 + T * dx, onc = cur === T;
+      s += line(xc - dx + cw + 2, y + ch / 2, xc + 2, y + ch / 2, AMB, "Amb", 3);
+      s += rect(xc + 4, y - 4, 96, ch + 8, onc || pos > T ? "var(--amber-soft)" : "var(--paper-2)", AMB, onc ? 3.5 : 2, 12);
+      s += text(xc + 52, y + ch / 2 + 6, "contexto", "lb", "middle", null, 15, 700);
+      if (pos >= T) s += text(xc + 52, y + ch + 30, "x₁: " + Math.round(Math.pow(0.8, T - 1) * 100) + "%", "tk", "middle", AMB, 15, 700);
+      var d0 = xc + 130;
+      s += line(xc + 102, y + ch / 2, d0 - 3, y + ch / 2, AMB, "Amb", 3);
+      for (k = 0; k < H; k++) {
+        var xd = d0 + k * dx, ond = cur === T + 1 + k, dn = pos >= T + 1 + k;
+        if (k > 0) s += line(xd - dx + cw + 2, y + ch / 2, xd - 3, y + ch / 2, AMB, "Amb", 3);
+        s += rect(xd, y, cw, ch, ond ? "var(--teal-soft)" : "var(--paper-2)", ond ? TEA : "var(--axis)", ond ? 3 : 1.5, 10);
+        s += text(xd + cw / 2, y + ch / 2 + 6, "dec.", "lb", "middle", null, 15, 600);
+        s += line(xd + cw / 2, y - 3, xd + cw / 2, y - 36, dn ? TEA : MUT, dn ? "Tea" : "Mut", 2.2, dn ? null : "5 5", dn ? 1 : .5);
+        if (dn) s += text(xd + cw / 2, y - 46, sub("ŷ", k + 1), "lb", "middle", TEA, 16, 600);
+        if (k < H - 1 && dn) s += path("M" + (xd + cw / 2 + 10) + " " + (y - 50) + " C " + (xd + cw / 2 + 60) + " " + (y - 50) + ", " + (xd + dx + cw / 2 - 50) + " " + (y + ch + 70) + ", " + (xd + dx + cw / 2 - 3) + " " + (y + ch + 6), TEA, "Tea", 1.8, "5 5");
+      }
+      s += text(x0 + (T * dx) / 2, 300, "codificador: lee " + T + " pasos", "tk", "middle", IND, 15);
+      s += text(d0 + (H * dx) / 2 - 20, 300, "decodificador: genera " + H, "tk", "middle", TEA, 15);
+      $("aeSvg").setAttribute("viewBox", "0 0 " + Math.max(1160, d0 + H * dx + 10) + " 320");
+      $("aeSvg").innerHTML = s;
+    }
+    function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("aePlay").textContent = "▶ Recorrer"; }
+    $("aeReset").addEventListener("click", function () { stop(); pos = -1; draw(); });
+    ["aeT", "aeH"].forEach(function (id) { $(id).addEventListener("input", function () { stop(); pos = -1; draw(); }); });
+    $("aePlay").addEventListener("click", function () {
+      if (timer) { stop(); return; }
+      var end = nT() + nH() + 0.99;
+      if (pos < 0 || pos >= end - 0.01) pos = 0;
+      $("aePlay").textContent = "❚❚ Pausa";
+      var last = null;
+      function frame(now) {
+        if (last === null) last = now;
+        var dt = Math.min((now - last) / 1000, 0.05); last = now;
+        pos += dt * 0.8;
+        if (pos >= end) { pos = end; draw(); stop(); return; }
+        draw(); timer = requestAnimationFrame(frame);
+      }
+      timer = requestAnimationFrame(frame);
+    });
+    draw();
+  })();
+
+
+  /* ---------- apiladas y bidireccional ---------- */
+  (function () {
+    var s = "", k, dx = 110, x0 = 40, cw = 74, ch = 40;
+    for (k = 0; k < 4; k++) {
+      var x = x0 + k * dx;
+      s += rect(x, 140, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x + cw / 2, 166, "capa 1", "tk", "middle", null, 14);
+      s += rect(x, 60, cw, ch, "var(--amber-soft)", AMB, 1.5, 8) + text(x + cw / 2, 86, "capa 2", "tk", "middle", null, 14);
+      if (k > 0) { s += line(x - dx + cw + 2, 160, x - 3, 160, AMB, "Amb", 2.5); s += line(x - dx + cw + 2, 80, x - 3, 80, AMB, "Amb", 2.5); }
+      s += line(x + cw / 2, 224, x + cw / 2, 183, IND, "Ind", 2.5) + text(x + cw / 2, 244, sub("x", k + 1), "lb", "middle", IND, 16, 600);
+      s += line(x + cw / 2, 138, x + cw / 2, 103, AMB, "Amb", 2.5);
+      s += line(x + cw / 2, 58, x + cw / 2, 22, TEA, "Tea", 2.5);
+    }
+    $("apSvg").innerHTML = s;
+    s = "";
+    for (k = 0; k < 4; k++) {
+      var x2 = x0 + k * dx;
+      s += rect(x2, 140, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x2 + cw / 2, 166, "→", "lb", "middle", AMB, 18, 700);
+      s += rect(x2, 75, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x2 + cw / 2, 101, "←", "lb", "middle", IND, 18, 700);
+      if (k > 0) { s += line(x2 - dx + cw + 2, 160, x2 - 3, 160, AMB, "Amb", 2.5); s += line(x2 - 3, 95, x2 - dx + cw + 2, 95, IND, "Ind", 2.5); }
+      s += line(x2 + cw / 2, 224, x2 + cw / 2, 183, IND, "Ind", 2.5) + text(x2 + cw / 2, 244, sub("x", k + 1), "lb", "middle", IND, 16, 600);
+      s += line(x2 + cw / 2, 73, x2 + cw / 2, 30, TEA, "Tea", 2.5);
+      s += text(x2 + cw / 2, 22, "unir", "tk", "middle", TEA, 13);
+    }
+    $("biSvg").innerHTML = s;
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  var stage = document.getElementById("stage"), slides = [].slice.call(document.querySelectorAll(".slide"));
+  var pg = document.getElementById("pg"), bar = document.getElementById("bar"), cur = 0;
+  var root = document.documentElement;
+
+  try { var t = localStorage.getItem("deck-theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(i, noHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); });
+    pg.textContent = (cur + 1) + " / " + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    document.querySelector(".foot").style.display = cur === 0 ? "none" : "flex";
+    if (!noHash) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function go(d) { show(cur + d); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (e.target && e.target.tagName === "INPUT" && k.indexOf("Arrow") === 0) return;
+    if (e.target && e.target.tagName === "BUTTON" && (k === " " || k === "Enter")) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].indexOf(k) > -1) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].indexOf(k) > -1) { e.preventDefault(); go(-1); }
+    else if (k === "Home") show(0); else if (k === "End") show(slides.length - 1);
+    else if (k === "f" || k === "F") toggleFs(); else if (k === "t" || k === "T") toggleTheme();
+  });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a,button,input,summary,.noclick")) return;
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left) / r.width < 0.25 ? go(-1) : go(1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen && root.requestFullscreen(); }
+  function toggleTheme() {
+    var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", n); try { localStorage.setItem("deck-theme", n); } catch (e) {}
+  }
+  document.getElementById("bPrev").onclick = function (e) { e.stopPropagation(); go(-1); };
+  document.getElementById("bNext").onclick = function (e) { e.stopPropagation(); go(1); };
+  document.getElementById("bFs").onclick = toggleFs;
+  document.getElementById("bTheme").onclick = toggleTheme;
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) show(n - 1, true); });
+
+  function typeset() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, { delimiters: [
+        { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }
+      ], throwOnError: false });
+    }
+  }
+
+
+
+
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, true);
+  window.addEventListener("load", typeset);
+  if (document.readyState === "complete") typeset();
+})();
+</script>
+</body>
+</html>
+

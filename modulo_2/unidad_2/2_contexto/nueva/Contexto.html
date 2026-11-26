@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contexto · M2 U2</title>
+<script src="https://kit.fontawesome.com/43bc24b73f.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../../../../archivos_web/css/estilos_contenidos_local_m2.css">
+</head><body style="font-family: verdana, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px;">
+<p class="titulo_contenido">Contexto<span class="icono_momento" id="contexto"></span></p>
+<div class="separa_titulo"></div>
+<p class="btn_recurso"><span class="num_recurso"><i class="fa-regular fa-file-lines"></i></span>Redes recurrentes</p>
+<div id="recurso_1" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Bienvenidos a la última unidad el curso. En este primer momento los invito a que observemos el siguiente video acerca de las motivaciones para el desarrollo de las redes recurrentes."><span class="subtitulo_conte"></span>Bienvenidos a la última unidad del curso. Hasta ahora, nuestras redes recibían un dato completo (una imagen, una fila de una tabla) y respondían. Pero muchos datos llegan <strong>en orden, uno tras otro</strong>: la temperatura de cada hora, las ventas de cada día, los pasajeros de cada jornada, las palabras de una frase. Para entenderlos importa tanto el valor como el momento en que ocurrió. Para este tipo de datos se crearon las <strong>redes neuronales recurrentes</strong>, redes que leen una secuencia paso a paso y recuerdan lo que ya leyeron. Hoy se usan para pronosticar la demanda de energía, el clima o las ventas, para vigilar señales médicas y de máquinas, y estuvieron detrás del reconocimiento de voz y de la traducción automática.<br><br>Con el fin de entender a profundidad cómo funcionan estas redes y cómo se usan para pronosticar series de tiempo, los invito a que estudiemos el libro guía del curso: “<strong>Hands-On Machine Learning with Scikit-Learn and PyTorch</strong>” del autor Aurélien Géron. Para esta unidad, la lectura obligatoria es el <strong>capítulo 13</strong>, sobre el procesamiento de secuencias con redes recurrentes. El capítulo usa el mismo ejemplo con el que trabajaremos en la Experiencia: los pasajeros diarios del metro de Chicago.</p>
+<a href="https://oreilly.com/library/view/hands-on-machine-learning/9798341607972/" target="_blank" class="btn_03" rel="noopener" data-cambio="nuevo">Hands-On Machine Learning with Scikit-Learn and PyTorch</a>
+<p class="nota" data-cambio="nuevo"><a class="btn_nota"><span class="icono_nota"><i class="fa-solid fa-thumbtack"></i></span>Nota</a><strong>Es posible que para acceder al recurso tengas que iniciar sesión con tu usuario y contraseña de Javeriana Cali. </strong>Para una mejor experiencia de visualización, te recomendamos utilizar el navegador Google Chrome.</p>
+</div>
+<p class="btn_recurso" data-cambio="nuevo"><span class="num_recurso"><i class="fa-regular fa-circle-play"></i></span>Historia y aplicaciones de las redes recurrentes</p>
+<div id="recurso_2" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="nuevo">Antes de estudiar cómo funcionan por dentro, los invito a ver la siguiente presentación interactiva. Cuenta qué tienen de especial los datos que llegan en orden, cómo las redes recurrentes pasaron de ser una idea de laboratorio a funcionar en el celular de millones de personas (y por qué luego cedieron parte de su lugar al Transformer) y para qué se usan hoy.</p>
+<div class="container" style="max-width:960px" data-cambio="modificado" data-antes="Video de YouTube sobre las motivaciones para el desarrollo de las redes recurrentes (560×315), en el recurso 1."><iframe width="800" height="450" src="redes_recurrentes_historia.html" frameborder="0" class="video" allowfullscreen="allowfullscreen"></iframe></div>
+<br><br></div>
+<style>
+body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
+body.rev [data-cambio=nuevo]{--c:#1a9b6b} body.rev [data-cambio=modificado]{--c:#d98a00}
+body.rev .rev-b{position:absolute;top:-13px;right:-6px;z-index:5;font:700 11px/1 verdana,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--c);border:0;border-radius:10px;padding:5px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+body.rev .rev-b::after{content:" ▾"}
+body.rev .rev-p{display:none;position:absolute;top:10px;right:-6px;z-index:6;width:min(420px,90vw);max-height:260px;overflow:auto;background:#fffdf5;color:#222;border:2px solid var(--c);border-radius:8px;padding:10px 12px;font:13px/1.45 verdana,sans-serif;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.rev .rev-p b{display:block;margin-bottom:4px;color:var(--c)} body.rev .rev-p.on{display:block}
+#rev-t{display:none}
+body.rev-ok #rev-t{display:block;position:fixed;top:10px;left:10px;z-index:9;font:700 12px verdana,sans-serif;background:#2f2f2f;color:#fff;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
+body:not(.rev) .rev-b,body:not(.rev) .rev-p{display:none!important}
+</style>
+<button id="rev-t" type="button">Ocultar marcas de cambios</button>
+<script>
+(function(){
+  if(!/[?&]revision=1/.test(location.search))return;
+  var b=document.body; b.classList.add("rev","rev-ok");
+  document.querySelectorAll("[data-cambio]").forEach(function(el){
+    var nuevo=el.getAttribute("data-cambio")==="nuevo", antes=el.getAttribute("data-antes");
+    var bt=document.createElement("button"); bt.type="button"; bt.className="rev-b";
+    bt.textContent=nuevo?"Nuevo":"Modificado";
+    var p=document.createElement("div"); p.className="rev-p";
+    p.innerHTML=nuevo?"<b>Nuevo</b>Este texto no estaba en la versión anterior."
+                     :"<b>Modificado. Antes decía:</b>"+(antes||"");
+    bt.onclick=function(e){e.preventDefault();e.stopPropagation();p.classList.toggle("on");};
+    el.appendChild(bt); el.appendChild(p);
+  });
+  var t=document.getElementById("rev-t");
+  t.onclick=function(){var on=b.classList.toggle("rev");t.textContent=on?"Ocultar marcas de cambios":"Mostrar marcas de cambios";};
+})();
+</script>
+</body></html>

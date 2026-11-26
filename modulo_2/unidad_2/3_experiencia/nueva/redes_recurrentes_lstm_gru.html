@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes recurrentes · Parte 2: LSTM y GRU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  :root {
+    --bg: #EFEADF;
+    --paper: #FFFDF8;
+    --paper-2: #F3EEE2;
+    --fg: #1A1D3B;
+    --muted: #4F5380;
+    --line: rgba(26, 29, 59, .13);
+    --grid: rgba(26, 29, 59, .09);
+    --axis: #7A7EA6;
+    --indigo: #3A47B5;
+    --teal: #0B8570;
+    --amber: #B86A00;
+    --coral: #C03F32;
+    --teal-soft: #D3F0E8;
+    --amber-soft: #F8E5C2;
+    --coral-soft: #F8D9D4;
+    --indigo-soft: #DDE0F7;
+    --shadow: 0 1px 2px rgba(26,29,59,.06), 0 8px 24px rgba(26,29,59,.07);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090B1C;
+    --paper: #151834;
+    --paper-2: #1C2043;
+    --fg: #F3EFE6;
+    --muted: #AEB4E2;
+    --line: rgba(243, 239, 230, .14);
+    --grid: rgba(243, 239, 230, .09);
+    --axis: #8B91C4;
+    --indigo: #8E9BFF;
+    --teal: #4FE3C8;
+    --amber: #FFB547;
+    --coral: #FF7F70;
+    --teal-soft: #103A36;
+    --amber-soft: #3A2B12;
+    --coral-soft: #3F1F23;
+    --indigo-soft: #22275A;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--text); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* escenario 16:9 escalado a la ventana */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: 0 0; background: var(--bg); overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; padding: 50px 80px 70px; display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  .slide.active { display: flex; }
+  .slide::before {            /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
+    background: linear-gradient(180deg, var(--teal), var(--indigo) 55%, var(--amber));
+  }
+
+  h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 600; color: var(--fg); }
+  p { margin: 0; }
+  .eyebrow {
+    font: 700 15px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 30px; height: 3px; border-radius: 2px; background: currentColor; }
+  h2 { font-size: 40px; line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 900px; }
+  .lead b, .txt b { color: var(--fg); font-weight: 600; }
+  .txt { font-size: 21px; line-height: 1.55; color: var(--fg); }
+  .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+  .row2.wide-l { grid-template-columns: 1.05fr 1fr; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .grow { flex: 1; min-height: 0; }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px;
+    box-shadow: var(--shadow); min-width: 0;
+  }
+  .card h3 { font-size: 26px; margin-bottom: 8px; }
+  .card p { font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .chartbox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 14px 14px 8px; box-shadow: var(--shadow); }
+  .chartbox .cap { font-size: 16px; color: var(--muted); padding: 4px 10px 8px; line-height: 1.4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart .gr { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--axis); stroke-width: 1.6; }
+  .chart text { font-family: var(--text); }
+  .chart .tk { fill: var(--muted); font-size: 16px; font-weight: 500; }
+  .chart .lb { fill: var(--fg); font-size: 18px; font-weight: 500; }
+  .chart .lg { fill: var(--fg); font-size: 17px; font-weight: 500; }
+  .chart .an { fill: var(--fg); font-size: 18px; font-weight: 600; }
+  .chart .an-teal { fill: var(--teal); font-size: 18px; font-weight: 700; }
+  .chart .lgbg { fill: var(--paper); stroke: var(--line); }
+  .s-indigo { stroke: var(--indigo); } .s-teal { stroke: var(--teal); } .s-amber { stroke: var(--amber); }
+  .s-coral { stroke: var(--coral); } .s-muted { stroke: var(--axis); }
+  .f-indigo { fill: var(--indigo); } .f-teal { fill: var(--teal); } .f-amber { fill: var(--amber); } .f-coral { fill: var(--coral); }
+  .chart circle.f-teal, .chart circle.f-coral, .chart circle.f-amber { stroke: var(--paper); stroke-width: 2; }
+
+  /* ecuaciones */
+  .eq {
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--indigo);
+    border-radius: 16px; padding: 14px 26px 16px; box-shadow: var(--shadow);
+  }
+  .eq .lbl { font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 2px; }
+  .eq .math { font-size: 27px; text-align: center; color: var(--fg); overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .eq .note { font-size: 18px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+  .eq .note .katex { font-size: 1.05em; }
+  .katex { color: inherit; }
+  .katex-display { margin: .15em 0 !important; }
+  .defs3 { display: grid; gap: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .defs3 div { padding: 11px 22px; font-size: 18px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+  .defs3 div:first-child { border-top: none; }
+  .defs3 b { font-family: var(--display); font-size: 21px; color: var(--fg); margin-right: 6px; }
+  .defs3 i { font-size: 15px; }
+  .hl-c { color: var(--coral); } .hl-t { color: var(--teal); } .hl-a { color: var(--amber); } .hl-i { color: var(--indigo); }
+  .tag {
+    display: inline-block; font: 700 14px var(--text); letter-spacing: .09em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .t-teal { background: var(--teal-soft); color: var(--teal); } .t-coral { background: var(--coral-soft); color: var(--coral); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); } .t-indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+  /* piezas específicas */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .big-num { font-family: var(--display); font-size: 54px; line-height: 1; font-weight: 600; }
+  sub { font-size: 0.6em; line-height: 0; vertical-align: -0.35em; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 22px; box-shadow: var(--shadow); }
+  .kpi .k { font: 700 13px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-family: var(--display); font-size: 36px; font-weight: 600; margin-top: 4px; line-height: 1.1; }
+  .kpi .s { font-size: 16px; color: var(--muted); margin-top: 4px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover h1 { font-size: 84px; line-height: 1.02; letter-spacing: -.02em; max-width: 700px; }
+  .cover h1 em { font-style: italic; color: var(--teal); font-weight: 500; }
+  .cover .lead { margin-top: 26px; max-width: 600px; font-size: 25px; }
+  .cover .meta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cover .meta span { font: 600 16px var(--text); padding: 8px 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+  svg.chart.cover-art { position: absolute; right: 0; bottom: 0; width: 720px; height: auto; opacity: .95;
+    -webkit-mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); }
+
+  /* agenda */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 16px 24px; flex: 1; margin-bottom: 8px; }
+  .ag { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; box-shadow: var(--shadow); }
+  .ag .n { font-family: var(--display); font-size: 44px; color: var(--amber); width: 38px; text-align: center; font-weight: 600; }
+  .ag b { display: block; font-size: 23px; font-weight: 600; margin-bottom: 2px; }
+  .ag span { font-size: 18px; color: var(--muted); }
+
+  /* idea central */
+  .big-idea { font-family: var(--display); font-size: 50px; line-height: 1.18; max-width: 1000px; font-weight: 500; }
+  .big-idea span { color: var(--teal); }
+  .steps-v { display: flex; gap: 14px; align-items: stretch; }
+  .steps-v .card { flex: 1; padding: 18px 22px; }
+  .steps-v .arrow { align-self: center; font-size: 28px; color: var(--amber); }
+
+  /* ciclo */
+  .cycle { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; }
+  .cycle .link { align-self: center; text-align: center; font-size: 28px; color: var(--amber); }
+  .cycle .card { padding: 22px 20px; display: flex; flex-direction: column; }
+  .cycle .card p { margin-bottom: 14px; }
+  .cycle .n { font-family: var(--display); font-size: 46px; line-height: 1; color: var(--amber); display: block; margin-bottom: 8px; }
+  .loopback { width: 100%; height: 60px; display: block; margin-top: -6px; }
+  .loopback path { stroke: var(--teal); }
+  .loopback text { fill: var(--teal); font: 600 18px var(--text); }
+
+  /* lr */
+  .lrcard { padding: 16px 20px 18px; }
+  .lrcard .tag { margin-bottom: 8px; }
+  .lrcard h3 { font-size: 24px; margin-bottom: 6px; }
+  .lrcard p { font-size: 17px; }
+  .lrcard svg.chart { margin: 2px 0 8px; }
+
+  /* batches */
+  .blocks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .blocks div {
+    border-radius: 12px; padding: 16px 0 12px; text-align: center; background: var(--teal-soft); color: var(--teal);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  }
+  .blocks div:nth-child(even) { background: var(--indigo-soft); color: var(--indigo); border-color: color-mix(in srgb, var(--indigo) 35%, transparent); }
+  .blocks b { display: block; font: 700 22px var(--text); }
+  .blocks small { font: 500 13px var(--text); opacity: .85; }
+  .epoch-br { height: 16px; border: 2px solid var(--amber); border-top: none; border-radius: 0 0 12px 12px; margin: 0 2px; }
+  .epoch-cap { text-align: center; font-size: 19px; color: var(--amber); font-weight: 600; margin-top: 8px; }
+  .def { border-left: 5px solid var(--amber); padding: 4px 0 4px 18px; }
+  .def h3 { font-size: 28px; margin-bottom: 6px; }
+  .def p { font-size: 19px; line-height: 1.45; color: var(--muted); }
+
+  /* tabla */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  th { text-align: left; font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 12px 22px; background: var(--paper-2); }
+  td { padding: 9px 22px; border-top: 1px solid var(--line); line-height: 1.35; color: var(--fg); }
+  td:first-child { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--amber); white-space: nowrap; width: 250px; }
+
+  /* preguntas */
+  .qs { display: grid; gap: 10px; counter-reset: q; padding: 0; margin: 0; list-style: none; }
+  .qs li {
+    counter-increment: q; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 12px 24px 12px 78px; position: relative; font-size: 21px; line-height: 1.45;
+  }
+  .qs details { margin-top: 8px; }
+  .qs summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 17px; }
+  .qs details p { font-size: 17px; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+  .qs li::before { content: counter(q); position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-family: var(--display); font-size: 40px; color: var(--teal); font-weight: 600; }
+
+  .ctl { padding: 12px 20px; display: grid; gap: 8px; }
+  .ctl label { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; font: 600 20px var(--display); }
+  .ctl label small { font: 500 13px var(--text); color: var(--muted); display: block; }
+  .ctl output { font: 600 18px var(--text); text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--amber); height: 26px; }
+  .btns { display: flex; gap: 10px; margin-top: 2px; }
+  .btns button { flex: 1; font: 600 16px var(--text); padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); cursor: pointer; }
+  .btns button:hover { border-color: var(--amber); } .btns button.on { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btns button:focus-visible, .ctl input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  /* pie, controles */
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 22px; display: flex; justify-content: space-between; font: 500 14px var(--text); color: var(--muted); }
+  .foot .pg { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { position: absolute; left: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--teal), var(--indigo), var(--amber)); transition: width .35s ease; z-index: 5; }
+  .ui { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; opacity: .0; transition: opacity .25s; }
+  body:hover .ui, .ui:focus-within { opacity: 1; }
+  .ui button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); border-radius: 999px; height: 38px; min-width: 38px;
+    padding: 0 14px; font: 600 14px var(--text); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .ui button:hover { border-color: var(--amber); }
+  .ui button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  /* animación de entrada */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active .hd, .slide.active .bd > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    .slide.active .bd > *:nth-child(2) { animation-delay: .07s; }
+    .slide.active .bd > *:nth-child(3) { animation-delay: .14s; }
+    .slide.active .bd > *:nth-child(4) { animation-delay: .21s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* impresión / PDF: una diapositiva por página */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: none; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; overflow: visible; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide .hd, .slide .bd > * { animation: none !important; }
+    .ui, .bar { display: none; }
+  }
+
+  /* laboratorio 2 */
+  .pg-bar { display: flex; gap: 16px; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 14px; }
+  .pg-bar .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pg-bar .f > span { font: 600 13px var(--text); color: var(--muted); height: 20px; line-height: 20px; white-space: nowrap; }
+  .pg-bar select { width: 100%; height: 38px; font: 600 15px var(--text); padding: 5px 4px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .pg-bar .rb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); font: 600 16px var(--text); cursor: pointer; padding: 0; }
+  .pg-bar .rb.play { background: var(--amber); color: #fff; border-color: var(--amber); width: 46px; height: 46px; }
+  .pg-bar .rb:hover { border-color: var(--amber); }
+  .pg-bar .ep { font: 600 26px var(--display); min-width: 74px; line-height: 1.1; }
+  .pg-mini { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; font: 600 15px var(--text); color: var(--fg); }
+  .pg-mini button, .pg-lay button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font: 700 15px var(--text); color: var(--fg); line-height: 1; padding: 0; }
+  .pg-mini button:hover, .pg-lay button:hover { border-color: var(--amber); }
+  .pg-lay { display: flex; align-items: center; gap: 6px; font: 600 15px var(--text); }
+  .pg-thumb { width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; background: var(--paper); }
+  .pg-thumb.on { border-color: var(--amber); }
+  .pg-side label { font: 600 13px var(--text); color: var(--muted); display: block; }
+  .pg-side input[type=range] { width: 100%; accent-color: var(--amber); }
+  .pg-bar .ep input { width: 78px; height: 34px; font: 600 18px var(--text); padding: 2px 6px; border-radius: 9px; border: 2px solid var(--amber); background: var(--paper-2); color: var(--fg); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide cover" data-title="Portada">
+  <svg class="chart cover-art" id="rnCover" style="opacity:.9" viewBox="0 0 720 520" role="img" aria-label="Ilustración de una red recurrente desenrollada en el tiempo"></svg>
+  <div class="hd" style="position:relative">
+    <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes · Parte 2</p>
+    <h1>Memoria de <em>largo plazo</em></h1>
+    <p class="lead">Por qué la red recurrente simple olvida rápido y cómo lo resuelven dos neuronas recurrentes con compuertas: la LSTM y la GRU.</p>
+    <div class="meta"><span>Deep Learning</span><span>Parte 2 · LSTM · GRU</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ruta">
+  <div class="hd"><p class="eyebrow">Ruta de la sesión</p><h2>Tres etapas: el problema y dos soluciones</h2>
+    <p class="lead" style="font-size:19px">En la primera parte armamos redes recurrentes con la neurona recurrente simple. Ahora vemos su gran falla y las neuronas que la resuelven. Cada etapa responde una pregunta.</p></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px">
+      <div class="ag"><span class="n">1</span><div><b>El problema: memoria corta</b><span>¿Por qué la red recurrente simple olvida rápido?</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>LSTM</b><span>¿Cómo se construye una memoria de largo plazo?</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>GRU y comparación</b><span>¿Hay una versión más simple y cuál conviene usar?</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Lo que ya sabemos">
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Lo que ya sabemos de la red recurrente</h2>
+    <p class="lead" style="font-size:20px">Tres ideas de la primera parte que hacen falta para entender su falla.</p></div>
+  <div class="bd">
+    <div class="eq" style="padding:10px 22px"><div class="lbl">La neurona recurrente simple</div>
+      <div class="math" style="font-size:26px">\[ h_t = \tanh\big(w_x\,x_t + w_h\,h_{t-1} + w_0\big) \]</div>
+      <div style="font-size:17px;text-align:left">\(x_t\): entrada del paso \(t\). \(h_{t-1}\): memoria, lo que la neurona calculó en el paso anterior. \(w_x\), \(w_h\), \(w_0\): pesos y sesgo, los mismos en todos los pasos.</div></div>
+    <div class="grid3" style="gap:14px">
+      <div class="card" style="padding:10px 18px"><span class="tag t-amber">1 · Memoria</span><p style="font-size:16px">Lo leído pasa de un paso al siguiente solo a través de \(h_{t-1}\), y en cada paso se multiplica por \(w_h\).</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-indigo">2 · Desenrollada</span><p style="font-size:16px">Para entrenar, la red se dibuja como una cadena: una copia de la misma neurona por cada paso de la serie.</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-coral">3 · Backward</span><p style="font-size:16px">El gradiente recorre esa cadena del último paso al primero (BPTT). Con series largas, la cadena es muy larga.</p></div>
+    </div>
+    <p class="txt" style="font-size:18px">La pregunta de esta etapa: ¿qué le pasa a lo que entró hace muchos pasos?</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Memoria corta">
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>El problema: la red olvida rápido</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <p class="lead" style="font-size:18px;line-height:1.45">Recuerda la ecuación: en cada paso, el estado anterior \(h_{t-1}\) se multiplica por \(w_h\). Entonces lo que queda del primer valor se multiplica por \(w_h\) una y otra vez: después de \(t\) pasos queda, aproximadamente, \(w_h^{\,t}\) (sin contar tanh ni los valores nuevos que van entrando). Si \(w_h=0{,}8\), tras 10 pasos queda \(0{,}8^{10}\approx 0{,}11\): casi nada.</p>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:170px 1fr"><span>\(w_h\) <small>factor por paso</small></span>
+            <input type="number" id="gvW" min="0" max="1.5" step="0.05" value="0.8" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)"></label>
+          <label style="grid-template-columns:170px 1fr"><span>\(T\) <small>longitud</small></span>
+            <select id="gvT" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)">
+              <option>10</option><option selected>20</option><option>40</option></select></label>
+        </div>
+        <div class="grid2" style="gap:8px">
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Queda en el paso T</div><div class="v" id="gvK" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Diagnóstico</div><div class="v" id="gvD" style="font-size:20px">–</div></div>
+        </div>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Pon \(w_h\) en 0,8, 0,95 y 1,1. 2. Cambia \(T\) a 40.</p>
+      </div>
+      <div class="chartbox" style="padding:12px 16px;align-self:center">
+        <div class="cap">Cuánto queda del primer elemento en cada paso \(t\). Verde: aún se recuerda. Rojo: casi nada (menos de 0,05) o demasiado (más de 2).</div>
+        <svg class="chart" id="gvSvg" viewBox="0 0 560 300" role="img" aria-label="Decaimiento de la memoria con los pasos"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Gradiente que se desvanece">
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Lo mismo le pasa al gradiente</h2>
+    <p class="lead" style="font-size:20px">Recuerda: el gradiente indica cuánto y hacia dónde corregir cada peso. En el backward viaja del último paso al primero, y en cada paso se multiplica por un factor parecido a \(w_h\). Multiplicar un número por sí mismo muchas veces da resultados extremos:</p></div>
+  <div class="bd">
+    <div class="grid2" style="gap:20px">
+      <div class="eq" style="padding:12px 24px"><div class="lbl">Factor menor que 1: se desvanece</div>
+        <div class="math" style="font-size:24px">\[ 0{,}5^{10} \approx 0{,}001 \]</div>
+        <div style="font-size:17px;line-height:1.45;text-align:left">El gradiente que llega a los primeros pasos es casi cero: lo que pasó al principio casi no influye en la corrección de los pesos, y la red <b>no aprende</b> a usarlo. Se llama <b>gradiente que se desvanece</b>.</div></div>
+      <div class="eq" style="padding:12px 24px"><div class="lbl">Factor mayor que 1: explota</div>
+        <div class="math" style="font-size:24px">\[ 1{,}5^{10} \approx 58 \]</div>
+        <div style="font-size:17px;line-height:1.45;text-align:left">El gradiente se vuelve enorme y cada step mueve los pesos demasiado: la pérdida salta y el entrenamiento se daña. Se llama <b>gradiente que explota</b>.</div></div>
+    </div>
+    <div class="grid3">
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal">tanh: ayuda solo en parte</span><p style="font-size:16px">La activación tanh deja cada estado entre −1 y 1: en el forward los estados no crecen sin control. Pero no impide que el gradiente explote.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-amber">Remedio · recortar</span><p style="font-size:16px"><i>Gradient clipping</i>: si el gradiente pasa de un tope, se reduce a ese tope antes del step. Evita que explote.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-coral">Lo que no se arregla</span><p style="font-size:16px">Ninguno de los dos evita que el gradiente se desvanezca: en la práctica, una celda simple recuerda bien solo unos pocos pasos (del orden de 10). Hace falta otra celda: la <b>LSTM</b>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Por qué la LSTM">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>¿Por qué hace falta otra celda?</h2>
+    <p class="lead" style="font-size:20px">El problema de la celda simple viene de su propia ecuación. La LSTM cambia justo esa parte.</p></div>
+  <div class="bd">
+    <div class="grid2" style="gap:20px">
+      <div class="eq" style="padding:12px 24px"><div class="lbl">Celda simple: la memoria se multiplica en cada paso</div>
+        <div class="math" style="font-size:24px">\[ h_t = \tanh\big(w_x\,x_t + w_h\,h_{t-1} + w_0\big) \]</div>
+        <div style="font-size:17px;line-height:1.5;text-align:left">La memoria \(h_{t-1}\) pasa por \(w_h\) y por tanh en <b>todos</b> los pasos, aunque no haya nada nuevo que guardar. Como viste en la actividad, así la memoria se borra sola.</div></div>
+      <div class="eq" style="padding:12px 24px"><div class="lbl">LSTM: la memoria solo cambia si la red lo decide</div>
+        <div class="math" style="font-size:24px">\[ c_t = c_{t-1} \quad \text{(si no se borra ni se escribe nada)} \]</div>
+        <div style="font-size:17px;line-height:1.5;text-align:left">La LSTM agrega una segunda memoria, \(c_t\), que pasa de un paso al siguiente <b>sin multiplicarse por \(W_h\) ni pasar por tanh</b>. Solo cambia cuando la red decide borrar o escribir; si no, un valor guardado sigue intacto muchos pasos.</div></div>
+    </div>
+    <div class="card" style="padding:12px 22px"><span class="tag t-teal">Entonces, ¿cómo cambia la memoria?</span><p style="font-size:18px;line-height:1.5;color:var(--fg);margin-top:2px">Con tres controles que la red aprende, llamados <b>compuertas</b>: una decide qué <b>borrar</b> de \(c_t\), otra qué <b>escribir</b> y otra qué <b>mostrar</b> como salida. La siguiente diapositiva presenta cada una.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="La idea de la LSTM">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>LSTM: una memoria con compuertas</h2>
+    <p class="lead" style="font-size:20px">La <b>LSTM</b> (<i>Long Short-Term Memory</i>) tiene dos memorias: \(c_t\), la de largo plazo, y \(h_t\), la de corto plazo, que además es la salida. Tres <b>compuertas</b> controlan qué se borra, qué se escribe y qué se muestra.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">La celda LSTM. Arriba, la memoria de largo plazo \(c_t\) (verde). Abajo, el estado de corto plazo \(h_t\) (ámbar). Los círculos son las compuertas.</div>
+        <svg class="chart" id="lsSvg" viewBox="0 0 600 330" role="img" aria-label="Esquema de una celda LSTM"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="card" style="padding:10px 18px"><span class="tag t-coral">Olvido · f</span><p style="font-size:16px">Decide qué parte de la memoria \(c_{t-1}\) se conserva: 1 = conservar todo, 0 = borrar todo.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Entrada · i</span><p style="font-size:16px">Decide qué parte de la información nueva se escribe en la memoria.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber">Salida · o</span><p style="font-size:16px">Decide qué parte de la memoria se muestra como \(h_t\) en este paso.</p></div>
+        <p class="txt" style="font-size:16px;color:var(--muted)">Cada compuerta es una pequeña capa densa con <b>sigmoide</b>: da números entre 0 (cerrada) y 1 (abierta), calculados a partir de \(x_t\) y \(h_{t-1}\).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Compuertas de la LSTM">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>Cómo se calcula cada compuerta</h2>
+    <p class="lead" style="font-size:20px">Cada compuerta se calcula como la celda simple (pesos para \(x_t\), pesos para \(h_{t-1}\) y un sesgo), con sus propios pesos y con <b>sigmoide</b> \(\sigma\) en vez de tanh, para que dé un número entre 0 y 1. Las letras vienen del inglés: <i>forget</i>, <i>input</i>, <i>output</i>.</p></div>
+  <div class="bd">
+    <div class="row2" style="grid-template-columns:1.15fr .85fr;gap:22px;align-items:center">
+      <div class="eq" style="padding:12px 24px"><div class="lbl">Las cuatro piezas, en el paso t</div>
+        <div class="math" style="font-size:22px">\[ \begin{aligned} f_t &= \sigma\big(W_{xf}\,x_t + W_{hf}\,h_{t-1} + w_{0f}\big) &&\text{olvido}\\ i_t &= \sigma\big(W_{xi}\,x_t + W_{hi}\,h_{t-1} + w_{0i}\big) &&\text{entrada}\\ o_t &= \sigma\big(W_{xo}\,x_t + W_{ho}\,h_{t-1} + w_{0o}\big) &&\text{salida}\\ \tilde c_t &= \tanh\big(W_{xc}\,x_t + W_{hc}\,h_{t-1} + w_{0c}\big) &&\text{candidato} \end{aligned} \]</div></div>
+      <div class="col" style="gap:12px">
+        <div class="card" style="padding:12px 20px"><span class="tag t-teal">Una compuerta es un porcentaje</span><p style="font-size:17px">Un valor de compuerta multiplica a otro: 1 deja pasar todo, 0 no deja pasar nada, 0,9 deja pasar el 90 %.</p></div>
+        <div class="card" style="padding:12px 20px"><span class="tag t-amber">El candidato</span><p style="font-size:17px">\(\tilde c_t\) es la información nueva que se <i>propone</i> guardar. Usa tanh, como la celda simple, y queda entre −1 y 1.</p></div>
+        <p class="txt" style="font-size:17px;color:var(--muted)">La siguiente diapositiva muestra cómo se combinan estas cuatro piezas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ecuaciones de la LSTM">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>Cómo se actualiza la memoria de la LSTM</h2>
+    <p class="lead" style="font-size:20px">Con las compuertas \(f_t\), \(i_t\), \(o_t\) y el candidato \(\tilde c_t\) ya calculados, la celda actualiza sus dos estados:</p></div>
+  <div class="bd">
+    <div class="row2" style="grid-template-columns:1fr 1fr;gap:20px;align-items:stretch">
+      <div class="eq"><div class="lbl">Memoria de largo plazo</div>
+        <div class="math">\[ c_t = f_t \odot c_{t-1} \;+\; i_t \odot \tilde c_t \]</div>
+        <div style="font-size:17px;line-height:1.45;text-align:left">Se conserva lo que deja la compuerta de olvido y se suma lo nuevo que deja la de entrada. \(\odot\): multiplicación elemento a elemento.</div></div>
+      <div class="eq"><div class="lbl">Estado de corto plazo (salida)</div>
+        <div class="math">\[ h_t = o_t \odot \tanh(c_t) \]</div>
+        <div style="font-size:17px;line-height:1.45;text-align:left">La compuerta de salida decide qué parte de la memoria se muestra en este paso.</div></div>
+    </div>
+    <div class="grid3">
+      <div class="card" style="padding:14px 20px"><span class="tag t-teal">Suma, no producto</span><p style="font-size:17px">La memoria avanza sumando. Si \(f_t\) vale casi 1, \(c_t\) pasa casi intacta muchos pasos, y el gradiente también.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-amber">Las compuertas se aprenden</span><p style="font-size:17px">La red aprende cuándo recordar, cuándo escribir y cuándo olvidar a partir de los datos.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-indigo">Más parámetros</span><p style="font-size:17px">Cuatro bloques de pesos en vez de uno: unas cuatro veces los parámetros de la celda simple.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: un paso de la LSTM">
+  <style>.ctl select,.ctl input[type=number]{font:600 16px var(--text);padding:5px 8px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg);width:100%}</style>
+  <div class="hd"><p class="eyebrow">Etapa 2 · Actividad</p><h2>Un paso de la LSTM, con números</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <p class="lead" style="font-size:18px;line-height:1.45">En una red entrenada, las compuertas salen de sus pesos. Aquí las fijas tú a mano, entre 0 y 1, para ver qué hace cada una con la memoria.</p>
+        <div class="card ctl" style="padding:8px 18px;gap:5px">
+          <label style="grid-template-columns:200px 1fr"><span>Situación</span>
+            <select id="lgPre"><option value="0">Guardar lo que hay</option><option value="1">Escribir algo nuevo</option><option value="2">Olvidar</option><option value="3">Reemplazar</option><option value="4">Guardar sin mostrar</option></select></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(c_{t-1}\) <small>memoria anterior</small></span><input type="number" id="lgC" min="-1" max="1" step="0.1"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(\tilde c_t\) <small>propuesta nueva</small></span><input type="number" id="lgN" min="-1" max="1" step="0.1"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(f_t\) <small>olvido (0 a 1)</small></span><input type="number" id="lgF" min="0" max="1" step="0.1"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(i_t\) <small>entrada (0 a 1)</small></span><input type="number" id="lgI" min="0" max="1" step="0.1"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(o_t\) <small>salida (0 a 1)</small></span><input type="number" id="lgO" min="0" max="1" step="0.1"></label>
+        </div>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> recorre las situaciones del desplegable y luego cambia un valor a la vez.</p>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 16px">
+          <div class="cap">Barras: valor de cada cantidad (de −1 a 1). Verde: la memoria nueva \(c_t\). Ámbar: la salida \(h_t\).</div>
+          <svg class="chart" id="lgSvg" viewBox="0 0 580 250" role="img" aria-label="Valores de un paso de la LSTM"></svg>
+        </div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal" id="lgTag">Lectura</span><p style="font-size:17px" id="lgTxt"></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: la memoria de la LSTM">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Actividad</p><h2>Escribir, guardar y olvidar en la memoria</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <p class="lead" style="font-size:18px;line-height:1.45"><b>Objetivo:</b> comparar cuánto dura un dato en la LSTM y en la celda simple. En el paso de escritura entra un valor 1; después no entra nada.</p>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:190px 1fr"><span>Escribir <small>compuerta de entrada abierta</small></span>
+            <select id="lmW" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)"></select></label>
+          <label style="grid-template-columns:190px 1fr"><span>Olvidar <small>\(f_t=0\) en ese paso</small></span>
+            <select id="lmF" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)"></select></label>
+          <label style="grid-template-columns:190px 1fr"><span>\(f_t\) <small>al guardar</small></span>
+            <input type="number" id="lmFv" min="0" max="1" step="0.01" value="0.98" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)"></label>
+          <div class="btns"><button type="button" id="lmPlay">▶ Recorrer</button><button type="button" id="lmReset">Reiniciar</button></div>
+        </div>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Recorre con los valores iniciales. 2. Elige un paso para olvidar. 3. Baja \(f_t\) a 0,8: la LSTM se parece a la celda simple.</p>
+      </div>
+      <div class="chartbox" style="padding:12px 16px;align-self:center">
+        <div class="cap">Verde: memoria \(c_t\) de la LSTM. Rojo discontinuo: lo que queda en la celda simple con \(w_h=0{,}8\). Las marcas indican cuándo se escribe y cuándo se olvida.</div>
+        <svg class="chart" id="lmSvg" viewBox="0 0 560 300" role="img" aria-label="Memoria de la LSTM frente a la celda simple"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="GRU">
+  <div class="hd"><p class="eyebrow">Etapa 3 · GRU</p><h2>GRU: la misma idea con menos piezas</h2>
+    <p class="lead" style="font-size:20px">La LSTM funciona, pero tiene muchas piezas: dos memorias y tres compuertas. La <b>GRU</b> (<i>Gated Recurrent Unit</i>) se propuso como una versión más simple: una sola memoria \(h_t\) y dos compuertas. Con menos parámetros, a menudo funciona tan bien como la LSTM. Su idea central es una mezcla entre lo viejo y lo nuevo:</p></div>
+  <div class="bd">
+    <div class="eq"><div class="lbl">Estado de la GRU</div>
+      <div class="math">\[ h_t = (1 - z_t)\odot h_{t-1} \;+\; z_t \odot \tilde h_t \]</div>
+      <div style="font-size:18px;line-height:1.5;margin-top:4px;text-align:left">
+        <div style="margin-bottom:3px">\(z_t\) (entre 0 y 1): la <b>compuerta de actualización</b>. Con \(z_t\) cerca de 0 se conserva la memoria; cerca de 1 se reemplaza por lo nuevo.</div>
+        <div>\(\tilde h_t\): el candidato nuevo, calculado con tanh a partir de \(x_t\) y de la parte de \(h_{t-1}\) que deja pasar la <b>compuerta de reinicio</b> \(r_t\).</div>
+      </div></div>
+    <div class="grid3">
+      <div class="card" style="padding:14px 20px"><span class="tag t-teal">Un solo control</span><p style="font-size:17px">\(z_t\) hace a la vez de olvido y de entrada: lo que se borra es justo lo que se escribe.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-amber">Reinicio</span><p style="font-size:17px">\(r_t\) permite ignorar el pasado al proponer lo nuevo, por ejemplo cuando la serie cambia de comportamiento de golpe y lo anterior ya no ayuda.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-indigo">Una sola memoria</span><p style="font-size:17px">La memoria y la salida son el mismo \(h_t\); no hay compuerta de salida.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ecuaciones de la GRU">
+  <div class="hd"><p class="eyebrow">Etapa 3 · GRU</p><h2>Cómo se calculan las piezas de la GRU</h2>
+    <p class="lead" style="font-size:20px">Como en la LSTM, cada compuerta es una celda simple con sigmoide y sus propios pesos. La GRU tiene tres piezas en vez de cuatro.</p></div>
+  <div class="bd">
+    <div class="eq" style="padding:12px 24px"><div class="lbl">En el paso t</div>
+      <div class="math" style="font-size:22px">\[ \begin{aligned} z_t &= \sigma\big(W_{xz}\,x_t + W_{hz}\,h_{t-1} + w_{0z}\big) &&\text{actualización}\\ r_t &= \sigma\big(W_{xr}\,x_t + W_{hr}\,h_{t-1} + w_{0r}\big) &&\text{reinicio}\\ \tilde h_t &= \tanh\big(W_{xh}\,x_t + W_{hh}\,(r_t \odot h_{t-1}) + w_{0h}\big) &&\text{candidato}\\ h_t &= (1 - z_t)\odot h_{t-1} + z_t \odot \tilde h_t &&\text{nuevo estado} \end{aligned} \]</div></div>
+    <div class="grid2" style="gap:20px">
+      <div class="card" style="padding:12px 20px"><span class="tag t-amber">El reinicio actúa antes</span><p style="font-size:17px">\(r_t\) multiplica a \(h_{t-1}\) <b>dentro</b> del candidato: con \(r_t\) cerca de 0, el candidato se calcula casi solo con \(x_t\), como si se empezara de nuevo.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal">La actualización mezcla</span><p style="font-size:17px">El nuevo estado es un promedio entre lo viejo y lo nuevo. Con \(z_t=0{,}2\): 80 % de \(h_{t-1}\) y 20 % de \(\tilde h_t\). PyTorch usa la convención inversa (\(z_t\) multiplica a lo viejo); la idea es la misma.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: cuántos parámetros">
+  <div class="hd"><p class="eyebrow">Etapa 3 · Actividad</p><h2>¿Cuántos parámetros tiene cada celda?</h2></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <p class="lead" style="font-size:18px;line-height:1.45">Una capa recurrente con \(n\) neuronas que recibe \(x_t\) de \(d\) valores tiene, por cada <b>bloque</b>, una matriz \(W_x\) (\(n\times d\)), una matriz \(W_h\) (\(n\times n\)) y un sesgo \(w_0\) (\(n\)). La RNN simple tiene 1 bloque, la GRU 3 (\(z\), \(r\), candidato) y la LSTM 4 (\(f\), \(i\), \(o\), candidato).</p>
+        <div class="eq" style="padding:8px 18px"><div class="math" style="font-size:22px">\[ \text{parámetros} = \text{bloques}\times n\,(d+n+1) \]</div></div>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:220px 1fr"><span>\(d\) <small>valores por paso</small></span><input type="number" id="gpD" min="1" max="100" step="1" value="1"></label>
+          <label style="grid-template-columns:220px 1fr"><span>\(n\) <small>neuronas de la capa</small></span><input type="number" id="gpN" min="1" max="256" step="1" value="32"></label>
+        </div>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> deja \(d=1\) (serie univariada) y duplica \(n\): los parámetros crecen casi 4 veces, por el término \(n\times n\) de \(W_h\). Ninguna cuenta depende de \(T\).</p>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:10px 16px">
+          <div class="cap">Parámetros de una capa de cada tipo con los mismos \(d\) y \(n\).</div>
+          <svg class="chart" id="gpSvg" viewBox="0 0 580 260" role="img" aria-label="Parámetros de RNN, GRU y LSTM"></svg>
+        </div>
+        <p class="txt" style="font-size:15px;color:var(--muted)">PyTorch guarda dos vectores de sesgo por bloque, por eso sus conteos salen un poco mayores (\(n\) más por bloque). La idea no cambia: la LSTM cuesta unas 4 veces la RNN simple y la GRU unas 3.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="RNN, LSTM y GRU">
+  <style>.slide[data-title="RNN, LSTM y GRU"] td{padding:8px 18px;font-size:17px}.slide[data-title="RNN, LSTM y GRU"] td:first-child{font-size:19px;width:200px}</style>
+  <div class="hd"><p class="eyebrow">Etapa 3 · Comparación</p><h2>¿Cuál usar?</h2>
+    <p class="lead" style="font-size:20px">Las tres leen la secuencia paso a paso con pesos compartidos; cambian en cómo cuidan la memoria.</p></div>
+  <div class="bd">
+    <table>
+      <thead><tr><th></th><th>RNN simple</th><th>LSTM</th><th>GRU</th></tr></thead>
+      <tbody>
+        <tr><td>Estados</td><td>\(h_t\)</td><td>\(h_t\) y \(c_t\)</td><td>\(h_t\)</td></tr>
+        <tr><td>Compuertas</td><td>Ninguna</td><td>Olvido, entrada, salida</td><td>Actualización, reinicio</td></tr>
+        <tr><td>Parámetros</td><td>1 bloque de pesos</td><td>4 bloques</td><td>3 bloques</td></tr>
+        <tr><td>Memoria</td><td>Corta (unos 10 pasos)</td><td>Mucho más larga</td><td>Mucho más larga</td></tr>
+        <tr><td>Cuándo</td><td>Secuencias cortas o como punto de partida</td><td>Opción por defecto en secuencias largas</td><td>Cuando se quiere algo más liviano y rápido</td></tr>
+      </tbody>
+    </table>
+    <p class="txt" style="font-size:18px;color:var(--muted)">En la práctica se prueban LSTM y GRU y se elige la que dé mejor pérdida de validación. Aun así, les cuesta aprender patrones de cientos de pasos (audio, series muy largas). Para eso existen otras opciones que no se ven en esta unidad, como las convoluciones en una dimensión (un filtro que se desliza sobre el tiempo) o los modelos de <b>atención</b>.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Resumen">
+  <div class="hd"><p class="eyebrow">Resumen</p><h2>Las tres preguntas, respondidas</h2></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>El problema: memoria corta</b><span>Lo que entró hace \(t\) pasos se multiplica por \(w_h\) unas \(t\) veces: se borra (o crece sin control). Al gradiente le pasa lo mismo: se desvanece o explota. El gradient clipping evita que explote, pero no que se desvanezca.</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>LSTM</b><span>Una memoria \(c_t\) que avanza sumando, sin pasar por \(W_h\) ni por tanh, y tres compuertas que deciden qué olvidar, qué escribir y qué mostrar.</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>GRU y comparación</b><span>Una sola memoria y dos compuertas (actualización y reinicio). LSTM, GRU y RNN simple tienen 4, 3 y 1 bloques de pesos; se prueban LSTM y GRU y se elige con la pérdida de validación.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="foot"><span>Deep Learning · Unidad 2 · Redes recurrentes · Parte 2: LSTM y GRU</span><span class="pg" id="pg"></span></div>
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="ui">
+  <button id="bPrev" type="button" aria-label="Diapositiva anterior">←</button>
+  <button id="bNext" type="button" aria-label="Diapositiva siguiente">→</button>
+  <button id="bFs" type="button" aria-label="Pantalla completa (F)">Pantalla</button>
+  <button id="bTheme" type="button" aria-label="Cambiar tema (T)">Tema</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var AMB = "var(--amber)", IND = "var(--indigo)", TEA = "var(--teal)", COR = "var(--coral)", MUT = "var(--axis)";
+  var defs = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.style.position = "absolute";
+  defs.innerHTML = ["Amb:var(--amber)", "Mut:var(--axis)", "Tea:var(--teal)", "Ind:var(--indigo)", "Cor:var(--coral)"].map(function (d) {
+    var p = d.split(":");
+    return '<defs><marker id="rk' + p[0] + '" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" style="fill:' + p[1] + '"/></marker></defs>';
+  }).join("");
+  document.body.appendChild(defs);
+  function rect(x, y, w, h, fill, stroke, sw, rx, op) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (rx === undefined ? 8 : rx) + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + (op !== undefined ? ';opacity:' + op : '') + '"/>';
+  }
+  function text(x, y, t, cls, anchor, fill, size, weight) {
+    return '<text x="' + x + '" y="' + y + '" class="' + (cls || "lb") + '" text-anchor="' + (anchor || "middle") + '" style="' + (fill ? 'fill:' + fill + ';' : '') + (size ? 'font-size:' + size + 'px;' : '') + (weight ? 'font-weight:' + weight + ';' : '') + '">' + t + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, mk, w, dash, op) {
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + (op !== undefined ? ';opacity:' + op : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function path(d, color, mk, w, dash) {
+    return '<path d="' + d + '" style="fill:none;stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function circ(x, y, r, fill, stroke, sw) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + '"/>';
+  }
+  function sub(base, s) { return base + '<tspan dy="5" style="font-size:.72em">' + s + '</tspan>'; }
+  function fmt(v, d) { return v.toFixed(d === undefined ? 2 : d).replace(".", ","); }
+
+  /* cadena desenrollada genérica: n celdas */
+  function chain(n, x0, y, dx, opt) {
+    var s = "", k, cw = opt.cw || 70, ch = opt.ch || 50;
+    for (k = 0; k < n; k++) {
+      var x = x0 + k * dx, on = opt.on ? opt.on(k) : false;
+      if (k > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 3);
+      s += rect(x, y, cw, ch, on ? "var(--amber-soft)" : "var(--paper-2)", on ? AMB : "var(--axis)", on ? 3 : 1.5, 10);
+      s += text(x + cw / 2, y + ch / 2 + 6, opt.label ? opt.label(k) : "celda", "lb", "middle", null, 16, 600);
+      if (opt.inp) { var a = opt.inp(k); s += line(x + cw / 2, y + ch + 40, x + cw / 2, y + ch + 3, a ? IND : MUT, a ? "Ind" : "Mut", 2.5, a ? null : "5 5", a ? 1 : .5); if (a) s += text(x + cw / 2, y + ch + 62, a, "lb", "middle", IND, 17, 600); }
+      if (opt.out) { var b = opt.out(k); s += line(x + cw / 2, y - 3, x + cw / 2, y - 40, b ? TEA : MUT, b ? "Tea" : "Mut", 2.5, b ? null : "5 5", b ? 1 : .5); if (b) s += text(x + cw / 2, y - 50, b, "lb", "middle", TEA, 17, 600); }
+    }
+    return s;
+  }
+
+  /* ---------- portada ---------- */
+  (function () {
+    var s = chain(5, 120, 220, 110, { cw: 74, ch: 56, label: function (k) { return "h" + (k + 1); },
+      inp: function (k) { return "x" + (k + 1); }, out: function (k) { return k === 4 ? "ŷ" : ""; }, on: function (k) { return k === 2; } });
+    $("rnCover").innerHTML = s;
+  })();
+
+  /* ---------- serie de tiempo (como en el libro: dos ondas más ruido, semilla fija) ---------- */
+  var SER = (function () {
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var a = [], n = 120, k;
+    for (k = 0; k < n; k++) { var u = k / n; a.push(0.5 * Math.sin((u - 0.3) * 2 * Math.PI * 4.2) + 0.2 * Math.sin((u - 0.1) * 2 * Math.PI * 11.5) + 0.1 * (rnd() - 0.5)); }
+    return a;
+  })();
+
+  /* ---------- actividad: un paso de la LSTM ---------- */
+  (function () {
+    var P = [[0.8, 0.5, 1, 0, 1], [0, 0.9, 1, 1, 1], [0.8, 0.5, 0, 0, 1], [0.8, -0.6, 0, 1, 1], [0.8, 0.5, 1, 0, 0]];
+    var ids = ["lgC", "lgN", "lgF", "lgI", "lgO"];
+    function v(id, lo, hi) { var a = parseFloat($(id).value); if (isNaN(a)) a = 0; return Math.max(lo, Math.min(hi, a)); }
+    function load() { var p = P[+$("lgPre").value]; ids.forEach(function (id, k) { $(id).value = p[k]; }); draw(); }
+    function draw() {
+      var c0 = v("lgC", -1, 1), cn = v("lgN", -1, 1), f = v("lgF", 0, 1), i = v("lgI", 0, 1), o = v("lgO", 0, 1);
+      var c = f * c0 + i * cn, h = o * Math.tanh(c);
+      var rows = [[sub("c", "t−1"), "memoria anterior", c0, MUT], ["f·" + sub("c", "t−1"), "lo que se conserva", f * c0, COR], ["i·c̃", "lo que se escribe", i * cn, IND], [sub("c", "t"), "memoria nueva", c, TEA], [sub("h", "t"), "salida", h, AMB]];
+      var s = "", mid = 360, sc = 150, y0 = 18, dy = 46;
+      s += line(mid, 8, mid, 240, "var(--axis)", null, 1.5);
+      rows.forEach(function (r, k) {
+        var y = y0 + k * dy, w = Math.max(-1.6, Math.min(1.6, r[2])) * sc;
+        s += text(16, y + 20, r[0], "lb", "start", null, 18, 700);
+        s += text(16, y + 37, r[1], "tk", "start", null, 13);
+        s += rect(w >= 0 ? mid : mid + w, y + 6, Math.abs(w), 26, r[3], r[3], 1, 5, .8);
+        s += text(w >= 0 ? mid + w + 8 : mid + w - 8, y + 25, fmt(r[2]), "lb", w >= 0 ? "start" : "end", null, 15, 600);
+      });
+      $("lgSvg").innerHTML = s;
+      var t;
+      if (f > 0.7 && i < 0.3) t = ["Guardar", "La memoria pasa casi intacta y no se escribe nada: así una LSTM recuerda un dato durante muchos pasos."];
+      else if (f < 0.3 && i > 0.7) t = ["Reemplazar", "Se borra lo anterior y se escribe lo nuevo: la memoria cambia por completo."];
+      else if (f < 0.3 && i < 0.3) t = ["Olvidar", "Compuertas de olvido y de entrada cerradas: la memoria queda en cero."];
+      else if (f > 0.7 && i > 0.7) t = ["Acumular", "Se conserva lo anterior y se suma lo nuevo: la memoria acumula información."];
+      else t = ["Mezcla", "Las compuertas están a medio abrir: se conserva una parte y se escribe otra."];
+      if (o < 0.3) t[1] += " Con la compuerta de salida cerrada, la salida h es casi 0 aunque la memoria tenga información: se guarda sin mostrarla.";
+      $("lgTag").textContent = t[0]; $("lgTxt").textContent = t[1];
+    }
+    $("lgPre").addEventListener("change", load);
+    ids.forEach(function (id) { $(id).addEventListener("input", draw); });
+    load();
+  })();
+
+  /* ---------- actividad: parámetros ---------- */
+  (function () {
+    function draw() {
+      var d = Math.max(1, Math.round(parseFloat($("gpD").value) || 1)), n = Math.max(1, Math.round(parseFloat($("gpN").value) || 1));
+      var base = n * (d + n + 1), R = [["RNN simple", 1, COR], ["GRU", 3, IND], ["LSTM", 4, TEA]], s = "", mx = 4 * base;
+      R.forEach(function (r, k) {
+        var y = 30 + k * 72, w = r[1] * base / mx * 250;
+        s += text(10, y + 30, r[0], "lb", "start", null, 18, 700);
+        s += rect(130, y + 8, w, 36, r[2], r[2], 1, 6, .85);
+        s += text(130 + w + 10, y + 32, (r[1] * base).toLocaleString("es-CO") + " (" + r[1] + " bloque" + (r[1] > 1 ? "s" : "") + ")", "lb", "start", null, 16, 600);
+      });
+      s += text(10, 250, "Un bloque: n·(d + n + 1) = " + n + "·(" + d + " + " + n + " + 1) = " + base.toLocaleString("es-CO"), "tk", "start", null, 15);
+      $("gpSvg").innerHTML = s;
+    }
+    ["gpD", "gpN"].forEach(function (id) { $(id).addEventListener("input", draw); });
+    draw();
+  })();
+
+  /* ---------- memoria corta ---------- */
+  (function () {
+    function draw() {
+      var w = parseFloat($("gvW").value); if (isNaN(w)) w = 0.8; w = Math.max(0, Math.min(1.5, w));
+      var T = +$("gvT").value, W = 560, H = 300, ml = 52, mr = 14, mt = 14, mb = 40, ymax = 2.2, s = "", k;
+      function sx(t) { return ml + (t - 0.5) / T * (W - ml - mr); }
+      function sy(v) { return H - mb - Math.min(v, ymax) / ymax * (H - mt - mb); }
+      [0, 0.5, 1, 1.5, 2].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
+      s += line(ml, sy(0), W - mr, sy(0), "var(--axis)", null, 1.6);
+      var bw = Math.max(3, (W - ml - mr) / T * 0.7);
+      for (k = 1; k <= T; k++) {
+        var v = Math.pow(w, k - 1), bad = v < 0.05 || v > 2;
+        s += '<rect x="' + (sx(k) - bw / 2) + '" y="' + sy(v) + '" width="' + bw + '" height="' + Math.max(1, sy(0) - sy(v)) + '" rx="2" style="fill:' + (bad ? COR : TEA) + '"/>';
+        if (T <= 20 || k % 5 === 0 || k === 1) s += text(sx(k), H - mb + 20, k, "tk", "middle", null, 13);
+      }
+      s += text((W + ml) / 2, H - 4, "paso t", "tk");
+      s += text(ml + 6, mt + 12, "lo que queda del primer elemento", "tk", "start", null, 14);
+      $("gvSvg").innerHTML = s;
+      var last = Math.pow(w, T - 1);
+      $("gvK").textContent = last > 1000 ? "> 1000" : (last < 0.001 ? "< 0,001" : fmt(last, 3));
+      $("gvD").textContent = last < 0.05 ? "Se desvanece" : (last > 2 ? "Explota" : "Se conserva");
+      $("gvD").style.color = (last < 0.05 || last > 2) ? "var(--coral)" : "var(--teal)";
+    }
+    ["input", "change"].forEach(function (ev) { $("gvW").addEventListener(ev, draw); $("gvT").addEventListener(ev, draw); });
+    draw();
+  })();
+
+  /* ---------- esquema LSTM ---------- */
+  (function () {
+    var s = "";
+    s += rect(110, 60, 380, 220, "var(--paper-2)", "var(--axis)", 1.5, 16);
+    s += line(20, 90, 578, 90, TEA, "Tea", 4);
+    s += text(30, 78, sub("c", "t−1"), "lb", "start", TEA, 18, 600);
+    s += text(575, 78, sub("c", "t"), "lb", "end", TEA, 18, 600);
+    s += line(20, 250, 578, 250, AMB, "Amb", 3);
+    s += text(30, 272, sub("h", "t−1"), "lb", "start", AMB, 18, 600);
+    s += text(575, 272, sub("h", "t"), "lb", "end", AMB, 18, 600);
+    s += line(300, 325, 300, 254, IND, "Ind", 2.5);
+    s += text(318, 318, sub("x", "t"), "lb", "start", IND, 18, 600);
+    function gate(x, lab, col, mk) {
+      var g = line(x, 246, x, 112, col, mk, 2.5, "5 4") + circ(x, 90, 18, "var(--paper)", col, 3) + text(x, 97, "×", "lb", "middle", col, 22, 700);
+      return g + rect(x - 34, 160, 68, 34, "var(--paper)", col, 2, 8) + text(x, 183, lab, "lb", "middle", col, 15, 700);
+    }
+    s += gate(170, "olvido", COR, "Cor");
+    s += line(300, 246, 300, 198, IND, "Ind", 2.5, "5 4") + rect(266, 160, 68, 34, "var(--paper)", IND, 2, 8) + text(300, 183, "entrada", "lb", "middle", IND, 15, 700);
+    s += line(300, 158, 300, 134, IND, "Ind", 2.5, "5 4");
+    s += circ(300, 116, 16, "var(--paper)", IND, 3) + text(300, 123, "×", "lb", "middle", IND, 20, 700);
+    s += circ(370, 90, 18, "var(--paper)", TEA, 3) + text(370, 97, "+", "lb", "middle", TEA, 22, 700);
+    s += line(314, 108, 354, 98, TEA, "Tea", 2.5);
+    s += rect(400, 160, 68, 34, "var(--paper)", AMB, 2, 8) + text(434, 183, "salida", "lb", "middle", AMB, 15, 700);
+    s += line(434, 246, 434, 198, AMB, "Amb", 2.5, "5 4");
+    s += path("M 450 92 L 450 140 L 450 156", TEA, "Tea", 2.5, "5 4");
+    s += line(434, 194, 520, 246, AMB, "Amb", 2.5);
+    s += text(300, 40, "memoria de largo plazo", "tk", "middle", TEA, 15);
+    $("lsSvg").innerHTML = s;
+  })();
+
+  /* ---------- actividad LSTM ---------- */
+  (function () {
+    var T = 20, pos = T, timer = null, k;
+    var sw = $("lmW"), sf = $("lmF");
+    for (k = 1; k <= 10; k++) sw.innerHTML += '<option value="' + k + '"' + (k === 2 ? " selected" : "") + '>Paso ' + k + '</option>';
+    sf.innerHTML = '<option value="0" selected>Nunca</option>';
+    for (k = 3; k <= T; k++) sf.innerHTML += '<option value="' + k + '">Paso ' + k + '</option>';
+    function series() {
+      var wr = +sw.value, fo = +sf.value, fv = parseFloat($("lmFv").value); if (isNaN(fv)) fv = 0.98; fv = Math.max(0, Math.min(1, fv));
+      var c = 0, h = 0, C = [], R = [];
+      for (var t = 1; t <= T; t++) {
+        var f = (fo && t === fo) ? 0 : fv, i = t === wr ? 1 : 0;
+        c = f * c + i * 1; C.push(c);
+        h = t === wr ? 1 : 0.8 * h; R.push(h);
+      }
+      return { C: C, R: R, wr: wr, fo: fo };
+    }
+    function draw() {
+      var d = series(), W = 560, H = 300, ml = 52, mr = 14, mt = 16, mb = 40, s = "";
+      function sx(t) { return ml + (t - 1) / (T - 1) * (W - ml - mr); }
+      function sy(v) { return H - mb - v / 1.15 * (H - mt - mb); }
+      [0, 0.5, 1].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
+      s += line(ml, sy(0), W - mr, sy(0), "var(--axis)", null, 1.6);
+      for (var t = 1; t <= T; t += (t < 5 ? 1 : 5) - (t === 1 ? 0 : 0)) s += text(sx(t), H - mb + 20, t, "tk", "middle", null, 13);
+      s += text((W + ml) / 2, H - 4, "paso t", "tk");
+      s += line(sx(d.wr), mt, sx(d.wr), sy(0), IND, null, 2, "5 4") + text(sx(d.wr) + 6, mt + 14, "escribir", "tk", "start", IND, 14);
+      if (d.fo) s += line(sx(d.fo), mt, sx(d.fo), sy(0), COR, null, 2, "5 4") + text(sx(d.fo) - 6, mt + 14, "olvidar", "tk", "end", COR, 14);
+      var upto = Math.floor(pos), a = "", b = "";
+      for (t = 1; t <= Math.min(upto, T); t++) { a += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.C[t - 1]) + " "; b += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.R[t - 1]) + " "; }
+      if (b) s += path(b, COR, null, 2.5, "7 5");
+      if (a) s += path(a, TEA, null, 3.5);
+      if (upto >= 1) { s += circ(sx(Math.min(upto, T)), sy(d.C[Math.min(upto, T) - 1]), 6, TEA, "var(--paper)", 2); }
+      $("lmSvg").innerHTML = s;
+    }
+    function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("lmPlay").textContent = "▶ Recorrer"; }
+    $("lmReset").addEventListener("click", function () { stop(); pos = 0; draw(); });
+    $("lmPlay").addEventListener("click", function () {
+      if (timer) { stop(); return; }
+      if (pos >= T) pos = 0;
+      $("lmPlay").textContent = "❚❚ Pausa";
+      var last = null;
+      function frame(now) {
+        if (last === null) last = now;
+        var dt = Math.min((now - last) / 1000, 0.05); last = now;
+        pos += dt * 2.5;
+        if (pos >= T) { pos = T; draw(); stop(); return; }
+        draw(); timer = requestAnimationFrame(frame);
+      }
+      timer = requestAnimationFrame(frame);
+    });
+    ["lmW", "lmF", "lmFv"].forEach(function (id) { ["input", "change"].forEach(function (ev) { $(id).addEventListener(ev, function () { stop(); pos = T; draw(); }); }); });
+    draw();
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  var stage = document.getElementById("stage"), slides = [].slice.call(document.querySelectorAll(".slide"));
+  var pg = document.getElementById("pg"), bar = document.getElementById("bar"), cur = 0;
+  var root = document.documentElement;
+
+  try { var t = localStorage.getItem("deck-theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(i, noHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); });
+    pg.textContent = (cur + 1) + " / " + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    document.querySelector(".foot").style.display = cur === 0 ? "none" : "flex";
+    if (!noHash) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function go(d) { show(cur + d); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (e.target && e.target.tagName === "INPUT" && k.indexOf("Arrow") === 0) return;
+    if (e.target && e.target.tagName === "BUTTON" && (k === " " || k === "Enter")) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].indexOf(k) > -1) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].indexOf(k) > -1) { e.preventDefault(); go(-1); }
+    else if (k === "Home") show(0); else if (k === "End") show(slides.length - 1);
+    else if (k === "f" || k === "F") toggleFs(); else if (k === "t" || k === "T") toggleTheme();
+  });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a,button,input,summary,.noclick")) return;
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left) / r.width < 0.25 ? go(-1) : go(1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen && root.requestFullscreen(); }
+  function toggleTheme() {
+    var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", n); try { localStorage.setItem("deck-theme", n); } catch (e) {}
+  }
+  document.getElementById("bPrev").onclick = function (e) { e.stopPropagation(); go(-1); };
+  document.getElementById("bNext").onclick = function (e) { e.stopPropagation(); go(1); };
+  document.getElementById("bFs").onclick = toggleFs;
+  document.getElementById("bTheme").onclick = toggleTheme;
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) show(n - 1, true); });
+
+  function typeset() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, { delimiters: [
+        { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }
+      ], throwOnError: false });
+    }
+  }
+
+
+
+
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, true);
+  window.addEventListener("load", typeset);
+  if (document.readyState === "complete") typeset();
+})();
+</script>
+</body>
+</html>
+

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiencia · M2 U2</title>
+<script src="https://kit.fontawesome.com/43bc24b73f.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../../../../archivos_web/css/estilos_contenidos_local_m2.css">
+</head><body style="font-family: verdana, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px;">
+<p class="titulo_contenido">Experiencia<span class="icono_momento" id="experiencia"></span></p>
+<div class="separa_titulo"></div>
+
+<!-- Recurso 1 -->
+<p class="btn_recurso"><span class="num_recurso"><i class="fa-regular fa-circle-play"></i></span>Redes neuronales recurrentes (RNN) y sus principales variaciones</p>
+<div id="recurso_1" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Luego de tener este primer acercamiento al tema principal de la presente unidad vamos a estudiar el funcionamiento de las redes neuronales recurrentes (RNN) y sus principales variaciones dependiendo de la aplicación. Además, analizaremos las problemáticas de las RNN y cómo pueden ser solucionadas a partir de las redes neuronales con compuertas (GRU) y las redes con memoria prolongada de corto plazo (LSTM). Finalmente, estudiaremos la forma de construir redes más elaboradas a partir de los conceptos de RNNs bidireccionales y profundas. [Presentación de Genially]"><span class="subtitulo_conte"></span>Luego de tener este primer acercamiento al tema principal de la presente unidad, vamos a estudiar cómo funcionan las redes neuronales recurrentes <strong>(RNN)</strong> con series de tiempo, datos que llegan en orden. Lo haremos en tres presentaciones interactivas: en la primera, por qué una red densa se queda corta con este tipo de datos y cómo una red recurrente lee una secuencia paso a paso y recuerda lo que ya leyó; en la segunda, por qué la red recurrente simple olvida rápido y cómo lo resuelven las redes con compuertas, <strong>LSTM</strong> y <strong>GRU</strong>; y en la tercera, las arquitecturas según el problema, las redes profundas y bidireccionales, y cómo armar una red recurrente paso a paso. Después de cada una de las dos primeras hay un notebook para llevarla a código.</p>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>Parte 1 · La red recurrente.</strong></p>
+<div class="container" style="max-width:960px" data-cambio="modificado" data-antes="Presentación de Genially sobre las RNN y sus principales variaciones (560×315)."><iframe width="800" height="450" src="redes_recurrentes.html" frameborder="0" class="video" allowfullscreen="allowfullscreen"></iframe></div>
+<br>
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Una vez hemos definido los principales conceptos de las redes recurrentes, es hora de que entendamos cómo podemos definir y entrenar nuestra primera red recurrente. Los invito a que revisemos y ejecutemos el siguiente código.">Una vez hemos definido los principales conceptos de las redes recurrentes, es hora de que definamos y entrenemos nuestra primera red recurrente. Con los pasajeros diarios del metro de Chicago (el ejemplo del libro guía), convertimos la serie en ejemplos de entrenamiento con <strong>ventanas deslizantes</strong>, comprobamos a mano que <code>nn.RNN</code> calcula la ecuación de la neurona recurrente, vemos qué entrega una capa con muchas neuronas y cuántos parámetros tiene, y entrenamos la red para pronosticar el día siguiente. Los invito a que revisemos y ejecutemos el siguiente código.</p>
+<a href="https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_2/3_experiencia/nueva/3_Script1a_M2_U2_rnn_pytorch.ipynb" target="_blank" class="btn_03" rel="noopener" data-cambio="modificado" data-antes="El botón decía &quot;Redes Neuronales Recurrentes&quot; y abría el notebook Red_Recurrente_Basica.ipynb (Keras), que clasificaba mensajes de texto como spam.">Red recurrente simple</a>
+<br><br>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>Parte 2 · Memoria de largo plazo: LSTM y GRU.</strong> La red recurrente simple tiene una falla: olvida rápido lo que pasó hace muchos pasos. Esta presentación muestra por qué ocurre y cómo la resuelven dos neuronas recurrentes con compuertas.</p>
+<div class="container" style="max-width:960px" data-cambio="nuevo"><iframe width="800" height="450" src="redes_recurrentes_lstm_gru.html" frameborder="0" class="video" allowfullscreen="allowfullscreen"></iframe></div>
+<br>
+<p class="cuerpo_txt" data-cambio="nuevo">En el siguiente código tomamos el mismo problema y cambiamos solo la celda: <strong>RNN</strong>, <strong>LSTM</strong> y <strong>GRU</strong>, con los mismos datos y la misma forma de entrenar. Veremos qué cambia al programar cada una, cuántos parámetros tiene y cómo se comparan sus errores frente a un pronóstico ingenuo.</p>
+<a href="https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_2/3_experiencia/nueva/3_Script1b_M2_U2_lstm_gru_pytorch.ipynb" target="_blank" class="btn_03" rel="noopener" data-cambio="nuevo">LSTM y GRU</a>
+<br><br>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>Parte 3 · Arquitecturas y práctica.</strong> Con la red recurrente y sus celdas ya claras, esta presentación muestra cómo se conectan sus entradas y salidas según el problema, dónde se usan estas redes y cómo armar una paso a paso.</p>
+<div class="container" style="max-width:960px" data-cambio="nuevo"><iframe width="800" height="450" src="redes_recurrentes_arquitecturas.html" frameborder="0" class="video" allowfullscreen="allowfullscreen"></iframe></div>
+<br><br></div>
+
+<!-- Recurso 2 -->
+<p class="btn_recurso" data-cambio="nuevo"><span class="num_recurso"><i class="fa-solid fa-code"></i></span>Pronóstico de varios pasos</p>
+<div id="recurso_2" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="nuevo">Casi nunca basta con pronosticar un solo paso: para programar trenes y turnos, la empresa de transporte necesita saber qué pasará en las <strong>próximas dos semanas</strong>. En el siguiente código pronosticamos 14 días con las dos estrategias vistas en la tercera presentación: <strong>uno a uno</strong> (la red usa sus propios pronósticos como entrada) y <strong>todos a la vez</strong> (la red entrega los 14 días en una sola salida), y vemos cómo crece el error a medida que miramos más lejos.</p>
+<a href="https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_2/3_experiencia/nueva/4_Script2_M2_U2_varios_pasos_pytorch.ipynb" target="_blank" class="btn_03" rel="noopener" data-cambio="nuevo">Pronóstico de varios pasos</a></div>
+
+<style>
+body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
+body.rev [data-cambio=nuevo]{--c:#1a9b6b} body.rev [data-cambio=modificado]{--c:#d98a00}
+body.rev .rev-b{position:absolute;top:-13px;right:-6px;z-index:5;font:700 11px/1 verdana,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--c);border:0;border-radius:10px;padding:5px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+body.rev .rev-b::after{content:" ▾"}
+body.rev .rev-p{display:none;position:absolute;top:10px;right:-6px;z-index:6;width:min(420px,90vw);max-height:260px;overflow:auto;background:#fffdf5;color:#222;border:2px solid var(--c);border-radius:8px;padding:10px 12px;font:13px/1.45 verdana,sans-serif;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.rev .rev-p b{display:block;margin-bottom:4px;color:var(--c)} body.rev .rev-p.on{display:block}
+#rev-t{display:none}
+body.rev-ok #rev-t{display:block;position:fixed;top:10px;left:10px;z-index:9;font:700 12px verdana,sans-serif;background:#2f2f2f;color:#fff;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
+body:not(.rev) .rev-b,body:not(.rev) .rev-p{display:none!important}
+</style>
+<button id="rev-t" type="button">Ocultar marcas de cambios</button>
+<script>
+(function(){
+  if(!/[?&]revision=1/.test(location.search))return;
+  var b=document.body; b.classList.add("rev","rev-ok");
+  document.querySelectorAll("[data-cambio]").forEach(function(el){
+    var nuevo=el.getAttribute("data-cambio")==="nuevo", antes=el.getAttribute("data-antes");
+    var bt=document.createElement("button"); bt.type="button"; bt.className="rev-b";
+    bt.textContent=nuevo?"Nuevo":"Modificado";
+    var p=document.createElement("div"); p.className="rev-p";
+    p.innerHTML=nuevo?"<b>Nuevo</b>Este texto no estaba en la versión anterior."
+                     :"<b>Modificado. Antes decía:</b>"+(antes||"");
+    bt.onclick=function(e){e.preventDefault();e.stopPropagation();p.classList.toggle("on");};
+    el.appendChild(bt); el.appendChild(p);
+  });
+  var t=document.getElementById("rev-t");
+  t.onclick=function(){var on=b.classList.toggle("rev");t.textContent=on?"Ocultar marcas de cambios":"Mostrar marcas de cambios";};
+})();
+</script>
+</body></html>

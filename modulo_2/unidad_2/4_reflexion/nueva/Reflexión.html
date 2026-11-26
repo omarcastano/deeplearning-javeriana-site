@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflexión · M2 U2</title>
+<script src="https://kit.fontawesome.com/43bc24b73f.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../../../../archivos_web/css/estilos_contenidos_local_m2.css">
+</head><body style="font-family: verdana, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px;">
+<p class="titulo_contenido">Reflexión<span class="icono_momento" id="reflexion"></span></p>
+<div class="separa_titulo"></div>
+<p class="btn_recurso" data-cambio="modificado" data-antes="Análisis de sentimientos"><span class="num_recurso"><i class="fa-regular fa-comment-dots"></i></span>Pronóstico de la temperatura</p>
+<div id="recurso_1" class="contenedor_recurso">
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="Hasta este punto hemos analizado los conceptos principales de las redes recurrentes y sus principales variaciones. Ahora, se nos pide plantear una solución, usando modelos secuenciales, para resolver un problema de análisis de sentimientos en comentarios hechos a películas."><span class="subtitulo_conte"></span>Hasta este punto hemos analizado los conceptos principales de las redes recurrentes y sus variantes, y las usamos para pronosticar una serie con <strong>una sola variable</strong> (los pasajeros del metro). Ahora se nos pide plantear una solución para un problema más rico: <strong>pronosticar la temperatura que hará dentro de 24 horas</strong> a partir de las mediciones de una estación meteorológica.</p>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>El problema en concreto.</strong> Trabajaremos con los datos de clima de la ciudad de Jena (Alemania), registrados entre 2009 y 2016:</p>
+<ul class="items_curso" data-cambio="nuevo">
+<li><strong>Datos:</strong> una medición por hora de <strong>14 variables</strong>: temperatura, presión, humedad, punto de rocío, velocidad y dirección del viento, entre otras.</li>
+<li><strong>Entrada:</strong> las mediciones de las últimas <strong>72 horas</strong> (3 días), con las 14 variables en cada hora.</li>
+<li><strong>Salida esperada:</strong> un solo número: la temperatura, en grados Celsius, <strong>24 horas después</strong> de la última medición.</li>
+<li><strong>Punto de comparación:</strong> el pronóstico ingenuo “mañana a esta hora hará la misma temperatura que ahora”. Una buena red debe equivocarse menos que él.</li>
+</ul>
+<p class="cuerpo_txt" data-cambio="nuevo">Fíjense en la diferencia con el ejemplo del metro: allí cada paso de tiempo traía <em>un</em> número; aquí cada hora trae <strong>14</strong>. Además, la temperatura tiene dos ciclos: uno diario (día y noche) y uno anual (verano e invierno).</p>
+<p class="cuerpo_txt" data-cambio="modificado" data-antes="En los grupos de trabajo crearán un documento en el cual describan, de forma detallada, la hipótesis planteada para dar solución a la problemática. Se debe tener en cuenta los siguientes aspectos al momento de definir una solución:"><strong>Su tarea.</strong> En los grupos de trabajo, redacten un documento con una <strong>hipótesis</strong>: una propuesta, explicada paso a paso, de cómo resolverían este problema. Todavía no se trata de programar, sino de decidir y justificar. Para ello, respondan estas tres preguntas:</p>
+<ol class="items_curso" data-cambio="modificado" data-antes="Usar exclusivamente la información suministrada durante el curso (no se aceptan otras arquitecturas o técnicas). | Definir qué tipo de información deben contener las bases de datos usadas para este tipo de aplicaciones. | Definir el tipo de red que usarán (recuerden, únicamente las vistas en el curso) y como la configurarán para resolver el problema planteado.">
+<li><strong>¿Con qué datos entrenamos?</strong> ¿Cómo convierten la serie en ejemplos (entrada y etiqueta)? ¿Cómo dividen los datos en entrenamiento, validación y prueba, y por qué no se pueden mezclar al azar? ¿Qué preparación necesitan las 14 variables antes de entrar a la red?</li>
+<li><strong>¿Qué red usamos?</strong> Elijan entre RNN simple, LSTM y GRU, y justifiquen la elección pensando en la longitud de la ventana (72 pasos) y en el número de parámetros.</li>
+<li><strong>¿Cómo la configuramos para este problema?</strong> ¿Cuántas capas recurrentes y cuántas neuronas tendría? ¿Qué parte de la salida de la capa recurrente usan, y cómo la convierten en un solo número? ¿Qué función de pérdida y qué métrica usarían?</li>
+</ol>
+<p class="cuerpo_txt" data-cambio="nuevo"><strong>Condición:</strong> usen únicamente lo que hemos visto en el curso (no se aceptan otras arquitecturas ni técnicas). La hipótesis que planteen aquí es la que implementarán en la Acción.</p>
+<p class="cuerpo_txt">El documento que contiene la propuesta debe ser entregado a través de la actividad "<strong> Hipótesis </strong>”.<br><br>Para acceder a la actividad, haz clic <a href="/d2l/common/dialogs/quickLink/quickLink.d2l?ou=334242&amp;type=dropbox&amp;rcode=3DD214ED-5CEF-4D53-8AAA-879627930DB4-1007119" target="_blank" rel="noopener">aquí.</a><sup style="color:#c00;font-weight:bold" title="Este enlace solo funciona dentro del LMS">&nbsp;[⚠ solo LMS]</sup></p>
+</div>
+
+<style>
+body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
+body.rev [data-cambio=nuevo]{--c:#1a9b6b} body.rev [data-cambio=modificado]{--c:#d98a00}
+body.rev .rev-b{position:absolute;top:-13px;right:-6px;z-index:5;font:700 11px/1 verdana,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--c);border:0;border-radius:10px;padding:5px 9px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+body.rev .rev-b::after{content:" ▾"}
+body.rev .rev-p{display:none;position:absolute;top:10px;right:-6px;z-index:6;width:min(420px,90vw);max-height:260px;overflow:auto;background:#fffdf5;color:#222;border:2px solid var(--c);border-radius:8px;padding:10px 12px;font:13px/1.45 verdana,sans-serif;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.rev .rev-p b{display:block;margin-bottom:4px;color:var(--c)} body.rev .rev-p.on{display:block}
+#rev-t{display:none}
+body.rev-ok #rev-t{display:block;position:fixed;top:10px;left:10px;z-index:9;font:700 12px verdana,sans-serif;background:#2f2f2f;color:#fff;border:0;border-radius:6px;padding:7px 11px;cursor:pointer}
+body:not(.rev) .rev-b,body:not(.rev) .rev-p{display:none!important}
+</style>
+<button id="rev-t" type="button">Ocultar marcas de cambios</button>
+<script>
+(function(){
+  if(!/[?&]revision=1/.test(location.search))return;
+  var b=document.body; b.classList.add("rev","rev-ok");
+  document.querySelectorAll("[data-cambio]").forEach(function(el){
+    var nuevo=el.getAttribute("data-cambio")==="nuevo", antes=el.getAttribute("data-antes");
+    var bt=document.createElement("button"); bt.type="button"; bt.className="rev-b";
+    bt.textContent=nuevo?"Nuevo":"Modificado";
+    var p=document.createElement("div"); p.className="rev-p";
+    p.innerHTML=nuevo?"<b>Nuevo</b>Este texto no estaba en la versión anterior."
+                     :"<b>Modificado. Antes decía:</b>"+(antes||"");
+    bt.onclick=function(e){e.preventDefault();e.stopPropagation();p.classList.toggle("on");};
+    el.appendChild(bt); el.appendChild(p);
+  });
+  var t=document.getElementById("rev-t");
+  t.onclick=function(){var on=b.classList.toggle("rev");t.textContent=on?"Ocultar marcas de cambios":"Mostrar marcas de cambios";};
+})();
+</script>
+</body></html>

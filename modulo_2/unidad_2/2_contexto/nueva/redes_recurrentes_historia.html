@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes recurrentes · Introducción: historia y aplicaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  .ctl select,.ctl input[type=number]{font:600 16px var(--text);padding:5px 8px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg);width:100%}
+  :root {
+    --bg: #EFEADF;
+    --paper: #FFFDF8;
+    --paper-2: #F3EEE2;
+    --fg: #1A1D3B;
+    --muted: #4F5380;
+    --line: rgba(26, 29, 59, .13);
+    --grid: rgba(26, 29, 59, .09);
+    --axis: #7A7EA6;
+    --indigo: #3A47B5;
+    --teal: #0B8570;
+    --amber: #B86A00;
+    --coral: #C03F32;
+    --teal-soft: #D3F0E8;
+    --amber-soft: #F8E5C2;
+    --coral-soft: #F8D9D4;
+    --indigo-soft: #DDE0F7;
+    --shadow: 0 1px 2px rgba(26,29,59,.06), 0 8px 24px rgba(26,29,59,.07);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090B1C;
+    --paper: #151834;
+    --paper-2: #1C2043;
+    --fg: #F3EFE6;
+    --muted: #AEB4E2;
+    --line: rgba(243, 239, 230, .14);
+    --grid: rgba(243, 239, 230, .09);
+    --axis: #8B91C4;
+    --indigo: #8E9BFF;
+    --teal: #4FE3C8;
+    --amber: #FFB547;
+    --coral: #FF7F70;
+    --teal-soft: #103A36;
+    --amber-soft: #3A2B12;
+    --coral-soft: #3F1F23;
+    --indigo-soft: #22275A;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--text); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* escenario 16:9 escalado a la ventana */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: 0 0; background: var(--bg); overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; padding: 50px 80px 70px; display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  .slide.active { display: flex; }
+  .slide::before {            /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
+    background: linear-gradient(180deg, var(--teal), var(--indigo) 55%, var(--amber));
+  }
+
+  h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 600; color: var(--fg); }
+  p { margin: 0; }
+  .eyebrow {
+    font: 700 15px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 30px; height: 3px; border-radius: 2px; background: currentColor; }
+  h2 { font-size: 40px; line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 900px; }
+  .lead b, .txt b { color: var(--fg); font-weight: 600; }
+  .txt { font-size: 21px; line-height: 1.55; color: var(--fg); }
+  .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+  .row2.wide-l { grid-template-columns: 1.05fr 1fr; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .grow { flex: 1; min-height: 0; }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px;
+    box-shadow: var(--shadow); min-width: 0;
+  }
+  .card h3 { font-size: 26px; margin-bottom: 8px; }
+  .card p { font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .chartbox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 14px 14px 8px; box-shadow: var(--shadow); }
+  .chartbox .cap { font-size: 16px; color: var(--muted); padding: 4px 10px 8px; line-height: 1.4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart .gr { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--axis); stroke-width: 1.6; }
+  .chart text { font-family: var(--text); }
+  .chart .tk { fill: var(--muted); font-size: 16px; font-weight: 500; }
+  .chart .lb { fill: var(--fg); font-size: 18px; font-weight: 500; }
+  .chart .lg { fill: var(--fg); font-size: 17px; font-weight: 500; }
+  .chart .an { fill: var(--fg); font-size: 18px; font-weight: 600; }
+  .chart .an-teal { fill: var(--teal); font-size: 18px; font-weight: 700; }
+  .chart .lgbg { fill: var(--paper); stroke: var(--line); }
+  .s-indigo { stroke: var(--indigo); } .s-teal { stroke: var(--teal); } .s-amber { stroke: var(--amber); }
+  .s-coral { stroke: var(--coral); } .s-muted { stroke: var(--axis); }
+  .f-indigo { fill: var(--indigo); } .f-teal { fill: var(--teal); } .f-amber { fill: var(--amber); } .f-coral { fill: var(--coral); }
+  .chart circle.f-teal, .chart circle.f-coral, .chart circle.f-amber { stroke: var(--paper); stroke-width: 2; }
+
+  /* ecuaciones */
+  .eq {
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--indigo);
+    border-radius: 16px; padding: 14px 26px 16px; box-shadow: var(--shadow);
+  }
+  .eq .lbl { font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 2px; }
+  .eq .math { font-size: 27px; text-align: center; color: var(--fg); overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .eq .note { font-size: 18px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+  .eq .note .katex { font-size: 1.05em; }
+  .katex { color: inherit; }
+  .katex-display { margin: .15em 0 !important; }
+  .defs3 { display: grid; gap: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .defs3 div { padding: 11px 22px; font-size: 18px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+  .defs3 div:first-child { border-top: none; }
+  .defs3 b { font-family: var(--display); font-size: 21px; color: var(--fg); margin-right: 6px; }
+  .defs3 i { font-size: 15px; }
+  .hl-c { color: var(--coral); } .hl-t { color: var(--teal); } .hl-a { color: var(--amber); } .hl-i { color: var(--indigo); }
+  .tag {
+    display: inline-block; font: 700 14px var(--text); letter-spacing: .09em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .t-teal { background: var(--teal-soft); color: var(--teal); } .t-coral { background: var(--coral-soft); color: var(--coral); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); } .t-indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+  /* piezas específicas */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .big-num { font-family: var(--display); font-size: 54px; line-height: 1; font-weight: 600; }
+  sub { font-size: 0.6em; line-height: 0; vertical-align: -0.35em; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 22px; box-shadow: var(--shadow); }
+  .kpi .k { font: 700 13px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-family: var(--display); font-size: 36px; font-weight: 600; margin-top: 4px; line-height: 1.1; }
+  .kpi .s { font-size: 16px; color: var(--muted); margin-top: 4px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover h1 { font-size: 84px; line-height: 1.02; letter-spacing: -.02em; max-width: 700px; }
+  .cover h1 em { font-style: italic; color: var(--teal); font-weight: 500; }
+  .cover .lead { margin-top: 26px; max-width: 600px; font-size: 25px; }
+  .cover .meta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cover .meta span { font: 600 16px var(--text); padding: 8px 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+  svg.chart.cover-art { position: absolute; right: 0; bottom: 0; width: 720px; height: auto; opacity: .95;
+    -webkit-mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); }
+
+  /* agenda */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 16px 24px; flex: 1; margin-bottom: 8px; }
+  .ag { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; box-shadow: var(--shadow); }
+  .ag .n { font-family: var(--display); font-size: 44px; color: var(--amber); width: 38px; text-align: center; font-weight: 600; }
+  .ag b { display: block; font-size: 23px; font-weight: 600; margin-bottom: 2px; }
+  .ag span { font-size: 18px; color: var(--muted); }
+
+  /* idea central */
+  .big-idea { font-family: var(--display); font-size: 50px; line-height: 1.18; max-width: 1000px; font-weight: 500; }
+  .big-idea span { color: var(--teal); }
+  .steps-v { display: flex; gap: 14px; align-items: stretch; }
+  .steps-v .card { flex: 1; padding: 18px 22px; }
+  .steps-v .arrow { align-self: center; font-size: 28px; color: var(--amber); }
+
+  /* ciclo */
+  .cycle { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; }
+  .cycle .link { align-self: center; text-align: center; font-size: 28px; color: var(--amber); }
+  .cycle .card { padding: 22px 20px; display: flex; flex-direction: column; }
+  .cycle .card p { margin-bottom: 14px; }
+  .cycle .n { font-family: var(--display); font-size: 46px; line-height: 1; color: var(--amber); display: block; margin-bottom: 8px; }
+  .loopback { width: 100%; height: 60px; display: block; margin-top: -6px; }
+  .loopback path { stroke: var(--teal); }
+  .loopback text { fill: var(--teal); font: 600 18px var(--text); }
+
+  /* lr */
+  .lrcard { padding: 16px 20px 18px; }
+  .lrcard .tag { margin-bottom: 8px; }
+  .lrcard h3 { font-size: 24px; margin-bottom: 6px; }
+  .lrcard p { font-size: 17px; }
+  .lrcard svg.chart { margin: 2px 0 8px; }
+
+  /* batches */
+  .blocks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .blocks div {
+    border-radius: 12px; padding: 16px 0 12px; text-align: center; background: var(--teal-soft); color: var(--teal);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  }
+  .blocks div:nth-child(even) { background: var(--indigo-soft); color: var(--indigo); border-color: color-mix(in srgb, var(--indigo) 35%, transparent); }
+  .blocks b { display: block; font: 700 22px var(--text); }
+  .blocks small { font: 500 13px var(--text); opacity: .85; }
+  .epoch-br { height: 16px; border: 2px solid var(--amber); border-top: none; border-radius: 0 0 12px 12px; margin: 0 2px; }
+  .epoch-cap { text-align: center; font-size: 19px; color: var(--amber); font-weight: 600; margin-top: 8px; }
+  .def { border-left: 5px solid var(--amber); padding: 4px 0 4px 18px; }
+  .def h3 { font-size: 28px; margin-bottom: 6px; }
+  .def p { font-size: 19px; line-height: 1.45; color: var(--muted); }
+
+  /* tabla */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  th { text-align: left; font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 12px 22px; background: var(--paper-2); }
+  td { padding: 9px 22px; border-top: 1px solid var(--line); line-height: 1.35; color: var(--fg); }
+  td:first-child { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--amber); white-space: nowrap; width: 250px; }
+
+  /* preguntas */
+  .qs { display: grid; gap: 10px; counter-reset: q; padding: 0; margin: 0; list-style: none; }
+  .qs li {
+    counter-increment: q; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 12px 24px 12px 78px; position: relative; font-size: 21px; line-height: 1.45;
+  }
+  .qs details { margin-top: 8px; }
+  .qs summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 17px; }
+  .qs details p { font-size: 17px; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+  .qs li::before { content: counter(q); position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-family: var(--display); font-size: 40px; color: var(--teal); font-weight: 600; }
+
+  .ctl { padding: 12px 20px; display: grid; gap: 8px; }
+  .ctl label { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; font: 600 20px var(--display); }
+  .ctl label small { font: 500 13px var(--text); color: var(--muted); display: block; }
+  .ctl output { font: 600 18px var(--text); text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--amber); height: 26px; }
+  .btns { display: flex; gap: 10px; margin-top: 2px; }
+  .btns button { flex: 1; font: 600 16px var(--text); padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); cursor: pointer; }
+  .btns button:hover { border-color: var(--amber); } .btns button.on { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btns button:focus-visible, .ctl input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  /* pie, controles */
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 22px; display: flex; justify-content: space-between; font: 500 14px var(--text); color: var(--muted); }
+  .foot .pg { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { position: absolute; left: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--teal), var(--indigo), var(--amber)); transition: width .35s ease; z-index: 5; }
+  .ui { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; opacity: .0; transition: opacity .25s; }
+  body:hover .ui, .ui:focus-within { opacity: 1; }
+  .ui button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); border-radius: 999px; height: 38px; min-width: 38px;
+    padding: 0 14px; font: 600 14px var(--text); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .ui button:hover { border-color: var(--amber); }
+  .ui button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  /* animación de entrada */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active .hd, .slide.active .bd > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    .slide.active .bd > *:nth-child(2) { animation-delay: .07s; }
+    .slide.active .bd > *:nth-child(3) { animation-delay: .14s; }
+    .slide.active .bd > *:nth-child(4) { animation-delay: .21s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* impresión / PDF: una diapositiva por página */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: none; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; overflow: visible; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide .hd, .slide .bd > * { animation: none !important; }
+    .ui, .bar { display: none; }
+  }
+
+  /* laboratorio 2 */
+  .pg-bar { display: flex; gap: 16px; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 14px; }
+  .pg-bar .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pg-bar .f > span { font: 600 13px var(--text); color: var(--muted); height: 20px; line-height: 20px; white-space: nowrap; }
+  .pg-bar select { width: 100%; height: 38px; font: 600 15px var(--text); padding: 5px 4px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .pg-bar .rb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); font: 600 16px var(--text); cursor: pointer; padding: 0; }
+  .pg-bar .rb.play { background: var(--amber); color: #fff; border-color: var(--amber); width: 46px; height: 46px; }
+  .pg-bar .rb:hover { border-color: var(--amber); }
+  .pg-bar .ep { font: 600 26px var(--display); min-width: 74px; line-height: 1.1; }
+  .pg-mini { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; font: 600 15px var(--text); color: var(--fg); }
+  .pg-mini button, .pg-lay button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font: 700 15px var(--text); color: var(--fg); line-height: 1; padding: 0; }
+  .pg-mini button:hover, .pg-lay button:hover { border-color: var(--amber); }
+  .pg-lay { display: flex; align-items: center; gap: 6px; font: 600 15px var(--text); }
+  .pg-thumb { width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; background: var(--paper); }
+  .pg-thumb.on { border-color: var(--amber); }
+  .pg-side label { font: 600 13px var(--text); color: var(--muted); display: block; }
+  .pg-side input[type=range] { width: 100%; accent-color: var(--amber); }
+  .pg-bar .ep input { width: 78px; height: 34px; font: 600 18px var(--text); padding: 2px 6px; border-radius: 9px; border: 2px solid var(--amber); background: var(--paper-2); color: var(--fg); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide cover" data-title="Portada">
+  <svg class="chart cover-art" id="hsCover" style="opacity:.9" viewBox="0 0 720 520" role="img" aria-label="Ilustración de una red recurrente leyendo una secuencia"></svg>
+  <div class="hd" style="position:relative">
+    <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes · Introducción</p>
+    <h1>Historia <em>y aplicaciones</em></h1>
+    <p class="lead">Por qué los datos que llegan en orden necesitaron un tipo de red propio, cómo llegaron las redes recurrentes al celular de millones de personas y para qué se usan hoy.</p>
+    <div class="meta"><span>Deep Learning</span><span>Introducción · Historia y aplicaciones</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ruta">
+  <div class="hd"><p class="eyebrow">Ruta de la sesión</p><h2>Tres etapas: los datos, la historia y los usos</h2>
+    <p class="lead" style="font-size:20px">Esta presentación no tiene ecuaciones: es un recorrido para entender <b>por qué existen</b> las redes recurrentes antes de ver, en la Experiencia, <b>cómo funcionan</b>. Cada etapa responde una pregunta.</p></div>
+  <div class="bd">
+    <div class="agenda" style="gap:12px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Datos en orden</b><span>¿Qué tienen de especial los datos que llegan uno tras otro?</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>Historia</b><span>¿Cómo pasaron las redes recurrentes de una idea de laboratorio a usarse todos los días?</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>Aplicaciones</b><span>¿Para qué se usan hoy?</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Muchos datos llegan en orden">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Datos en orden</p><h2>Muchos datos llegan en orden</h2>
+    <p class="lead" style="font-size:20px">Hasta ahora, nuestras redes recibían un dato completo (una imagen, una fila de una tabla) y respondían. Pero muchos datos llegan <b>uno tras otro</b>, y cada valor se entiende mejor sabiendo lo que vino antes. A estos datos se les llama <b>secuencias</b>.</p></div>
+  <div class="bd">
+    <div class="grid4" style="gap:16px">
+      <div class="card" style="padding:14px 18px"><span class="tag t-indigo">Series de tiempo</span><svg class="chart" id="hsSp0" viewBox="0 0 220 80" aria-hidden="true"></svg><p style="font-size:16px;margin-top:6px">La temperatura de cada hora, las ventas de cada día, los pasajeros de cada jornada.</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-indigo">Voz y sonido</span><svg class="chart" id="hsSp1" viewBox="0 0 220 80" aria-hidden="true"></svg><p style="font-size:16px;margin-top:6px">Miles de mediciones por segundo de la vibración del aire; una palabra dura muchas de ellas.</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-indigo">Texto</span><svg class="chart" id="hsSp2" viewBox="0 0 220 80" aria-hidden="true"></svg><p style="font-size:16px;margin-top:6px">Palabras una tras otra: «el perro mordió al cartero» no dice lo mismo que «el cartero mordió al perro».</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-indigo">Señales del cuerpo</span><svg class="chart" id="hsSp3" viewBox="0 0 220 80" aria-hidden="true"></svg><p style="font-size:16px;margin-top:6px">El ritmo cardiaco, la respiración o los pasos que cuenta un reloj inteligente.</p></div>
+    </div>
+    <p class="txt" style="font-size:19px;color:var(--muted)">En todos los casos hay dos cosas en juego: <b>el valor</b> y <b>el momento</b> en que ocurrió. Las redes que ya conocemos solo miran el valor. La siguiente diapositiva muestra qué se pierde cuando se ignora el momento.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: si se pierde el orden">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Si se pierde el orden, se pierde el patrón</h2>
+    <p class="lead" style="font-size:20px">El gráfico muestra los pasajeros diarios de un sistema de transporte durante seis semanas. Son los mismos números en las dos vistas; solo cambia su orden.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:1.3fr .7fr;align-items:start;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap" id="hsOrdCap">Índigo: días entre semana. Ámbar: sábados y domingos.</div>
+        <svg class="chart" id="hsOrd" viewBox="0 0 640 330" role="img" aria-label="Pasajeros por día"></svg>
+      </div>
+      <div class="col" style="gap:12px">
+        <div class="card" style="padding:12px 18px"><p style="font-size:17px;color:var(--fg)"><b>Objetivo:</b> ver que el orden es parte de la información.</p>
+          <p style="font-size:16px;margin-top:8px">1. Observa el patrón semanal.<br>2. Pulsa «Mezclar los días».<br>3. Intenta adivinar el día siguiente en cada vista.</p></div>
+        <div class="card ctl" style="padding:12px 18px"><div class="btns" style="flex-direction:column">
+          <button type="button" id="hsMix">Mezclar los días</button>
+          <button type="button" id="hsSort">Volver al orden real</button></div></div>
+        <div class="card" style="padding:12px 18px"><span class="tag t-teal" id="hsOrdTag">En orden</span><p style="font-size:16px" id="hsOrdTxt"></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Leer paso a paso y recordar">
+  <div class="hd"><p class="eyebrow">Etapa 1 · La idea</p><h2>Leer paso a paso y recordar</h2>
+    <p class="lead" style="font-size:20px">Una red densa recibe todos los valores <b>a la vez</b>, como columnas sueltas. Una <b>red recurrente</b> los lee <b>uno por uno</b>, en orden, y lleva consigo un resumen de lo que ya leyó: su <b>memoria</b>.</p></div>
+  <div class="bd">
+    <div class="grid2" style="gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap"><b>Red densa:</b> todos los valores entran juntos; si se cambia el orden de las columnas, la red no lo nota.</div>
+        <svg class="chart" id="hsDen" viewBox="0 0 520 250" role="img" aria-label="Red densa"></svg>
+      </div>
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap"><b>Red recurrente:</b> la misma neurona lee un valor en cada paso y pasa su memoria (ámbar) al paso siguiente.</div>
+        <svg class="chart" id="hsRec" viewBox="0 0 520 250" role="img" aria-label="Red recurrente leyendo una secuencia"></svg>
+      </div>
+    </div>
+    <p class="txt" style="font-size:19px;color:var(--muted)">Esa memoria es la idea de la que nace todo lo que sigue. Su historia es la de un problema difícil: lograr que la red <b>recuerde por mucho tiempo</b>.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Línea de tiempo">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Historia</p><h2>Cuarenta años de redes recurrentes</h2>
+    <p class="lead" style="font-size:20px">Recorre los momentos clave: haz clic en un año o usa los botones.</p></div>
+  <div class="bd noclick">
+    <div class="chartbox" style="padding:8px 16px 4px">
+      <svg class="chart" id="hsTl" viewBox="0 0 1080 118" role="img" aria-label="Línea de tiempo"></svg>
+    </div>
+    <div class="row2 grow" style="grid-template-columns:1fr 330px;align-items:stretch;gap:20px">
+      <div class="card" style="padding:16px 24px"><span class="tag t-amber" id="hsTlYear"></span><h3 id="hsTlTit"></h3><p style="font-size:18px" id="hsTlTxt"></p></div>
+      <div class="card ctl" style="padding:14px 18px;align-content:center">
+        <div class="btns"><button type="button" id="hsTlPrev">← Anterior</button><button type="button" id="hsTlNext">Siguiente →</button></div>
+        <p style="font-size:15px;color:var(--muted);text-align:center;margin-top:6px" id="hsTlPos"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="El gran obstáculo: la memoria corta">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Historia</p><h2>El gran obstáculo: la memoria corta</h2>
+    <p class="lead" style="font-size:20px">Las primeras redes recurrentes recordaban bien lo de hace pocos pasos, pero lo de hace muchos se les borraba. Por eso tardaron casi veinte años en volverse útiles.</p></div>
+  <div class="bd">
+    <div class="chartbox" style="padding:12px 16px">
+      <div class="cap">Cuánto queda del primer dato en la memoria a medida que la red avanza (ilustración). Coral: red recurrente simple. Verde: red con compuertas (LSTM).</div>
+      <svg class="chart" id="hsMem" viewBox="0 0 1080 175" role="img" aria-label="Memoria de la red simple frente a la LSTM"></svg>
+    </div>
+    <div class="grid2" style="gap:20px">
+      <div class="card" style="padding:12px 20px"><span class="tag t-coral">El problema</span><p style="font-size:17px">«Crecí en Bogotá, y aunque llevo años viviendo en otros países, mi acento es…». Para completar la frase hay que recordar una palabra lejana. Al entrenar, la señal que corrige a la red se debilita en cada paso hacia atrás y casi no llega al comienzo.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal">La solución</span><p style="font-size:17px">La <b>LSTM</b> (1997) y luego la <b>GRU</b> (2014) añaden <b>compuertas</b>: pequeñas partes de la red que deciden qué guardar, qué olvidar y qué usar. En la Experiencia verás cómo funcionan por dentro.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="La época dorada">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Historia</p><h2>La época dorada: de 2009 a 2018</h2>
+    <p class="lead" style="font-size:20px">Con más datos, computadores más rápidos (las GPU) y la LSTM, las redes recurrentes empezaron a ganar competencias y luego llegaron a productos que usamos a diario.</p></div>
+  <div class="bd">
+    <div class="grid4" style="gap:16px">
+      <div class="card" style="padding:14px 18px"><span class="tag t-teal">2009 · Escritura</span><h3 style="font-size:22px">Leer a mano</h3><p style="font-size:16px">Una LSTM gana competencias de reconocimiento de escritura a mano, leyendo el trazo de izquierda a derecha sin separar las letras.</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-teal">2013–2015 · Voz</span><h3 style="font-size:22px">Entender la voz</h3><p style="font-size:16px">Las LSTM profundas bajan el error del reconocimiento de voz; el buscador por voz de Google las adopta en 2015.</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-teal">2014–2016 · Idiomas</span><h3 style="font-size:22px">Traducir</h3><p style="font-size:16px">Un <b>codificador</b> lee la frase y un <b>decodificador</b> la escribe en otro idioma. En 2016 Google Translate pasa a funcionar con LSTM.</p></div>
+      <div class="card" style="padding:14px 18px"><span class="tag t-teal">Hacia 2018 · Teclado</span><h3 style="font-size:22px">Sugerir palabras</h3><p style="font-size:16px">El teclado del celular sugiere la siguiente palabra a partir de las que ya escribiste, con una red recurrente pequeña que corre en el propio teléfono.</p></div>
+    </div>
+    <p class="txt" style="font-size:19px;color:var(--muted)">En pocos años pasaron de los artículos científicos al bolsillo de millones de personas. Todo eso sin cambiar la idea de fondo: <b>leer en orden y recordar</b>.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Después de 2017">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Historia</p><h2>Después de 2017: un relevo, no un final</h2>
+    <p class="lead" style="font-size:20px">En 2017 apareció el <b>Transformer</b>, una red que mira toda la secuencia a la vez con un mecanismo llamado <b>atención</b>. Hoy es la base de los chatbots y de la traducción automática. ¿Quedaron obsoletas las redes recurrentes?</p></div>
+  <div class="bd">
+    <div class="grid3" style="gap:18px">
+      <div class="card" style="padding:14px 20px"><span class="tag t-indigo">Donde ganó el Transformer</span><p style="font-size:17px">Textos largos, chatbots y traducción. Como mira todo a la vez, aprovecha mejor las GPU con enormes cantidades de datos.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-teal">Donde las recurrentes siguen</span><p style="font-size:17px">Series de tiempo, señales de sensores y tareas en <b>tiempo real</b>: procesan cada dato nuevo apenas llega, con poca memoria y poco cómputo, incluso en dispositivos pequeños.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-amber">La idea vuelve</span><p style="font-size:17px">Desde 2023, varios modelos nuevos para secuencias muy largas retoman la idea recurrente: un <b>estado</b> que se actualiza paso a paso, ahora mucho más rápido de entrenar.</p></div>
+    </div>
+    <p class="txt" style="font-size:19px;color:var(--muted)">Entender las redes recurrentes es entender el origen de todos estos modelos: el problema de recordar en una secuencia sigue siendo el mismo.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Aplicaciones">
+  <div class="hd"><p class="eyebrow">Etapa 3 · Aplicaciones</p><h2>¿Para qué se usan hoy?</h2>
+    <p class="lead" style="font-size:20px">Elige una aplicación para ver qué secuencia lee la red y qué entrega.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:start;gap:22px">
+      <div class="grid2" id="hsApps" style="gap:10px"></div>
+      <div class="col" style="gap:12px">
+        <div class="card" style="padding:14px 22px"><span class="tag t-teal" id="hsAppTag"></span><h3 id="hsAppTit" style="font-size:24px"></h3>
+          <p style="font-size:17px;margin-top:6px"><b>Lee:</b> <span id="hsAppIn"></span></p>
+          <p style="font-size:17px;margin-top:6px"><b>Entrega:</b> <span id="hsAppOut"></span></p></div>
+        <div class="chartbox" style="padding:10px 14px"><svg class="chart" id="hsAppSvg" viewBox="0 0 520 150" role="img" aria-label="Qué entra y qué sale"></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Resumen">
+  <div class="hd"><p class="eyebrow">Resumen</p><h2>Las tres preguntas, respondidas</h2></div>
+  <div class="bd">
+    <div class="agenda" style="gap:12px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Datos en orden</b><span>En una secuencia importan el valor y el momento. Si se pierde el orden, se pierde el patrón. Las redes recurrentes leen paso a paso y recuerdan.</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>Historia</b><span>Primeras redes recurrentes (1980s) → memoria corta → LSTM (1997) y GRU (2014) → voz, traducción y teclado (2009–2018) → relevo del Transformer en texto (2017), sin desaparecer.</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>Aplicaciones</b><span>Pronóstico de demanda, clima y transporte, salud, industria, voz y texto. En esta unidad nos enfocamos en pronosticar series de tiempo: en la Experiencia verás cómo funcionan por dentro y las usarás con datos reales.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="foot"><span>Deep Learning · Unidad 2 · Redes recurrentes · Introducción: historia y aplicaciones</span><span class="pg" id="pg"></span></div>
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="ui">
+  <button id="bPrev" type="button" aria-label="Diapositiva anterior">←</button>
+  <button id="bNext" type="button" aria-label="Diapositiva siguiente">→</button>
+  <button id="bFs" type="button" aria-label="Pantalla completa (F)">Pantalla</button>
+  <button id="bTheme" type="button" aria-label="Cambiar tema (T)">Tema</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var AMB = "var(--amber)", IND = "var(--indigo)", TEA = "var(--teal)", COR = "var(--coral)", MUT = "var(--axis)";
+  var defs = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.style.position = "absolute";
+  defs.innerHTML = ["Amb:var(--amber)", "Mut:var(--axis)", "Tea:var(--teal)", "Ind:var(--indigo)", "Cor:var(--coral)"].map(function (d) {
+    var p = d.split(":");
+    return '<defs><marker id="rk' + p[0] + '" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" style="fill:' + p[1] + '"/></marker></defs>';
+  }).join("");
+  document.body.appendChild(defs);
+  function rect(x, y, w, h, fill, stroke, sw, rx, op) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (rx === undefined ? 8 : rx) + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + (op !== undefined ? ';opacity:' + op : '') + '"/>';
+  }
+  function text(x, y, t, cls, anchor, fill, size, weight) {
+    return '<text x="' + x + '" y="' + y + '" class="' + (cls || "lb") + '" text-anchor="' + (anchor || "middle") + '" style="' + (fill ? 'fill:' + fill + ';' : '') + (size ? 'font-size:' + size + 'px;' : '') + (weight ? 'font-weight:' + weight + ';' : '') + '">' + t + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, mk, w, dash, op) {
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + (op !== undefined ? ';opacity:' + op : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function path(d, color, mk, w, dash) {
+    return '<path d="' + d + '" style="fill:none;stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function circ(x, y, r, fill, stroke, sw) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + '"/>';
+  }
+  function sub(base, s) { return base + '<tspan dy="5" style="font-size:.72em">' + s + '</tspan>'; }
+  function fmt(v, d) { return v.toFixed(d === undefined ? 2 : d).replace(".", ","); }
+
+  /* cadena desenrollada genérica: n celdas */
+  function chain(n, x0, y, dx, opt) {
+    var s = "", k, cw = opt.cw || 70, ch = opt.ch || 50;
+    for (k = 0; k < n; k++) {
+      var x = x0 + k * dx, on = opt.on ? opt.on(k) : false;
+      if (k > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 3);
+      s += rect(x, y, cw, ch, on ? "var(--amber-soft)" : "var(--paper-2)", on ? AMB : "var(--axis)", on ? 3 : 1.5, 10);
+      s += text(x + cw / 2, y + ch / 2 + 6, opt.label ? opt.label(k) : "celda", "lb", "middle", null, 16, 600);
+      if (opt.inp) { var a = opt.inp(k); s += line(x + cw / 2, y + ch + 40, x + cw / 2, y + ch + 3, a ? IND : MUT, a ? "Ind" : "Mut", 2.5, a ? null : "5 5", a ? 1 : .5); if (a) s += text(x + cw / 2, y + ch + 62, a, "lb", "middle", IND, 17, 600); }
+      if (opt.out) { var b = opt.out(k); s += line(x + cw / 2, y - 3, x + cw / 2, y - 40, b ? TEA : MUT, b ? "Tea" : "Mut", 2.5, b ? null : "5 5", b ? 1 : .5); if (b) s += text(x + cw / 2, y - 50, b, "lb", "middle", TEA, 17, 600); }
+    }
+    return s;
+  }
+
+
+  /* ---------- portada ---------- */
+  (function () {
+    var s = chain(5, 120, 220, 110, { cw: 74, ch: 56, label: function (k) { return "h" + (k + 1); },
+      inp: function (k) { return "x" + (k + 1); }, out: function (k) { return k === 4 ? "ŷ" : ""; }, on: function (k) { return k === 2; } });
+    $("hsCover").innerHTML = s;
+  })();
+
+  var seed = 11;
+  function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+
+  /* ---------- mini gráficos de tipos de secuencia ---------- */
+  (function () {
+    function poly(vals, color, w) {
+      var n = vals.length, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), pts = [];
+      vals.forEach(function (v, k) { pts.push((6 + k * 208 / (n - 1)).toFixed(1) + "," + (72 - (v - mn) / (mx - mn || 1) * 62).toFixed(1)); });
+      return '<polyline points="' + pts.join(" ") + '" style="fill:none;stroke:' + color + ';stroke-width:' + (w || 2.5) + ';stroke-linejoin:round"/>';
+    }
+    var a = [], k;
+    for (k = 0; k < 48; k++) a.push(Math.sin((k - 8) / 24 * 2 * Math.PI) + 0.15 * (rnd() - 0.5));
+    $("hsSp0").innerHTML = poly(a, IND);
+    a = []; for (k = 0; k < 160; k++) a.push(Math.sin(k * 0.9) * (0.2 + Math.exp(-Math.pow((k - 50) / 18, 2)) + 0.8 * Math.exp(-Math.pow((k - 115) / 14, 2))));
+    $("hsSp1").innerHTML = poly(a, IND, 1.6);
+    var words = ["el", "perro", "mordió", "al", "cartero"], s = "", x = 4;
+    words.forEach(function (w, i) {
+      var wd = w.length * 6.6 + 10;
+      s += rect(x, 26, wd, 30, "var(--indigo-soft)", IND, 1.2, 8) + text(x + wd / 2, 45, w, "lb", "middle", IND, 11, 600);
+      if (i < words.length - 1) s += line(x + wd + 1, 41, x + wd + 5, 41, AMB, null, 2);
+      x += wd + 6;
+    });
+    $("hsSp2").innerHTML = s;
+    a = []; for (k = 0; k < 120; k++) { var u = k % 30; a.push(u === 10 ? 1 : u === 11 ? -0.35 : u === 9 ? 0.15 : u > 16 && u < 22 ? 0.18 * Math.sin((u - 16) / 6 * Math.PI) : 0); }
+    $("hsSp3").innerHTML = poly(a, IND, 1.8);
+  })();
+
+  /* ---------- actividad: mezclar el orden ---------- */
+  (function () {
+    var N = 42, vals = [], k, order = [], mixed = false;
+    for (k = 0; k < N; k++) {
+      var dow = k % 7, wk = dow >= 5;
+      vals.push((wk ? (dow === 5 ? 330 : 250) : 600 + 25 * Math.sin(dow)) + 4 * k / 6 + 40 * (rnd() - 0.5));
+      order.push(k);
+    }
+    var X0 = 60, X1 = 625, Y0 = 285, Y1 = 20, vmax = 750;
+    function px(i) { return X0 + (i + 0.5) * (X1 - X0) / N; }
+    function py(v) { return Y0 - v / vmax * (Y0 - Y1); }
+    function draw() {
+      var s = "", i;
+      [0, 200, 400, 600].forEach(function (v) { s += line(X0, py(v), X1, py(v), "var(--grid)", null, 1) + text(X0 - 8, py(v) + 5, v, "tk", "end", null, 14); });
+      s += line(X0, Y0, X1, Y0, "var(--axis)", null, 1.6);
+      for (i = 0; i < 6; i++) s += text(X0 + (i * 7 + 3.5) * (X1 - X0) / N, Y0 + 22, "semana " + (i + 1), "tk", "middle", null, 13);
+      s += text(X0 - 48, 14, "miles de pasajeros", "tk", "start", null, 13);
+      var pts = [];
+      for (i = 0; i < N; i++) pts.push(px(i).toFixed(1) + "," + py(vals[order[i]]).toFixed(1));
+      s += '<polyline points="' + pts.join(" ") + '" style="fill:none;stroke:var(--axis);stroke-width:1.5;opacity:.7"/>';
+      for (i = 0; i < N; i++) {
+        var j = order[i], we = j % 7 >= 5;
+        s += '<circle cx="' + px(i).toFixed(1) + '" cy="' + py(vals[j]).toFixed(1) + '" r="5.5" style="fill:' + (we ? AMB : IND) + ';stroke:var(--paper);stroke-width:1.5"/>';
+      }
+      s += '<rect x="' + (px(N - 1) + 2) + '" y="' + (Y1) + '" width="0" height="0"/>';
+      $("hsOrd").innerHTML = s;
+      $("hsOrdTag").textContent = mixed ? "Mezclados" : "En orden";
+      $("hsOrdTag").className = "tag " + (mixed ? "t-coral" : "t-teal");
+      $("hsOrdTxt").innerHTML = mixed
+        ? "Los valores son los mismos, pero el ritmo semanal desapareció. Ya no hay forma de saber si mañana viene un día alto o uno bajo."
+        : "Cinco días altos y dos bajos, semana tras semana. Sabiendo qué días vinieron antes, es fácil adivinar el siguiente.";
+      $("hsMix").classList.toggle("on", mixed); $("hsSort").classList.toggle("on", !mixed);
+    }
+    $("hsMix").onclick = function () {
+      for (var i = N - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = order[i]; order[i] = order[j]; order[j] = t; }
+      mixed = true; draw();
+    };
+    $("hsSort").onclick = function () { order.sort(function (a, b) { return a - b; }); mixed = false; draw(); };
+    draw();
+  })();
+
+  /* ---------- densa vs recurrente ---------- */
+  (function () {
+    var s = "", k, xs = [70, 150, 230, 310, 390, 470];
+    for (k = 0; k < 6; k++) {
+      s += rect(xs[k] - 26, 175, 52, 40, "var(--indigo-soft)", IND, 1.5, 8) + text(xs[k], 201, sub("x", k + 1), "lb", "middle", IND, 17, 600);
+      s += line(xs[k], 173, 268 + (k - 2.5) * 10, 98, IND, null, 1.6, null, .7);
+    }
+    s += rect(200, 46, 136, 50, "var(--paper-2)", "var(--axis)", 1.5, 10) + text(268, 77, "red densa", "lb", "middle", null, 17, 600);
+    s += line(268, 44, 268, 14, TEA, "Tea", 2.5) + text(300, 22, "ŷ", "lb", "middle", TEA, 18, 700);
+    s += text(270, 240, "todos los valores entran al mismo tiempo", "tk", "middle", null, 14);
+    $("hsDen").innerHTML = s;
+    s = chain(6, 18, 95, 85, { cw: 62, ch: 50, label: function () { return "red"; },
+      inp: function (k) { return sub("x", k + 1); }, out: function (k) { return k === 5 ? "ŷ" : ""; }, on: function (k) { return k === 5; } });
+    s += text(260, 240, "un valor por paso, con memoria (flechas ámbar)", "tk", "middle", null, 14);
+    $("hsRec").innerHTML = s;
+  })();
+
+  /* ---------- línea de tiempo ---------- */
+  (function () {
+    var E = [
+      { y: "1982", yr: 1982, t: "Redes con conexiones que vuelven", d: "John Hopfield propone una red cuyas neuronas se conectan en ciclo: la salida vuelve a entrar. La red puede guardar patrones y recuperarlos a partir de una versión incompleta. Es una de las primeras redes con algo parecido a una memoria." },
+      { y: "1986–1990", yr: 1988, t: "Las primeras redes recurrentes", d: "Michael Jordan (1986) y Jeffrey Elman (1990) proponen redes que, en cada paso, reciben un dato nuevo junto con lo que la red calculó en el paso anterior. Se entrenan con el mismo descenso por gradiente de las redes densas, «desenrollando» la red en el tiempo." },
+      { y: "1991–1994", yr: 1992.5, t: "Descubren la memoria corta", d: "Sepp Hochreiter (1991) y Yoshua Bengio y su grupo (1994) muestran por qué estas redes no aprenden relaciones entre datos muy separados: al entrenar, la señal que corrige a la red se debilita (o se dispara) en cada paso hacia atrás." },
+      { y: "1997", yr: 1997, t: "Llega la LSTM", d: "Sepp Hochreiter y Jürgen Schmidhuber presentan la LSTM (Long Short-Term Memory), una neurona con una memoria aparte y compuertas que deciden qué guardar y qué usar. Ese mismo año aparecen las redes bidireccionales, que leen la secuencia en los dos sentidos." },
+      { y: "2009–2013", yr: 2011, t: "Primeras victorias", d: "Las LSTM ganan competencias de reconocimiento de escritura a mano (2009) y alcanzan récords en reconocimiento de voz (2013). Ayudan las GPU y conjuntos de datos mucho más grandes." },
+      { y: "2014", yr: 2014, t: "GRU y secuencia a secuencia", d: "Aparece la GRU, una versión más sencilla de la LSTM con resultados parecidos. También se proponen los modelos codificador–decodificador: una red lee una secuencia y otra genera una nueva, por ejemplo una frase traducida." },
+      { y: "2015–2016", yr: 2015.5, t: "En el bolsillo de millones", d: "El buscador por voz de Google (2015) y Google Translate (2016) pasan a funcionar con LSTM. Las redes recurrentes llegan a productos que se usan todos los días." },
+      { y: "2017", yr: 2017.5, t: "El Transformer", d: "Se publica el Transformer, una red que no lee paso a paso sino que mira toda la secuencia a la vez con un mecanismo de atención. En pocos años reemplaza a las redes recurrentes en la mayoría de tareas de texto." },
+      { y: "Hoy", yr: 2023.5, t: "Siguen vigentes", d: "Las redes recurrentes se siguen usando en series de tiempo, sensores y tareas en tiempo real. Y desde 2023 varios modelos nuevos para secuencias muy largas (por ejemplo, los modelos de espacio de estados y la xLSTM) retoman la idea de un estado que se actualiza paso a paso." }
+    ], cur = 0;
+    var X0 = 50, X1 = 1030, Y = 78, A = 1980, B = 2025;
+    function px(yr) { return X0 + (yr - A) / (B - A) * (X1 - X0); }
+    function draw() {
+      var s = line(X0 - 20, Y, X1 + 20, Y, "var(--axis)", null, 2), k;
+      [1980, 1990, 2000, 2010, 2020].forEach(function (d) { s += line(px(d), Y - 6, px(d), Y + 6, "var(--axis)", null, 1.5) + text(px(d), Y + 26, d, "tk", "middle", null, 14); });
+        for (k = 0; k < E.length; k++) {
+        var on = k === cur, x = px(E[k].yr);
+        s += '<g class="hs-dot" data-k="' + k + '" style="cursor:pointer">';
+        s += '<circle cx="' + x + '" cy="' + Y + '" r="16" style="fill:transparent"/>';
+        s += circ(x, Y, on ? 11 : 7.5, on ? AMB : (k < cur ? "var(--teal)" : "var(--paper)"), on ? AMB : "var(--indigo)", 2.2);
+        s += line(x, Y - 12, x, Y - 18 - (k % 2) * 20, "var(--axis)", null, 1, null, .5) + text(x, Y - 22 - (k % 2) * 20, E[k].y, "tk", "middle", on ? AMB : null, on ? 15 : 13, on ? 700 : 500);
+        s += '</g>';
+      }
+      $("hsTl").innerHTML = s;
+      [].forEach.call($("hsTl").querySelectorAll(".hs-dot"), function (g) { g.onclick = function () { cur = +g.getAttribute("data-k"); draw(); }; });
+      $("hsTlYear").textContent = E[cur].y; $("hsTlTit").textContent = E[cur].t; $("hsTlTxt").textContent = E[cur].d;
+      $("hsTlPos").textContent = (cur + 1) + " de " + E.length;
+      $("hsTlPrev").disabled = cur === 0; $("hsTlNext").disabled = cur === E.length - 1;
+    }
+    $("hsTlPrev").onclick = function () { if (cur > 0) { cur--; draw(); } };
+    $("hsTlNext").onclick = function () { if (cur < E.length - 1) { cur++; draw(); } };
+    draw();
+  })();
+
+  /* ---------- memoria corta ---------- */
+  (function () {
+    var s = "", n = 14, k, x0 = 150, dx = 64;
+    s += text(20, 52, "Red simple", "lb", "start", COR, 17, 700);
+    s += text(20, 128, "LSTM", "lb", "start", TEA, 17, 700);
+    for (k = 0; k < n; k++) {
+      var x = x0 + k * dx, a = Math.pow(0.62, k), b = Math.pow(0.97, k);
+      s += rect(x, 70 - 50 * a, 40, 50 * a + 0.5, COR, COR, 1, 4, 0.85);
+      s += rect(x, 146 - 50 * b, 40, 50 * b, TEA, TEA, 1, 4, 0.85);
+      s += text(x + 20, 168, "paso " + (k + 1), "tk", "middle", null, 12);
+    }
+    s += line(x0 - 10, 71, x0 + n * dx, 71, "var(--axis)", null, 1.2) + line(x0 - 10, 147, x0 + n * dx, 147, "var(--axis)", null, 1.2);
+    $("hsMem").innerHTML = s;
+  })();
+
+  /* ---------- aplicaciones ---------- */
+  (function () {
+    var P = [
+      { g: "Energía", t: "Demanda eléctrica", i: "el consumo de energía de cada hora en los últimos días, junto con la temperatura.", o: "el consumo de las próximas horas, para planear cuánto generar.", seq: "num", out: "seq" },
+      { g: "Transporte", t: "Pasajeros por día", i: "los pasajeros de cada día de las últimas semanas.", o: "los pasajeros de mañana o de las próximas dos semanas. Es el problema que resolverás en la Experiencia.", seq: "num", out: "num" },
+      { g: "Clima", t: "Temperatura y lluvia", i: "las mediciones de varias estaciones cada hora: temperatura, humedad, presión, viento.", o: "la temperatura de las próximas horas o días.", seq: "num", out: "seq" },
+      { g: "Comercio", t: "Ventas e inventario", i: "las ventas diarias de cada producto.", o: "cuánto se venderá la próxima semana, para decidir cuánto pedir.", seq: "num", out: "seq" },
+      { g: "Salud", t: "Electrocardiograma", i: "la señal del corazón, cientos de mediciones por segundo.", o: "una alerta: ritmo normal o arritmia.", seq: "num", out: "cls" },
+      { g: "Industria", t: "Mantenimiento predictivo", i: "la vibración y la temperatura de una máquina, minuto a minuto.", o: "una alerta cuando el patrón anuncia una falla, antes de que ocurra.", seq: "num", out: "cls" },
+      { g: "Voz", t: "Dictado por voz", i: "el audio de una persona hablando.", o: "el texto de lo que dijo, palabra por palabra.", seq: "num", out: "txt" },
+      { g: "Texto", t: "Teclado predictivo", i: "las palabras que ya escribiste.", o: "la palabra que probablemente sigue.", seq: "txt", out: "txt" }
+    ], cur = 1;
+    var box = $("hsApps");
+    box.innerHTML = P.map(function (p, k) { return '<div class="btns"><button type="button" data-k="' + k + '" style="text-align:left;padding:10px 14px"><span style="display:block;font:700 12px var(--text);letter-spacing:.1em;text-transform:uppercase;opacity:.8">' + p.g + '</span>' + p.t + '</button></div>'; }).join("");
+    function draw() {
+      var p = P[cur], s = "", k;
+      [].forEach.call(box.querySelectorAll("button"), function (b) { b.classList.toggle("on", +b.getAttribute("data-k") === cur); });
+      $("hsAppTag").textContent = p.g; $("hsAppTit").textContent = p.t; $("hsAppIn").textContent = p.i; $("hsAppOut").textContent = p.o;
+      for (k = 0; k < 6; k++) {
+        var x = 14 + k * 46;
+        if (p.seq === "txt") s += rect(x, 55, 40, 40, "var(--indigo-soft)", IND, 1.3, 8) + text(x + 20, 81, "w" + (k + 1), "lb", "middle", IND, 13, 600);
+        else { var h = 12 + 26 * (0.5 + 0.5 * Math.sin(k * 1.3 + cur)); s += rect(x + 8, 95 - h, 24, h, IND, IND, 1, 4, 0.85); }
+      }
+      s += text(150, 125, "secuencia que lee", "tk", "middle", null, 13);
+      s += line(296, 75, 326, 75, AMB, "Amb", 2.5);
+      s += rect(330, 50, 74, 50, "var(--amber-soft)", AMB, 2, 10) + text(367, 81, "red", "lb", "middle", null, 15, 700);
+      s += line(406, 75, 432, 75, TEA, "Tea", 2.5);
+      if (p.out === "num") s += rect(440, 55, 60, 40, "var(--teal-soft)", TEA, 1.5, 8) + text(470, 81, "ŷ", "lb", "middle", TEA, 17, 700);
+      else if (p.out === "cls") s += rect(436, 55, 78, 40, "var(--teal-soft)", TEA, 1.5, 8) + text(475, 80, "alerta", "lb", "middle", TEA, 14, 700);
+      else if (p.out === "seq") for (k = 0; k < 3; k++) s += rect(438 + k * 26, 75 - 10 - 8 * k, 20, 20 + 8 * k, TEA, TEA, 1, 4, 0.85);
+      else for (k = 0; k < 3; k++) s += rect(438 + k * 26, 58, 22, 34, "var(--teal-soft)", TEA, 1.3, 6);
+      s += text(475, 125, "lo que entrega", "tk", "middle", null, 13);
+      $("hsAppSvg").innerHTML = s;
+    }
+    [].forEach.call(box.querySelectorAll("button"), function (b) { b.onclick = function () { cur = +b.getAttribute("data-k"); draw(); }; });
+    draw();
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  var stage = document.getElementById("stage"), slides = [].slice.call(document.querySelectorAll(".slide"));
+  var pg = document.getElementById("pg"), bar = document.getElementById("bar"), cur = 0;
+  var root = document.documentElement;
+
+  try { var t = localStorage.getItem("deck-theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(i, noHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); });
+    pg.textContent = (cur + 1) + " / " + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    document.querySelector(".foot").style.display = cur === 0 ? "none" : "flex";
+    if (!noHash) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function go(d) { show(cur + d); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (e.target && e.target.tagName === "INPUT" && k.indexOf("Arrow") === 0) return;
+    if (e.target && e.target.tagName === "BUTTON" && (k === " " || k === "Enter")) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].indexOf(k) > -1) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].indexOf(k) > -1) { e.preventDefault(); go(-1); }
+    else if (k === "Home") show(0); else if (k === "End") show(slides.length - 1);
+    else if (k === "f" || k === "F") toggleFs(); else if (k === "t" || k === "T") toggleTheme();
+  });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a,button,input,summary,.noclick")) return;
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left) / r.width < 0.25 ? go(-1) : go(1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen && root.requestFullscreen(); }
+  function toggleTheme() {
+    var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", n); try { localStorage.setItem("deck-theme", n); } catch (e) {}
+  }
+  document.getElementById("bPrev").onclick = function (e) { e.stopPropagation(); go(-1); };
+  document.getElementById("bNext").onclick = function (e) { e.stopPropagation(); go(1); };
+  document.getElementById("bFs").onclick = toggleFs;
+  document.getElementById("bTheme").onclick = toggleTheme;
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) show(n - 1, true); });
+
+  function typeset() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, { delimiters: [
+        { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }
+      ], throwOnError: false });
+    }
+  }
+
+
+
+
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, true);
+  window.addEventListener("load", typeset);
+  if (document.readyState === "complete") typeset();
+})();
+</script>
+</body>
+</html>

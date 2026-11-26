@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes neuronales recurrentes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+  .ctl select,.ctl input[type=number]{font:600 16px var(--text);padding:5px 8px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg);width:100%}
+  :root {
+    --bg: #EFEADF;
+    --paper: #FFFDF8;
+    --paper-2: #F3EEE2;
+    --fg: #1A1D3B;
+    --muted: #4F5380;
+    --line: rgba(26, 29, 59, .13);
+    --grid: rgba(26, 29, 59, .09);
+    --axis: #7A7EA6;
+    --indigo: #3A47B5;
+    --teal: #0B8570;
+    --amber: #B86A00;
+    --coral: #C03F32;
+    --teal-soft: #D3F0E8;
+    --amber-soft: #F8E5C2;
+    --coral-soft: #F8D9D4;
+    --indigo-soft: #DDE0F7;
+    --shadow: 0 1px 2px rgba(26,29,59,.06), 0 8px 24px rgba(26,29,59,.07);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --text: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #090B1C;
+    --paper: #151834;
+    --paper-2: #1C2043;
+    --fg: #F3EFE6;
+    --muted: #AEB4E2;
+    --line: rgba(243, 239, 230, .14);
+    --grid: rgba(243, 239, 230, .09);
+    --axis: #8B91C4;
+    --indigo: #8E9BFF;
+    --teal: #4FE3C8;
+    --amber: #FFB547;
+    --coral: #FF7F70;
+    --teal-soft: #103A36;
+    --amber-soft: #3A2B12;
+    --coral-soft: #3F1F23;
+    --indigo-soft: #22275A;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--text); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* escenario 16:9 escalado a la ventana */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: 0 0; background: var(--bg); overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0; padding: 50px 80px 70px; display: none; flex-direction: column;
+    background: var(--bg);
+  }
+  .slide.active { display: flex; }
+  .slide::before {            /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px;
+    background: linear-gradient(180deg, var(--teal), var(--indigo) 55%, var(--amber));
+  }
+
+  h1, h2, h3 { font-family: var(--display); margin: 0; font-weight: 600; color: var(--fg); }
+  p { margin: 0; }
+  .eyebrow {
+    font: 700 15px var(--text); letter-spacing: .16em; text-transform: uppercase; color: var(--amber);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .eyebrow::before { content: ""; width: 30px; height: 3px; border-radius: 2px; background: currentColor; }
+  h2 { font-size: 40px; line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { font-size: 23px; line-height: 1.5; color: var(--muted); max-width: 900px; }
+  .lead b, .txt b { color: var(--fg); font-weight: 600; }
+  .txt { font-size: 21px; line-height: 1.55; color: var(--fg); }
+  .bd { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; min-height: 0; }
+  .row2.wide-l { grid-template-columns: 1.05fr 1fr; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .grow { flex: 1; min-height: 0; }
+
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px;
+    box-shadow: var(--shadow); min-width: 0;
+  }
+  .card h3 { font-size: 26px; margin-bottom: 8px; }
+  .card p { font-size: 19px; line-height: 1.5; color: var(--muted); }
+  .chartbox { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 14px 14px 8px; box-shadow: var(--shadow); }
+  .chartbox .cap { font-size: 16px; color: var(--muted); padding: 4px 10px 8px; line-height: 1.4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .chart .gr { stroke: var(--grid); stroke-width: 1; }
+  .chart .ax { stroke: var(--axis); stroke-width: 1.6; }
+  .chart text { font-family: var(--text); }
+  .chart .tk { fill: var(--muted); font-size: 16px; font-weight: 500; }
+  .chart .lb { fill: var(--fg); font-size: 18px; font-weight: 500; }
+  .chart .lg { fill: var(--fg); font-size: 17px; font-weight: 500; }
+  .chart .an { fill: var(--fg); font-size: 18px; font-weight: 600; }
+  .chart .an-teal { fill: var(--teal); font-size: 18px; font-weight: 700; }
+  .chart .lgbg { fill: var(--paper); stroke: var(--line); }
+  .s-indigo { stroke: var(--indigo); } .s-teal { stroke: var(--teal); } .s-amber { stroke: var(--amber); }
+  .s-coral { stroke: var(--coral); } .s-muted { stroke: var(--axis); }
+  .f-indigo { fill: var(--indigo); } .f-teal { fill: var(--teal); } .f-amber { fill: var(--amber); } .f-coral { fill: var(--coral); }
+  .chart circle.f-teal, .chart circle.f-coral, .chart circle.f-amber { stroke: var(--paper); stroke-width: 2; }
+
+  /* ecuaciones */
+  .eq {
+    background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--indigo);
+    border-radius: 16px; padding: 14px 26px 16px; box-shadow: var(--shadow);
+  }
+  .eq .lbl { font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 2px; }
+  .eq .math { font-size: 27px; text-align: center; color: var(--fg); overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+  .eq .note { font-size: 18px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+  .eq .note .katex { font-size: 1.05em; }
+  .katex { color: inherit; }
+  .katex-display { margin: .15em 0 !important; }
+  .defs3 { display: grid; gap: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .defs3 div { padding: 11px 22px; font-size: 18px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--line); }
+  .defs3 div:first-child { border-top: none; }
+  .defs3 b { font-family: var(--display); font-size: 21px; color: var(--fg); margin-right: 6px; }
+  .defs3 i { font-size: 15px; }
+  .hl-c { color: var(--coral); } .hl-t { color: var(--teal); } .hl-a { color: var(--amber); } .hl-i { color: var(--indigo); }
+  .tag {
+    display: inline-block; font: 700 14px var(--text); letter-spacing: .09em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .t-teal { background: var(--teal-soft); color: var(--teal); } .t-coral { background: var(--coral-soft); color: var(--coral); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); } .t-indigo { background: var(--indigo-soft); color: var(--indigo); }
+
+  /* piezas específicas */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .big-num { font-family: var(--display); font-size: 54px; line-height: 1; font-weight: 600; }
+  sub { font-size: 0.6em; line-height: 0; vertical-align: -0.35em; }
+  .kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 12px 22px; box-shadow: var(--shadow); }
+  .kpi .k { font: 700 13px var(--text); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .kpi .v { font-family: var(--display); font-size: 36px; font-weight: 600; margin-top: 4px; line-height: 1.1; }
+  .kpi .s { font-size: 16px; color: var(--muted); margin-top: 4px; }
+
+  /* portada */
+  .cover { justify-content: center; }
+  .cover h1 { font-size: 84px; line-height: 1.02; letter-spacing: -.02em; max-width: 700px; }
+  .cover h1 em { font-style: italic; color: var(--teal); font-weight: 500; }
+  .cover .lead { margin-top: 26px; max-width: 600px; font-size: 25px; }
+  .cover .meta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .cover .meta span { font: 600 16px var(--text); padding: 8px 16px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+  svg.chart.cover-art { position: absolute; right: 0; bottom: 0; width: 720px; height: auto; opacity: .95;
+    -webkit-mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side at 60% 62%, #000 45%, transparent 100%); }
+
+  /* agenda */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; gap: 16px 24px; flex: 1; margin-bottom: 8px; }
+  .ag { display: flex; align-items: center; gap: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 20px; box-shadow: var(--shadow); }
+  .ag .n { font-family: var(--display); font-size: 44px; color: var(--amber); width: 38px; text-align: center; font-weight: 600; }
+  .ag b { display: block; font-size: 23px; font-weight: 600; margin-bottom: 2px; }
+  .ag span { font-size: 18px; color: var(--muted); }
+
+  /* idea central */
+  .big-idea { font-family: var(--display); font-size: 50px; line-height: 1.18; max-width: 1000px; font-weight: 500; }
+  .big-idea span { color: var(--teal); }
+  .steps-v { display: flex; gap: 14px; align-items: stretch; }
+  .steps-v .card { flex: 1; padding: 18px 22px; }
+  .steps-v .arrow { align-self: center; font-size: 28px; color: var(--amber); }
+
+  /* ciclo */
+  .cycle { display: grid; grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr; align-items: stretch; }
+  .cycle .link { align-self: center; text-align: center; font-size: 28px; color: var(--amber); }
+  .cycle .card { padding: 22px 20px; display: flex; flex-direction: column; }
+  .cycle .card p { margin-bottom: 14px; }
+  .cycle .n { font-family: var(--display); font-size: 46px; line-height: 1; color: var(--amber); display: block; margin-bottom: 8px; }
+  .loopback { width: 100%; height: 60px; display: block; margin-top: -6px; }
+  .loopback path { stroke: var(--teal); }
+  .loopback text { fill: var(--teal); font: 600 18px var(--text); }
+
+  /* lr */
+  .lrcard { padding: 16px 20px 18px; }
+  .lrcard .tag { margin-bottom: 8px; }
+  .lrcard h3 { font-size: 24px; margin-bottom: 6px; }
+  .lrcard p { font-size: 17px; }
+  .lrcard svg.chart { margin: 2px 0 8px; }
+
+  /* batches */
+  .blocks { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .blocks div {
+    border-radius: 12px; padding: 16px 0 12px; text-align: center; background: var(--teal-soft); color: var(--teal);
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, transparent);
+  }
+  .blocks div:nth-child(even) { background: var(--indigo-soft); color: var(--indigo); border-color: color-mix(in srgb, var(--indigo) 35%, transparent); }
+  .blocks b { display: block; font: 700 22px var(--text); }
+  .blocks small { font: 500 13px var(--text); opacity: .85; }
+  .epoch-br { height: 16px; border: 2px solid var(--amber); border-top: none; border-radius: 0 0 12px 12px; margin: 0 2px; }
+  .epoch-cap { text-align: center; font-size: 19px; color: var(--amber); font-weight: 600; margin-top: 8px; }
+  .def { border-left: 5px solid var(--amber); padding: 4px 0 4px 18px; }
+  .def h3 { font-size: 28px; margin-bottom: 6px; }
+  .def p { font-size: 19px; line-height: 1.45; color: var(--muted); }
+
+  /* tabla */
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 19px; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  th { text-align: left; font: 700 13px var(--text); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 12px 22px; background: var(--paper-2); }
+  td { padding: 9px 22px; border-top: 1px solid var(--line); line-height: 1.35; color: var(--fg); }
+  td:first-child { font-family: var(--display); font-size: 21px; font-weight: 600; color: var(--amber); white-space: nowrap; width: 250px; }
+
+  /* preguntas */
+  .qs { display: grid; gap: 10px; counter-reset: q; padding: 0; margin: 0; list-style: none; }
+  .qs li {
+    counter-increment: q; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 12px 24px 12px 78px; position: relative; font-size: 21px; line-height: 1.45;
+  }
+  .qs details { margin-top: 8px; }
+  .qs summary { cursor: pointer; color: var(--teal); font-weight: 600; font-size: 17px; }
+  .qs details p { font-size: 17px; margin-top: 6px; color: var(--muted); line-height: 1.45; }
+  .qs li::before { content: counter(q); position: absolute; left: 22px; top: 50%; transform: translateY(-50%); font-family: var(--display); font-size: 40px; color: var(--teal); font-weight: 600; }
+
+  .ctl { padding: 12px 20px; display: grid; gap: 8px; }
+  .ctl label { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; font: 600 20px var(--display); }
+  .ctl label small { font: 500 13px var(--text); color: var(--muted); display: block; }
+  .ctl output { font: 600 18px var(--text); text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+  .ctl input[type=range] { width: 100%; accent-color: var(--amber); height: 26px; }
+  .btns { display: flex; gap: 10px; margin-top: 2px; }
+  .btns button { flex: 1; font: 600 16px var(--text); padding: 9px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); cursor: pointer; }
+  .btns button:hover { border-color: var(--amber); } .btns button.on { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btns button:focus-visible, .ctl input:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+  /* pie, controles */
+  .foot { position: absolute; left: 80px; right: 80px; bottom: 22px; display: flex; justify-content: space-between; font: 500 14px var(--text); color: var(--muted); }
+  .foot .pg { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { position: absolute; left: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, var(--teal), var(--indigo), var(--amber)); transition: width .35s ease; z-index: 5; }
+  .ui { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; z-index: 50; opacity: .0; transition: opacity .25s; }
+  body:hover .ui, .ui:focus-within { opacity: 1; }
+  .ui button {
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); border-radius: 999px; height: 38px; min-width: 38px;
+    padding: 0 14px; font: 600 14px var(--text); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .ui button:hover { border-color: var(--amber); }
+  .ui button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+  /* animación de entrada */
+  @media (prefers-reduced-motion: no-preference) {
+    .slide.active .hd, .slide.active .bd > * { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    .slide.active .bd > *:nth-child(2) { animation-delay: .07s; }
+    .slide.active .bd > *:nth-child(3) { animation-delay: .14s; }
+    .slide.active .bd > *:nth-child(4) { animation-delay: .21s; }
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  /* impresión / PDF: una diapositiva por página */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: none; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; overflow: visible; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    .slide .hd, .slide .bd > * { animation: none !important; }
+    .ui, .bar { display: none; }
+  }
+
+  /* laboratorio 2 */
+  .pg-bar { display: flex; gap: 16px; align-items: flex-end; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px 14px; }
+  .pg-bar .f { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+  .pg-bar .f > span { font: 600 13px var(--text); color: var(--muted); height: 20px; line-height: 20px; white-space: nowrap; }
+  .pg-bar select { width: 100%; height: 38px; font: 600 15px var(--text); padding: 5px 4px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); }
+  .pg-bar .rb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); color: var(--fg); font: 600 16px var(--text); cursor: pointer; padding: 0; }
+  .pg-bar .rb.play { background: var(--amber); color: #fff; border-color: var(--amber); width: 46px; height: 46px; }
+  .pg-bar .rb:hover { border-color: var(--amber); }
+  .pg-bar .ep { font: 600 26px var(--display); min-width: 74px; line-height: 1.1; }
+  .pg-mini { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; font: 600 15px var(--text); color: var(--fg); }
+  .pg-mini button, .pg-lay button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font: 700 15px var(--text); color: var(--fg); line-height: 1; padding: 0; }
+  .pg-mini button:hover, .pg-lay button:hover { border-color: var(--amber); }
+  .pg-lay { display: flex; align-items: center; gap: 6px; font: 600 15px var(--text); }
+  .pg-thumb { width: 50px; height: 50px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; background: var(--paper); }
+  .pg-thumb.on { border-color: var(--amber); }
+  .pg-side label { font: 600 13px var(--text); color: var(--muted); display: block; }
+  .pg-side input[type=range] { width: 100%; accent-color: var(--amber); }
+  .pg-bar .ep input { width: 78px; height: 34px; font: 600 18px var(--text); padding: 2px 6px; border-radius: 9px; border: 2px solid var(--amber); background: var(--paper-2); color: var(--fg); vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="stage">
+<section class="slide cover" data-title="Portada">
+  <svg class="chart cover-art" id="rnCover" style="opacity:.9" viewBox="0 0 720 520" role="img" aria-label="Ilustración de una red recurrente desenrollada en el tiempo"></svg>
+  <div class="hd" style="position:relative">
+    <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes</p>
+    <h1>Redes neuronales <em>recurrentes</em></h1>
+    <p class="lead">Redes que leen los datos en orden, uno tras otro, y llevan una memoria de lo que ya leyeron. En esta unidad se usan para pronosticar series de tiempo.</p>
+    <div class="meta"><span>Deep Learning</span><span>Parte 1 · RNN</span></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Ruta">
+  <div class="hd"><p class="eyebrow">Ruta de la sesión</p><h2>Tres etapas para entender las redes recurrentes</h2>
+    <p class="lead" style="font-size:19px">Una red recurrente es una red neuronal con una pieza nueva: una <b>memoria</b> que pasa de un paso de la secuencia al siguiente. Cada etapa responde una pregunta.</p></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Secuencias y series de tiempo</b><span>¿Qué es pronosticar una serie y por qué no basta una red densa?</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>De la neurona a la red</b><span>¿Cómo recuerda lo que vio y cómo se arman capas con muchas neuronas?</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>Entrenamiento</b><span>¿Cómo aprende una red recurrente?</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Datos secuenciales">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencias y series de tiempo</p><h2>¿Qué es una serie de tiempo?</h2>
+    <p class="lead" style="font-size:20px">Hasta ahora, cada dato (una imagen, una fila de una tabla) se analizaba solo. Una <b>serie de tiempo</b> es distinta: es una lista de valores de una misma variable <b>medidos uno tras otro</b>, cada hora, cada día o cada mes. Ahí el <b>orden importa</b>: cada valor suele parecerse o depender de los anteriores.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:12px;justify-content:flex-start">
+        <div class="card ctl" style="padding:8px 18px">
+          <label style="grid-template-columns:120px 1fr"><span>Ejemplo</span>
+            <select id="tsEx" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)">
+              <option value="0" selected>Serie de ejemplo</option>
+              <option value="1">Clima: temperatura, hora a hora (3 días)</option>
+              <option value="2">Ventas de una tienda, mes a mes (3 años)</option>
+              <option value="3">Bolsa: precio de una acción, día a día</option></select></label></div>
+        <div class="eq" style="padding:10px 22px 12px"><div class="lbl">Cómo se escribe</div>
+          <div class="math" style="font-size:24px">\[ x_1,\; x_2,\; x_3,\; \dots \]</div>
+          <div style="font-size:17px;line-height:1.45;text-align:left">\(x_t\): el valor medido en el <b>paso de tiempo</b> \(t\). Con un solo valor por paso, la serie es <b>univariada</b>; con varios (temperatura, humedad y viento), es <b>multivariada</b> y \(x_t\) es un vector.</div></div>
+        <p class="txt" style="font-size:17px;color:var(--muted)">La tarea más común es el <b>pronóstico</b>: usar los valores pasados para predecir los que vienen (el precio de mañana, la temperatura de la próxima hora).</p>
+      </div>
+      <div class="chartbox" style="padding:12px 16px;align-self:center">
+        <div class="cap" id="tsCap">Cada punto es una medición; el eje horizontal es el tiempo. Fíjate en los patrones que se repiten y en si la serie tiende a subir o bajar. <b>Prueba:</b> cambia el ejemplo.</div>
+        <svg class="chart" id="tsSvg" viewBox="0 0 580 300" role="img" aria-label="Ejemplo de serie de tiempo"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo se entrena con una serie">
+  <style>#wdTab td,#wdTab th{padding:5px 10px;text-align:center;font:500 16px var(--text);color:var(--fg);width:auto;white-space:nowrap}#wdTab th{font:700 13px var(--text);color:var(--muted)}#wdTab td.y{color:var(--teal);font-weight:700}#wdTab tr.on td{background:var(--amber-soft)}#wdTab td.k{color:var(--muted)}</style>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencias y series de tiempo</p><h2>¿Cómo se entrena una red con una serie de tiempo?</h2>
+    <p class="lead" style="font-size:20px">Para entrenar una red se necesitan <b>ejemplos</b>: una entrada y la respuesta correcta (la <b>etiqueta</b>), como en las unidades anteriores. Pero una serie es una sola lista larga de valores. ¿De dónde salen los ejemplos? Se arman con una <b>ventana</b>.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.8fr 1.2fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card" style="padding:12px 20px"><ol style="margin:0;padding-left:22px;font-size:17px;line-height:1.5">
+          <li><b style="color:var(--amber)">Entrada:</b> se toman \(T\) valores seguidos (la ventana, en ámbar).</li>
+          <li><b style="color:var(--teal)">Etiqueta:</b> el valor que viene justo después (en verde) es lo que la red debe predecir.</li>
+          <li><b style="color:var(--indigo)">Deslizar:</b> se corre la ventana un paso y sale otro ejemplo, hasta el final de la serie.</li></ol></div>
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:150px 1fr"><span>\(T\) <small>largo de la ventana</small></span>
+            <select id="wdT"><option>3</option><option selected>4</option><option>5</option></select></label>
+          <div class="btns"><button type="button" id="wdNext">Siguiente ventana →</button><button type="button" id="wdReset">Reiniciar</button></div>
+        </div>
+        <p class="txt" style="font-size:16px;color:var(--muted)">Cada fila de la tabla es un ejemplo: \(T\) entradas y una etiqueta. Esa tabla es el <b>dataset</b>. Con una serie de 1000 valores y \(T=20\) salen 980 ejemplos.</p>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="chartbox" style="padding:8px 14px"><svg class="chart" id="wdSvg" viewBox="0 0 600 170" role="img" aria-label="Ventana sobre la serie"></svg></div>
+        <table id="wdTab"></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Con una red densa">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencias y series de tiempo</p><h2>¿Cómo procesaríamos estos datos con una red densa?</h2>
+    <p class="lead" style="font-size:20px">Con lo que ya sabemos, cada fila de la tabla anterior se trata como una fila de datos cualquiera: los \(T\) valores de la ventana son \(T\) variables de entrada y la etiqueta es lo que la red debe predecir.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:24px">
+      <div class="chartbox" style="padding:10px 14px">
+        <div class="cap">Una ventana de \(T=4\) valores entrando a una neurona: cada posición de la ventana tiene su propio peso.</div>
+        <svg class="chart" id="dsSvg" viewBox="0 0 560 270" role="img" aria-label="Neurona densa sobre una ventana"></svg>
+      </div>
+      <div class="col" style="gap:12px">
+        <div class="eq" style="padding:10px 22px"><div class="lbl">Pronóstico con una neurona densa</div>
+          <div class="math" style="font-size:20px">\[ \hat y = g\big(w_1 x_1 + w_2 x_2 + \dots + w_T x_T + w_0\big) \]</div>
+          <div style="font-size:17px;line-height:1.45;text-align:left">La neurona que ya conoces: suma ponderada, sesgo \(w_0\) y función de activación \(g\). Hay un peso \(w_t\) para cada posición de la ventana. Con más neuronas y capas es una red densa, y la idea es la misma.</div></div>
+        <p class="txt" style="font-size:18px">¿Qué pasaría? Con ventanas cortas <b>puede funcionar</b> bien. Pero la red trata la ventana como \(T\) números sueltos: no sabe que van en orden ni que son el mismo tipo de dato medido en momentos distintos. La siguiente diapositiva muestra los problemas que eso trae.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="La red densa no ve el orden">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Los límites de la red densa</p><h2>Límite 1: la red densa no sabe que hay un orden</h2>
+    <p class="lead" style="font-size:20px">En una serie, el valor <b>anterior</b> suele ser el que más ayuda a predecir el siguiente (la temperatura de la próxima hora depende sobre todo de la de esta hora). Pero la red densa no sabe cuál valor vino antes y cuál después.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:24px">
+      <div class="chartbox" style="padding:8px 12px">
+        <div class="cap">Una red densa con una ventana de 4 valores: cada valor de entrada se conecta con <b>todas</b> las neuronas. <b>Prueba:</b> desordena la ventana.</div>
+        <svg class="chart" id="ordSvg" style="max-height:250px" viewBox="0 0 560 280" role="img" aria-label="Red densa con todas las conexiones"></svg>
+        <div class="btns" style="margin-top:6px"><button type="button" id="ordBtn">Desordenar la ventana</button></div>
+      </div>
+      <div class="col" style="gap:12px">
+        <div class="card" style="padding:8px 18px"><span class="tag t-indigo">Todo conectado con todo</span><p style="font-size:16px">La red no lee la ventana de izquierda a derecha: recibe los \(T\) valores <b>de golpe</b>, y cada uno llega a todas las neuronas por su propio peso.</p></div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-amber">El orden no cambia nada</span><p style="font-size:16px">Si se desordenan las columnas de la tabla (igual en todos los ejemplos), para la red es el mismo problema: aprendería igual de bien.</p></div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-coral">Consecuencia</span><p style="font-size:16px">Que \(x_4\) es el valor más reciente y \(x_3\) vino justo antes, la red lo tiene que <b>descubrir</b> con muchos ejemplos.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Secuencias y redes densas">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Los límites de la red densa</p><h2>Límite 2: cada posición tiene su propio peso</h2>
+    <p class="lead" style="font-size:20px">En la red densa, el valor de la posición 1 siempre pasa por \(w_1\), el de la posición 2 por \(w_2\), y así. Eso trae dos problemas:</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
+      <div class="col" style="gap:12px;justify-content:center">
+        <div class="card" style="padding:10px 18px"><span class="tag t-coral">1 · Lo aprendido no se traslada</span><p style="font-size:16px">Ejemplo: ventas diarias que saltan de 20 a 80 unidades por una promoción. Si en el entrenamiento el salto casi siempre cae al final de la ventana, la red lo aprende con los pesos del final. Si cae al inicio, pasa por pesos que nunca lo vieron: hay que aprenderlo otra vez en cada posición.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber">2 · Un solo largo de ventana</span><p style="font-size:16px">Una red entrenada con \(T=20\) tiene exactamente 20 entradas: no recibe una ventana de 30 valores. Y muchas secuencias (una frase, un audio) no tienen siempre el mismo largo.</p></div>
+        <p class="txt" style="font-size:16px;color:var(--muted);margin:0">Además, los pesos crecen con la ventana: \(T+1\) por neurona.</p>
+      </div>
+      <div class="chartbox" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><span class="tag t-coral" style="margin:0">1</span><span style="font:600 20px var(--display)">El mismo salto de ventas, en otro día</span></div>
+        <div class="card ctl" style="padding:6px 16px;display:flex;gap:12px;align-items:center;box-shadow:none">
+          <span style="font-size:16px;white-space:nowrap">Día del salto</span>
+          <select id="psPos" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)">
+            <option value="1">del día 1 al 2</option><option value="3">del día 3 al 4</option><option value="5">del día 5 al 6</option><option value="7" selected>del día 7 al 8</option></select>
+        </div>
+        <svg class="chart" id="psSvg" style="max-height:270px" viewBox="0 0 560 280" role="img" aria-label="Un salto de ventas en distintas posiciones de la ventana pasa por pesos distintos"></svg>
+        <div class="cap" style="padding:0" id="psCap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Qué necesitamos">
+  <style>.slide[data-title="Qué necesitamos"] td{padding:8px 18px;font-size:17px;width:50%;line-height:1.45}.slide[data-title="Qué necesitamos"] td:first-child{font:500 17px var(--text);color:var(--fg)}</style>
+  <div class="hd"><p class="eyebrow">Etapa 2 · De la neurona a la red</p><h2>¿Qué necesitamos de una nueva red?</h2>
+    <p class="lead" style="font-size:20px">En la Etapa uno vimos tres problemas de la red densa con series de tiempo. Cada problema nos dice qué debe hacer una red mejor:</p></div>
+  <div class="bd">
+    <table>
+      <thead><tr><th>Problema de la red densa</th><th>Lo que pedimos a la nueva red</th></tr></thead>
+      <tbody>
+        <tr><td>No sabe en qué orden llegan los valores.</td><td><b>Leer los valores uno por uno, en orden</b>: primero \(x_1\), luego \(x_2\), y así.</td></tr>
+        <tr><td>Cada posición tiene su propio peso: lo aprendido en una posición no sirve en otra.</td><td><b>Usar los mismos pesos en cada paso</b>: un salto de ventas se procesa igual el día 1 o el día 7.</td></tr>
+        <tr><td>Solo acepta ventanas de un largo fijo.</td><td><b>Servir para cualquier largo</b>: si se leen los valores uno por uno con los mismos pesos, da igual si son 5 o 500.</td></tr>
+      </tbody>
+    </table>
+    <div class="card" style="padding:12px 22px"><span class="tag t-amber">Falta una pieza</span><p style="font-size:18px;line-height:1.5;color:var(--fg);margin-top:2px">Si la red lee un valor a la vez, ¿cómo sabe lo que leyó antes? Necesita una <b>memoria</b>: un resumen de lo leído que pase de un paso al siguiente. Esa es la idea de la red recurrente, y la siguiente diapositiva la muestra paso a paso.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="La idea paso a paso">
+  <div class="hd"><p class="eyebrow">Etapa 2 · La neurona recurrente</p><h2>La neurona recurrente</h2>
+    <p class="lead" style="font-size:20px">Para resolver los problemas de la red densa se propone un nuevo tipo de neurona: la <b>neurona recurrente</b>, también llamada <b>celda</b>. Lee un valor por paso y guarda una <b>memoria</b> \(h\) que pasa al paso siguiente. Ejemplo: con la temperatura de 4 días (18, 20, 23 y 25 °C) queremos pronosticar la del día 5. Pulsa <b>Siguiente paso</b>.</p></div>
+  <div class="bd noclick">
+    <div class="chartbox" style="padding:10px 16px">
+      <svg class="chart" id="ipSvg" style="max-height:225px" viewBox="40 15 960 285" role="img" aria-label="Una celda que lee cuatro temperaturas y actualiza su memoria"></svg>
+    </div>
+    <div class="row2" style="grid-template-columns:1fr auto;gap:18px;align-items:center">
+      <div class="card" style="padding:10px 20px"><span class="tag t-teal" id="ipTag">Antes de empezar</span><p style="font-size:18px;line-height:1.5" id="ipTxt"></p></div>
+      <div class="btns" style="width:340px"><button type="button" id="ipNext" class="on" style="flex:1.6;font-size:18px;padding:12px 10px;white-space:nowrap">Siguiente paso →</button><button type="button" id="ipReset">Reiniciar</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="La idea: leer con memoria">
+  <div class="hd"><p class="eyebrow">Etapa 2 · La neurona recurrente</p><h2>La neurona recurrente en un solo dibujo</h2>
+    <p class="lead" style="font-size:20px">Las cuatro cajas de la diapositiva anterior eran <b>la misma celda</b>. Por eso se suele dibujar una sola, con una flecha que vuelve a entrar: la memoria.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:26px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap">Una sola celda. La flecha ámbar lleva la memoria de un paso al siguiente.</div>
+        <svg class="chart" id="idSvg" viewBox="0 0 520 300" role="img" aria-label="Celda recurrente con un bucle"></svg>
+      </div>
+      <div class="col" style="gap:12px">
+        <div class="card" style="padding:12px 20px"><span class="tag t-indigo">Entrada</span><p style="font-size:17px">En el paso \(t\) entra el valor de ese paso, \(x_t\) (por ejemplo, la temperatura del día \(t\)).</p></div>
+        <div class="card" style="padding:12px 20px"><span class="tag t-amber">Memoria</span><p style="font-size:17px">También entra la memoria anterior, \(h_{t-1}\), llamada <b>estado oculto</b>: el resumen de lo leído. Al empezar vale 0.</p></div>
+        <div class="card" style="padding:12px 20px"><span class="tag t-teal">Salida</span><p style="font-size:17px">Con los dos calcula el nuevo resumen \(h_t\), que sale y vuelve a entrar en el paso \(t+1\). Esa flecha que vuelve da el nombre de <b>recurrente</b>.</p></div>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<section class="slide" data-title="Dentro de la neurona recurrente">
+  <div class="hd"><p class="eyebrow">Etapa 2 · La neurona recurrente</p><h2>¿Qué hay dentro de una neurona recurrente?</h2>
+    <p class="lead" style="font-size:20px">Es la <b>misma neurona de siempre</b> (suma ponderada, sesgo y activación) con una sola entrada más: <b>su propio resultado del paso anterior</b>.</p></div>
+  <div class="bd">
+    <div class="chartbox" style="padding:10px 16px">
+      <div class="cap">Izquierda: la neurona densa que ya conoces. Derecha: la neurona recurrente. Lo que se agrega está en ámbar.</div>
+      <svg class="chart" viewBox="0 10 1000 310" style="max-height:250px" role="img" aria-label="Neurona densa frente a neurona recurrente"><text x="230" y="30" class="lb" text-anchor="middle" style="fill:var(--fg);font-size:20px;font-weight:700">Neurona densa</text><rect x="10" y="90" width="80" height="44" rx="10" style="fill:var(--indigo-soft);stroke:var(--indigo);stroke-width:2"/><text x="50" y="119" class="lb" text-anchor="middle" style="fill:var(--indigo);font-size:20px;font-weight:700">x<tspan dy="5" style="font-size:.72em">t</tspan></text><line x1="92" y1="112" x2="196" y2="158" style="stroke:var(--indigo);stroke-width:2.6" marker-end="url(#rkInd)"/><text x="140" y="118" class="lb" text-anchor="middle" style="fill:var(--indigo);font-size:17px;font-weight:700">w<tspan dy="5" style="font-size:.72em">x</tspan></text><circle cx="230" cy="170" r="32" style="fill:var(--paper-2);stroke:var(--fg);stroke-width:2"/><text x="230" y="178" class="lb" text-anchor="middle" style="fill:var(--fg);font-size:26px;font-weight:700">Σ</text><text x="230" y="126" class="lb" text-anchor="middle" style="fill:var(--muted);font-size:15px;font-weight:600">+ w<tspan dy="5" style="font-size:.72em">0</tspan></text><line x1="263" y1="170" x2="296" y2="170" style="stroke:var(--axis);stroke-width:2.6" marker-end="url(#rkMut)"/><rect x="298" y="146" width="70" height="48" rx="10" style="fill:var(--paper-2);stroke:var(--fg);stroke-width:2"/><text x="333" y="176" class="lb" text-anchor="middle" style="fill:var(--fg);font-size:17px;font-weight:700">tanh</text><line x1="370" y1="170" x2="415" y2="170" style="stroke:var(--teal);stroke-width:2.6" marker-end="url(#rkTea)"/><text x="440" y="177" class="lb" text-anchor="middle" style="fill:var(--teal);font-size:22px;font-weight:700">h<tspan dy="5" style="font-size:.72em">t</tspan></text><line x1="492" y1="20" x2="492" y2="300" style="stroke:var(--line);stroke-width:1.5"/><text x="750" y="30" class="lb" text-anchor="middle" style="fill:var(--amber);font-size:20px;font-weight:700">Neurona recurrente</text><rect x="530" y="90" width="80" height="44" rx="10" style="fill:var(--indigo-soft);stroke:var(--indigo);stroke-width:2"/><text x="570" y="119" class="lb" text-anchor="middle" style="fill:var(--indigo);font-size:20px;font-weight:700">x<tspan dy="5" style="font-size:.72em">t</tspan></text><line x1="612" y1="112" x2="716" y2="158" style="stroke:var(--indigo);stroke-width:2.6" marker-end="url(#rkInd)"/><text x="660" y="118" class="lb" text-anchor="middle" style="fill:var(--indigo);font-size:17px;font-weight:700">w<tspan dy="5" style="font-size:.72em">x</tspan></text><rect x="530" y="206" width="80" height="44" rx="10" style="fill:var(--amber-soft);stroke:var(--amber);stroke-width:2"/><text x="570" y="235" class="lb" text-anchor="middle" style="fill:var(--amber);font-size:20px;font-weight:700">h<tspan dy="5" style="font-size:.72em">t−1</tspan></text><line x1="612" y1="228" x2="716" y2="182" style="stroke:var(--amber);stroke-width:2.6" marker-end="url(#rkAmb)"/><text x="660" y="236" class="lb" text-anchor="middle" style="fill:var(--amber);font-size:17px;font-weight:700">w<tspan dy="5" style="font-size:.72em">h</tspan></text><circle cx="750" cy="170" r="32" style="fill:var(--paper-2);stroke:var(--fg);stroke-width:2"/><text x="750" y="178" class="lb" text-anchor="middle" style="fill:var(--fg);font-size:26px;font-weight:700">Σ</text><text x="750" y="126" class="lb" text-anchor="middle" style="fill:var(--muted);font-size:15px;font-weight:600">+ w<tspan dy="5" style="font-size:.72em">0</tspan></text><line x1="783" y1="170" x2="816" y2="170" style="stroke:var(--axis);stroke-width:2.6" marker-end="url(#rkMut)"/><rect x="818" y="146" width="70" height="48" rx="10" style="fill:var(--paper-2);stroke:var(--fg);stroke-width:2"/><text x="853" y="176" class="lb" text-anchor="middle" style="fill:var(--fg);font-size:17px;font-weight:700">tanh</text><line x1="890" y1="170" x2="935" y2="170" style="stroke:var(--teal);stroke-width:2.6" marker-end="url(#rkTea)"/><text x="960" y="177" class="lb" text-anchor="middle" style="fill:var(--teal);font-size:22px;font-weight:700">h<tspan dy="5" style="font-size:.72em">t</tspan></text><path d="M960 190 L960 290 L570 290 L570 256" style="fill:none;stroke:var(--amber);stroke-width:2.6;stroke-dasharray:7 5" marker-end="url(#rkAmb)"/><text x="765" y="312" class="lb" text-anchor="middle" style="fill:var(--amber);font-size:15px;font-weight:600">en el paso siguiente, h<tspan dy="5" style="font-size:.72em">t</tspan><tspan dy="-5"> vuelve a entrar como memoria</tspan></text></svg>
+    </div>
+    <div class="grid3" style="gap:14px">
+      <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Entrada</span><p style="font-size:16px">\(x_t\): el valor de la serie en el paso \(t\) (por ejemplo, la temperatura de hoy).</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-amber">Memoria</span><p style="font-size:16px">\(h_{t-1}\): lo que la neurona calculó en el paso anterior (la flecha que vuelve, en el dibujo anterior).</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-teal">Salida</span><p style="font-size:16px">\(h_t\): el resultado de este paso; se guarda como memoria del siguiente. <b>No es el pronóstico</b> \(\hat y\), que sale de una capa densa.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="La ecuación de la neurona recurrente">
+  <div class="hd"><p class="eyebrow">Etapa 2 · La neurona recurrente</p><h2>La ecuación de la neurona recurrente</h2>
+    <p class="lead" style="font-size:20px">El dibujo anterior, escrito como una ecuación. Es la suma ponderada de la neurona densa con un término más: la memoria por su peso.</p></div>
+  <div class="bd">
+    <div class="eq" style="padding:12px 24px"><div class="lbl">Un paso de la neurona recurrente</div>
+      <div class="math" style="font-size:30px">\[ h_t = \tanh\big(\,\underbrace{w_x\,x_t \;+\; w_0}_{\text{neurona densa}} \;+\; \underbrace{w_h\,h_{t-1}}_{\text{memoria}}\,\big) \]</div>
+      <div style="font-size:18px;text-align:left;line-height:1.55">\(x_t\): entrada del paso \(t\). \(h_{t-1}\): memoria (resultado del paso anterior; al empezar, \(h_0=0\)). \(h_t\): resultado de este paso.<br>\(w_x\): peso de la entrada. \(w_h\): peso de la memoria. \(w_0\): sesgo.</div></div>
+    <div class="grid2" style="gap:14px">
+      <div class="card" style="padding:10px 18px"><span class="tag t-teal">Activación tanh</span><p style="font-size:17px">Es la que se usa casi siempre en esta neurona. Deja \(h_t\) entre −1 y 1, así la memoria no crece sin control de un paso a otro.</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-coral">Los mismos pesos en cada paso</span><p style="font-size:17px">\(w_x\), \(w_h\) y \(w_0\) son iguales en todos los pasos: con 3 o con 300 valores, la neurona tiene solo esos 3 parámetros.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Una capa con varias neuronas">
+  <div class="hd"><p class="eyebrow">Etapa 2 · De la neurona a la capa</p><h2>Una capa recurrente con \(n\) neuronas</h2>
+    <p class="lead" style="font-size:19px">Una neurona guarda su memoria en un solo número: es poco. Como en las redes densas, se juntan varias en una <b>capa</b>; cada cajita es una neurona recurrente con sus propios pesos.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.75fr 1.25fr;gap:20px;align-items:stretch">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:190px 1fr"><span>\(n\) <small>neuronas de la capa</small></span><input type="number" id="cnN" min="1" max="5" step="1" value="3"></label>
+          <label style="grid-template-columns:190px 1fr"><span>Neurona resaltada</span><select id="cnK"></select></label>
+        </div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-amber">La memoria es de todas</span><p style="font-size:16px">Cada neurona recibe la entrada \(x_t\) y la memoria de <b>todas</b> las neuronas en el paso anterior, no solo la suya.</p></div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-teal">El resultado es un vector</span><p style="font-size:16px">Juntas forman el <b>vector</b> \(\mathbf{h}_t\) (en negrilla) de \(n\) valores. Sin negrilla, \(h_{t,k}\) es un solo número.</p></div>
+        <p class="txt" style="font-size:15px;line-height:1.4"><b>Prueba:</b> cambia la neurona resaltada y luego \(n\).</p>
+        <p class="txt" style="font-size:14px;line-height:1.35;color:var(--muted)">Notación: los pesos de toda la capa se agrupan en dos matrices, \(W_x\) (los de la entrada) y \(W_h\) (los de la memoria).</p>
+      </div>
+      <div class="col" style="gap:8px">
+        <div class="chartbox" style="padding:10px 16px">
+          <div class="cap">Una red recurrente de <b>una capa</b> con \(n\) neuronas, en un paso de tiempo. Índigo: la entrada \(x_t\). Ámbar: la memoria \(\mathbf{h}_{t-1}\) (lo que calcularon las \(n\) neuronas en el paso anterior). Verde: el nuevo \(\mathbf{h}_t\).</div>
+          <svg class="chart" id="cnSvg" viewBox="0 10 620 320" style="max-height:330px" role="img" aria-label="Capa recurrente con varias neuronas"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Varias capas recurrentes">
+  <div class="hd"><p class="eyebrow">Etapa 2 · De la capa a la red</p><h2>Varias capas recurrentes, una encima de otra</h2>
+    <p class="lead" style="font-size:19px">Como en las redes densas, las capas se <b>apilan</b>: lo que calcula una capa en cada paso es la entrada de la de arriba. Así la red capta patrones más complejos; suelen bastar 2 o 3 capas.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:1.12fr .88fr;align-items:stretch;gap:20px">
+      <div class="chartbox" style="padding:10px 16px;gap:6px">
+        <div class="btns" style="flex-wrap:nowrap;gap:6px"><button type="button" id="vcV0" class="on" style="font-size:14px;padding:8px 6px">Compacta</button><button type="button" id="vcV1" style="font-size:14px;padding:8px 6px">Desenrollada</button><button type="button" id="vcNext" style="font-size:14px;padding:8px 6px;white-space:nowrap">Paso →</button><button type="button" id="vcReset" style="font-size:14px;padding:8px 6px">Reiniciar</button></div>
+        <div class="btns" id="vcBackWrap" style="display:none"><button type="button" id="vcV2" class="on">← Volver a la red completa</button></div>
+        <svg class="chart" id="vcSvg" viewBox="0 0 600 330" style="max-height:350px" role="img" aria-label="Dos capas recurrentes apiladas y una capa densa de salida"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="eq" style="padding:8px 16px"><div class="lbl">Capa ℓ en el paso t</div><div class="math" style="font-size:18px">\[ \mathbf{h}_t^{(\ell)} = \tanh\big(W_x^{(\ell)}\,\mathbf{h}_t^{(\ell-1)} + W_h^{(\ell)}\,\mathbf{h}_{t-1}^{(\ell)} + \mathbf{w}_0^{(\ell)}\big) \]</div>
+          <div style="font-size:15px;text-align:left;line-height:1.4">Superíndice \((\ell)\): la capa. Subíndice \(k\): la neurona. \(h_{t,k}^{(\ell)}\) es <b>un número</b>; \(\mathbf{h}_t^{(\ell)}\) (negrilla) es <b>el vector</b> con los \(n\) números: eso es lo que sube a la capa siguiente. La capa 1 recibe \(x_t\).</div></div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-amber">Qué está pasando</span><p id="vcTxt" style="font-size:15px;line-height:1.4"></p></div>
+        <div class="card" style="padding:8px 18px"><span class="tag t-teal">h y ŷ no son lo mismo</span><p style="font-size:15px;line-height:1.4">\(\mathbf{h}\) (ámbar) es la <b>memoria</b> de una capa, no un pronóstico. \(\hat y\) (verde) es el <b>pronóstico</b>: lo da la capa densa con el último \(\mathbf{h}\) de la capa de arriba.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Actividad: arma tu red recurrente">
+  <div class="hd"><p class="eyebrow">Etapa 2 · Actividad</p><h2>Arma tu red recurrente</h2>
+    <p class="lead" style="font-size:19px"><b>Objetivo:</b> ver cuántos parámetros (pesos y sesgos) tiene una red recurrente según sus capas y neuronas, y comprobar que <b>no</b> depende de lo larga que sea la serie.</p></div>
+  <div class="bd noclick">
+    <div class="row2 grow" style="grid-template-columns:.8fr 1.2fr;align-items:stretch;gap:20px">
+      <div class="col" style="gap:10px;justify-content:flex-start">
+        <div class="card ctl" style="padding:8px 18px;gap:6px">
+          <label style="grid-template-columns:200px 1fr"><span>Capas recurrentes</span><input type="number" id="arL" min="1" max="3" step="1" value="2"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(n\) <small>neuronas por capa</small></span><input type="number" id="arN" min="1" max="4" step="1" value="3"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(d\) <small>valores por paso</small></span><input type="number" id="arD" min="1" max="3" step="1" value="1"></label>
+          <label style="grid-template-columns:200px 1fr"><span>\(T\) <small>largo de la serie</small></span><input type="number" id="arT" min="2" max="1000" step="1" value="20"></label>
+        </div>
+        <div class="kpi" style="padding:8px 14px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Parámetros de toda la red</div><div class="v" id="arP" style="font-size:28px">–</div></div>
+        <p class="txt" style="font-size:15px;line-height:1.45"><b>Prueba:</b> 1. <b>Haz clic en una capa</b> para ver sus conexiones: cada línea es un peso. 2. Cambia \(T\): los parámetros no cambian, porque se usan los mismos pesos en cada paso. 3. Sube \(n\) y mira cómo crecen las líneas de la memoria.</p>
+      </div>
+      <div class="chartbox" style="padding:10px 16px">
+        <div class="cap" id="arCap"></div>
+        <div class="btns" id="arBackWrap" style="display:none"><button type="button" id="arBack" class="on">← Volver a la red completa</button></div>
+        <svg class="chart" id="arSvg" viewBox="95 20 520 315" style="max-height:380px" role="img" aria-label="Red recurrente con sus parámetros por capa"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Cómo se entrena">
+  <div class="hd"><p class="eyebrow">Etapa 3 · Entrenamiento</p><h2>Cómo se entrena: backward a través del tiempo</h2>
+    <p class="lead" style="font-size:20px">Desenrollada en el tiempo (como en la vista «Desenrollada»), la red es una cadena: una copia de la misma celda por paso, con los mismos pesos. Se entrena con el mismo ciclo que ya conoces: forward, pérdida, backward y step. Lo nuevo es que el backward recorre la cadena de derecha a izquierda, del último paso de tiempo al primero.</p></div>
+  <div class="bd" style="gap:12px">
+    <div class="cycle" style="flex:0 0 auto">
+      <div class="card"><span class="n" style="font-size:34px">1</span><h3 style="font-size:21px">Forward</h3><p style="font-size:16px">Se lee la secuencia de \(x_1\) a \(x_T\), calculando cada \(h_t\) con los mismos pesos.</p></div>
+      <div class="link">→</div>
+      <div class="card"><span class="n" style="font-size:34px">2</span><h3 style="font-size:21px">Pérdida</h3><p style="font-size:16px">La capa densa convierte el último estado \(h_T\) en el pronóstico \(\hat y\), y se compara con la etiqueta.</p></div>
+      <div class="link">→</div>
+      <div class="card"><span class="n" style="font-size:34px">3</span><h3 style="font-size:21px">Backward</h3><p style="font-size:16px">El gradiente viaja hacia atrás, paso a paso, por toda la cadena: es el <b>backpropagation through time</b> (BPTT).</p></div>
+      <div class="link">→</div>
+      <div class="card"><span class="n" style="font-size:34px">4</span><h3 style="font-size:21px">Step</h3><p style="font-size:16px">Como los pesos son compartidos, se suman los aportes de todos los pasos y se actualizan una sola vez.</p></div>
+    </div>
+    <div class="card" style="padding:12px 22px"><span class="tag t-coral">Un problema pendiente</span><p style="font-size:17px;line-height:1.5;color:var(--fg);margin-top:2px">En secuencias largas el gradiente debe atravesar <b>muchos pasos</b> y la red olvida lo que pasó al principio. Ese problema y su solución se ven en la <b>siguiente presentación</b>.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Resumen">
+  <div class="hd"><p class="eyebrow">Resumen</p><h2>Las tres preguntas, respondidas</h2></div>
+  <div class="bd">
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Secuencias y series de tiempo</b><span>La serie se corta en ventanas de \(T\) pasos con su etiqueta. La red densa no ve el orden, necesita un peso por posición y solo acepta un largo fijo.</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>De la neurona a la red</b><span>La neurona recurrente es la neurona de siempre más su resultado del paso anterior: \(h_t=\tanh(w_x x_t+w_h h_{t-1}+w_0)\). \(n\) neuronas forman una capa con el vector \(\mathbf{h}_t\); las capas se apilan y una capa densa da \(\hat y\).</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>Entrenamiento</b><span>Desenrollada, la red es una cadena con los mismos pesos en cada paso; el backward la recorre del último paso al primero (BPTT). En series largas aparece un problema: lo vemos en la parte 2.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="foot"><span>Deep Learning · Unidad 2 · Redes neuronales recurrentes</span><span class="pg" id="pg"></span></div>
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="ui">
+  <button id="bPrev" type="button" aria-label="Diapositiva anterior">←</button>
+  <button id="bNext" type="button" aria-label="Diapositiva siguiente">→</button>
+  <button id="bFs" type="button" aria-label="Pantalla completa (F)">Pantalla</button>
+  <button id="bTheme" type="button" aria-label="Cambiar tema (T)">Tema</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  var AMB = "var(--amber)", IND = "var(--indigo)", TEA = "var(--teal)", COR = "var(--coral)", MUT = "var(--axis)";
+  var defs = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  defs.setAttribute("width", "0"); defs.setAttribute("height", "0"); defs.style.position = "absolute";
+  defs.innerHTML = ["Amb:var(--amber)", "Mut:var(--axis)", "Tea:var(--teal)", "Ind:var(--indigo)", "Cor:var(--coral)"].map(function (d) {
+    var p = d.split(":");
+    return '<defs><marker id="rk' + p[0] + '" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1 L11 6 L1 11 Z" style="fill:' + p[1] + '"/></marker></defs>';
+  }).join("");
+  document.body.appendChild(defs);
+  function rect(x, y, w, h, fill, stroke, sw, rx, op) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (rx === undefined ? 8 : rx) + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + (op !== undefined ? ';opacity:' + op : '') + '"/>';
+  }
+  function text(x, y, t, cls, anchor, fill, size, weight) {
+    return '<text x="' + x + '" y="' + y + '" class="' + (cls || "lb") + '" text-anchor="' + (anchor || "middle") + '" style="' + (fill ? 'fill:' + fill + ';' : '') + (size ? 'font-size:' + size + 'px;' : '') + (weight ? 'font-weight:' + weight + ';' : '') + '">' + t + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, mk, w, dash, op) {
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + (op !== undefined ? ';opacity:' + op : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function path(d, color, mk, w, dash) {
+    return '<path d="' + d + '" style="fill:none;stroke:' + color + ';stroke-width:' + (w || 2) + (dash ? ';stroke-dasharray:' + dash : '') + '"' + (mk ? ' marker-end="url(#rk' + mk + ')"' : '') + '/>';
+  }
+  function circ(x, y, r, fill, stroke, sw) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:' + (sw || 1.5) + '"/>';
+  }
+  function sub(base, s) { return base + '<tspan dy="5" style="font-size:.72em">' + s + '</tspan>'; }
+  function fmt(v, d) { return v.toFixed(d === undefined ? 2 : d).replace(".", ","); }
+
+  /* cadena desenrollada genérica: n celdas */
+  function chain(n, x0, y, dx, opt) {
+    var s = "", k, cw = opt.cw || 70, ch = opt.ch || 50;
+    for (k = 0; k < n; k++) {
+      var x = x0 + k * dx, on = opt.on ? opt.on(k) : false;
+      if (k > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 3);
+      s += rect(x, y, cw, ch, on ? "var(--amber-soft)" : "var(--paper-2)", on ? AMB : "var(--axis)", on ? 3 : 1.5, 10);
+      s += text(x + cw / 2, y + ch / 2 + 6, opt.label ? opt.label(k) : "celda", "lb", "middle", null, 16, 600);
+      if (opt.inp) { var a = opt.inp(k); s += line(x + cw / 2, y + ch + 40, x + cw / 2, y + ch + 3, a ? IND : MUT, a ? "Ind" : "Mut", 2.5, a ? null : "5 5", a ? 1 : .5); if (a) s += text(x + cw / 2, y + ch + 62, a, "lb", "middle", IND, 17, 600); }
+      if (opt.out) { var b = opt.out(k); s += line(x + cw / 2, y - 3, x + cw / 2, y - 40, b ? TEA : MUT, b ? "Tea" : "Mut", 2.5, b ? null : "5 5", b ? 1 : .5); if (b) s += text(x + cw / 2, y - 50, b, "lb", "middle", TEA, 17, 600); }
+    }
+    return s;
+  }
+
+  /* ---------- portada ---------- */
+  (function () {
+    var s = chain(5, 120, 220, 110, { cw: 74, ch: 56, label: function (k) { return "h" + (k + 1); },
+      inp: function (k) { return "x" + (k + 1); }, out: function (k) { return k === 4 ? "ŷ" : ""; }, on: function (k) { return k === 2; } });
+    $("rnCover").innerHTML = s;
+  })();
+
+  /* ---------- serie de tiempo (como en el libro: dos ondas más ruido, semilla fija) ---------- */
+  var SER = (function () {
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var a = [], n = 120, k;
+    for (k = 0; k < n; k++) { var u = k / n; a.push(0.5 * Math.sin((u - 0.3) * 2 * Math.PI * 4.2) + 0.2 * Math.sin((u - 0.1) * 2 * Math.PI * 11.5) + 0.1 * (rnd() - 0.5)); }
+    return a;
+  })();
+
+  /* ---------- qué es una serie de tiempo ---------- */
+  (function () {
+    var seed = 11; function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+    var EX = [], k, a;
+    EX.push({ d: SER.slice(0, 60).map(function (y) { return y; }), unit: "valor", step: "", lo: -0.9, hi: 0.9, tick: [-0.5, 0, 0.5] });
+    a = []; for (k = 0; k < 72; k++) a.push(22 + 6 * Math.sin((k - 9) / 24 * 2 * Math.PI) + (rnd() - 0.5) * 0.4);
+    EX.push({ d: a, unit: "temperatura (°C)", step: "hora", lo: 12, hi: 32, tick: [15, 20, 25, 30] });
+    a = []; for (k = 0; k < 36; k++) { var m = k % 12; a.push(50 + 0.8 * k + (m === 11 ? 25 : m === 10 ? 10 : 0) + (rnd() - 0.5) * 2); }
+    EX.push({ d: a, unit: "ventas (millones)", step: "mes", lo: 40, hi: 110, tick: [50, 70, 90] });
+    a = []; for (k = 0; k < 60; k++) a.push(100 + 0.6 * k + 4 * Math.sin(k / 15 * 2 * Math.PI) + (rnd() - 0.5) * 1.5);
+    EX.push({ d: a, unit: "precio (USD)", step: "día", lo: 90, hi: 145, tick: [100, 120, 140] });
+    function draw() {
+      var e = EX[+$("tsEx").value], n = e.d.length, W = 580, H = 300, ml = 52, mr = 16, mt = 20, mb = 40, s = "";
+      function sx(i) { return ml + i / (n - 1) * (W - ml - mr); }
+      function sy(y) { return H - mb - (y - e.lo) / (e.hi - e.lo) * (H - mt - mb); }
+      e.tick.forEach(function (y) { s += line(ml, sy(y), W - mr, sy(y), "var(--grid)", null, 1); s += text(ml - 6, sy(y) + 5, y, "tk", "end", null, 13); });
+      var d = ""; for (k = 0; k < n; k++) d += (k ? "L" : "M") + sx(k).toFixed(1) + " " + sy(e.d[k]).toFixed(1) + " ";
+      s += path(d, IND, null, 2);
+      for (k = 0; k < n; k++) s += circ(sx(k), sy(e.d[k]), 3.2, IND, "none", 0);
+      [[0, "x", "1"], [n - 1, "x", String(n)]].forEach(function (q) {
+        s += circ(sx(q[0]), sy(e.d[q[0]]), 6, AMB, "var(--paper)", 2);
+        s += text(sx(q[0]) + (q[0] ? -4 : 4), sy(e.d[q[0]]) + 26, sub(q[1], q[2]), "tk", q[0] ? "end" : "start", AMB, 17, 700);
+      });
+      [0, Math.round((n - 1) / 2), n - 1].forEach(function (i) { s += text(sx(i), H - mb + 18, i + 1, "tk", "middle", null, 13); });
+      s += text((W + ml) / 2, H - 4, (e.step ? "paso t (cada paso = un " + e.step + ")" : "paso t"), "tk", "middle", null, 14);
+      s += text(ml, mt - 6, e.unit, "tk", "start", null, 13);
+      $("tsSvg").innerHTML = s;
+    }
+    ["input", "change"].forEach(function (ev) { $("tsEx").addEventListener(ev, draw); });
+    draw();
+  })();
+
+  /* ---------- armar el dataset con ventanas ---------- */
+  (function () {
+    var n = 14, st = 0, D = SER.slice(8, 8 + n);
+    function T() { return +$("wdT").value; }
+    function draw() {
+      var tt = T(), W = 600, H = 170, ml = 20, mr = 20, mt = 14, mb = 30, s = "", k;
+      function sx(i) { return ml + i / (n - 1) * (W - ml - mr); }
+      var lo = Math.min.apply(null, D) - 0.05, hi = Math.max.apply(null, D) + 0.05;
+      function sy(v) { return H - mb - (v - lo) / (hi - lo) * (H - mt - mb); }
+      s += rect(sx(st) - 12, mt, sx(st + tt - 1) - sx(st) + 24, H - mt - mb, "var(--amber-soft)", "none", 0, 8, 0.8);
+      var d = ""; for (k = 0; k < n; k++) d += (k ? "L" : "M") + sx(k).toFixed(1) + " " + sy(D[k]).toFixed(1) + " ";
+      s += path(d, "var(--axis)", null, 1.5);
+      for (k = 0; k < n; k++) {
+        var c = (k >= st && k < st + tt) ? AMB : (k === st + tt ? TEA : "var(--axis)");
+        s += circ(sx(k), sy(D[k]), k === st + tt ? 7 : 5, c, "var(--paper)", 1.5);
+        s += text(sx(k), H - 8, sub("x", k + 1), "tk", "middle", null, 13);
+      }
+      $("wdSvg").innerHTML = s;
+      var h = "<tr><th>Ejemplo</th>"; for (k = 1; k <= tt; k++) h += "<th>Entrada " + k + "</th>"; h += "<th>Etiqueta</th></tr>";
+      var a = Math.max(0, st - 3);
+      for (var r = a; r <= st; r++) {
+        h += '<tr class="' + (r === st ? "on" : "") + '"><td class="k">' + (r + 1) + "</td>";
+        for (k = 0; k < tt; k++) h += "<td>" + fmt(D[r + k]) + "</td>";
+        h += '<td class="y">' + fmt(D[r + tt]) + "</td></tr>";
+      }
+      $("wdTab").innerHTML = h;
+    }
+    $("wdNext").addEventListener("click", function () { st = st + T() + 1 < n ? st + 1 : 0; draw(); });
+    $("wdReset").addEventListener("click", function () { st = 0; draw(); });
+    ["input", "change"].forEach(function (ev) { $("wdT").addEventListener(ev, function () { st = 0; draw(); }); });
+    draw();
+  })();
+
+  /* ---------- red densa sobre la ventana ---------- */
+  (function () {
+    var s = "", k, ys = [50, 105, 160, 215];
+    for (k = 0; k < 4; k++) {
+      s += rect(30, ys[k] - 20, 80, 40, "var(--amber-soft)", AMB, 1.5, 8);
+      s += text(70, ys[k] + 6, sub("x", k + 1), "tk", "middle", null, 18, 700);
+      s += line(110, ys[k], 282, 135, IND, null, 2);
+      s += text(150, ys[k] + (135 - ys[k]) * 0.18 + (k < 2 ? -8 : 18), sub("w", k + 1), "tk", "middle", IND, 16, 700);
+    }
+    s += circ(318, 135, 36, "var(--paper-2)", IND, 2.5);
+    s += text(318, 143, "Σ", "tk", "middle", null, 24, 700);
+    s += text(318, 200, "+ sesgo " + sub("w", "0"), "tk", "middle", null, 14);
+    s += line(356, 135, 392, 135, "var(--axis)", "Mut", 2.2);
+    s += rect(396, 111, 56, 48, "var(--paper-2)", "var(--fg)", 2, 10);
+    s += text(424, 143, "g", "tk", "middle", null, 22, 700);
+    s += text(424, 185, "activación", "tk", "middle", null, 14);
+    s += line(454, 135, 486, 135, TEA, "Tea", 2.5);
+    s += circ(516, 135, 26, "var(--paper)", TEA, 2.5);
+    s += text(516, 142, "ŷ", "tk", "middle", TEA, 20, 700);
+    $("dsSvg").innerHTML = s;
+  })();
+
+  /* ---------- la red densa no ve el orden ---------- */
+  (function () {
+    var mixed = false;
+    function draw() {
+      var s = "", k, j, lab = mixed ? [3, 1, 4, 2] : [1, 2, 3, 4], yi = [45, 105, 165, 225], yh = [75, 135, 195];
+      for (k = 0; k < 4; k++) for (j = 0; j < 3; j++) s += line(120, yi[k], 300, yh[j], IND, null, 1.4, null, 0.55);
+      for (j = 0; j < 3; j++) s += line(300, yh[j], 460, 135, IND, null, 1.4, null, 0.55);
+      for (k = 0; k < 4; k++) {
+        s += rect(40, yi[k] - 20, 80, 40, "var(--amber-soft)", AMB, 1.5, 8);
+        s += text(80, yi[k] + 6, sub("x", lab[k]), "tk", "middle", null, 18, 700);
+      }
+      for (j = 0; j < 3; j++) s += circ(300, yh[j], 20, "var(--paper-2)", IND, 2);
+      s += circ(480, 135, 24, "var(--paper)", TEA, 2.5);
+      s += text(480, 142, "ŷ", "tk", "middle", TEA, 20, 700);
+      s += text(80, 272, "ventana", "tk", "middle", null, 14);
+      s += text(300, 272, "neuronas", "tk", "middle", null, 14);
+      $("ordSvg").innerHTML = s;
+      $("ordBtn").textContent = mixed ? "Volver al orden original" : "Desordenar la ventana";
+    }
+    $("ordBtn").addEventListener("click", function () { mixed = !mixed; draw(); });
+    draw();
+  })();
+
+  /* ---------- la misma subida en otra posición ---------- */
+  (function () {
+    function draw() {
+      var p = parseInt($("psPos").value, 10), T = 8, W = 560, H = 280, ml = 40, mr = 20, s = "";
+      function sx(i) { return ml + (i - 0.5) / T * (W - ml - mr); }
+      function sy(v) { return 150 - v * 110; }
+      var xs = []; for (var i = 1; i <= T; i++) xs.push(i <= p ? 0.15 : 0.85);
+      s += line(ml, sy(0), W - mr, sy(0), "var(--axis)", null, 1.4);
+      var d = ""; xs.forEach(function (v, k) { d += (k ? " L" : "M") + sx(k + 1) + " " + sy(v); });
+      s += path(d, IND, null, 3);
+      xs.forEach(function (v, k) {
+        var i = k + 1, hot = (i === p || i === p + 1), c = hot ? COR : "var(--muted)";
+        s += circ(sx(i), sy(v), 6, IND, "var(--paper)", 2);
+        s += text(sx(i), sy(0) + 22, "x" + i, "tk", "middle", null, 14);
+        s += line(sx(i), sy(0) + 30, sx(i), 210, c, null, hot ? 2.5 : 1.2);
+        s += rect(sx(i) - 22, 210, 44, 34, "var(--paper-2)", c, hot ? 2.5 : 1.2, 8);
+        s += text(sx(i), 233, "w" + i, "an", "middle", hot ? COR : null, 16);
+      });
+      s += text(sx(p + 0.5), sy(0.85) - 20, "salto: 20 → 80", "an", "middle", COR, 16);
+      s += text(sx(1) - 14, sy(0.15) + 5, "20", "tk", "end", null, 13);
+      s += text(sx(T) + 14, sy(0.85) + 5, T > p ? "80" : "", "tk", "start", null, 13);
+      $("psSvg").innerHTML = s;
+      $("psCap").innerHTML = "Ventas de 8 días (\\(x_1\\) a \\(x_8\\)). El salto pasa por \\(w_" + p + "\\) y \\(w_" + (p + 1) + "\\). Cambia el día: el salto es el mismo, pero lo procesan otros pesos.";
+      if (window.renderMathInElement) renderMathInElement($("psCap"), { delimiters: [{ left: "\\(", right: "\\)", display: false }] });
+    }
+    $("psPos").addEventListener("change", draw);
+    draw();
+  })();
+
+  /* ---------- la idea paso a paso (temperaturas) ---------- */
+  (function () {
+    var vals = [18, 20, 23, 25], k = 0;
+    var tags = ["Antes de empezar", "Paso 1", "Paso 2", "Paso 3", "Paso 4", "Al final"];
+    var txt = [
+      "Las cuatro cajas son <b>la misma celda</b>, dibujada una vez por día. Va a leer las temperaturas una por una. Todavía no ha leído nada, así que su memoria empieza en cero: \\(h_0=0\\).",
+      "Lee \\(x_1=18\\). La combina con la memoria vacía \\(h_0\\) y produce \\(h_1\\): un resumen del día 1.",
+      "Lee \\(x_2=20\\) y recibe \\(h_1\\), el resumen del día 1. Combina los dos y produce \\(h_2\\), que ya resume los días 1 y 2. Es <b>la misma celda</b>, con los mismos pesos.",
+      "Lee \\(x_3=23\\) y recibe \\(h_2\\). Produce \\(h_3\\), que resume los días 1, 2 y 3. La celda no guarda los valores sueltos: guarda un resumen que se actualiza.",
+      "Lee \\(x_4=25\\) y recibe \\(h_3\\). Produce \\(h_4\\), el resumen de los cuatro días.",
+      "Una capa densa toma \\(h_4\\) y lo convierte en el pronóstico \\(\\hat y\\) del día 5. Si la serie tuviera 30 días, se harían 30 pasos con la misma celda: el largo ya no es un problema."
+    ];
+    function draw() {
+      var s = "", x0 = 110, dx = 210, cw = 120, ch = 64, y = 120;
+      for (var i = 0; i < 4; i++) {
+        var x = x0 + i * dx, done = i < k, cur = i === k - 1;
+        var op = (i < k) ? 1 : 0.35;
+        s += rect(x, y, cw, ch, cur ? "var(--amber-soft)" : "var(--paper-2)", done ? AMB : "var(--line)", cur ? 3.5 : 2, 12);
+        s += text(x + cw / 2, y + 38, "celda", "lb", "middle", null, 18, 600);
+        s += line(x + cw / 2, 268, x + cw / 2, y + ch + 4, IND, "Ind", 2.6, null, op);
+        s += text(x + cw / 2, 290, sub("x", i + 1) + " = " + vals[i] + " °C", "lb", "middle", IND, 18, 600);
+        if (done) {
+          s += line(x + cw / 2, y - 4, x + cw / 2, 50, TEA, "Tea", 2.6);
+          s += text(x + cw / 2, 38, sub("h", i + 1), "lb", "middle", TEA, 20, 600);
+        }
+        var hx = i === 0 ? 4 : x - dx + cw;
+        if (i === 0) { s += text(x0 - 44, y + ch / 2 + 6, sub("h", 0) + " = 0", "lb", "end", AMB, 16, 600); }
+        if (i < k) s += line(i === 0 ? x0 - 38 : hx + 4, y + ch / 2, x - 4, y + ch / 2, AMB, "Amb", 3);
+        if (i > 0 && i < k) s += text((hx + x) / 2, y + ch / 2 - 12, sub("h", i), "lb", "middle", AMB, 16, 600);
+      }
+      if (k >= 5) {
+        var xl = x0 + 3 * dx + cw;
+        s += line(xl + 4, y + ch / 2, xl + 58, y + ch / 2, TEA, "Tea", 3);
+        s += rect(xl + 62, y + 8, 48, 48, "var(--teal-soft, var(--paper-2))", TEA, 2.5, 10);
+        s += text(xl + 86, y + 40, "ŷ", "lb", "middle", TEA, 22, 700);
+        s += text(xl + 86, y + 82, "día 5", "tk", "middle", TEA, 14);
+      }
+      $("ipSvg").innerHTML = s;
+      $("ipTag").textContent = tags[k];
+      $("ipTxt").innerHTML = txt[k];
+      if (window.renderMathInElement) renderMathInElement($("ipTxt"), { delimiters: [{ left: "\\(", right: "\\)", display: false }] });
+      $("ipNext").disabled = k >= 5;
+    }
+    $("ipNext").addEventListener("click", function () { if (k < 5) { k++; draw(); } });
+    $("ipReset").addEventListener("click", function () { k = 0; draw(); });
+    draw();
+  })();
+
+  /* ---------- idea: celda con bucle ---------- */
+  (function () {
+    var s = "";
+    s += rect(190, 110, 140, 80, "var(--amber-soft)", AMB, 3, 14);
+    s += text(260, 157, "celda", "lb", "middle", null, 20, 600);
+    s += line(260, 280, 260, 194, IND, "Ind", 3);
+    s += text(290, 268, sub("x", "t"), "lb", "start", IND, 22, 600);
+    s += line(260, 106, 260, 24, TEA, "Tea", 3);
+    s += text(290, 40, sub("h", "t"), "lb", "start", TEA, 22, 600);
+    s += path("M 334 150 C 430 150, 430 60, 300 64 M 300 64", AMB, null, 3);
+    s += path("M 260 64 C 100 64, 100 150, 186 150", AMB, "Amb", 3);
+    s += text(440, 108, sub("h", "t−1"), "lb", "middle", AMB, 20, 600);
+    s += text(440, 132, "memoria", "tk", "middle", AMB);
+    $("idSvg").innerHTML = s;
+  })();
+
+  /* ---------- una capa con varias neuronas ---------- */
+  (function () {
+    function getN() { var v = Math.round(parseFloat($("cnN").value)); if (isNaN(v)) v = 3; return Math.max(1, Math.min(5, v)); }
+    function fillK(n) {
+      var sel = $("cnK"), old = +sel.value || 1, h = "";
+      for (var i = 1; i <= n; i++) h += '<option value="' + i + '">Neurona ' + i + '</option>';
+      sel.innerHTML = h; sel.value = String(Math.min(old, n));
+    }
+    function draw() {
+      var n = getN(), K = +$("cnK").value - 1, s = "", j, k;
+      var fx = 120, fw = 480, fy = 118, fh = 92, w = fw / n, bw = Math.min(100, w - 16), bh = 46;
+      function nx(i) { return fx + w * i + w / 2; }
+      var ny = fy + 30, oy = 34, my = 262, ow = Math.min(70, w - 18);
+      // conexiones (abajo -> neuronas)
+      for (k = 0; k < n; k++) {
+        var on = k === K;
+        s += line(80, 268, nx(k) - 8, ny + bh + 2, IND, on ? "Ind" : null, on ? 2.4 : 1.1, null, on ? 1 : 0.2);
+        for (j = 0; j < n; j++) s += line(nx(j), my - 2, nx(k) + 6, ny + bh + 2, AMB, on ? "Amb" : null, on ? 2.2 : 1, null, on ? 1 : 0.14);
+      }
+      // marco de la capa
+      s += rect(fx, fy, fw, fh, "none", "var(--axis)", 1.6, 14);
+      s += text(fx - 12, fy + 42, "capa", "tk", "end", null, 14, 700); s += text(fx - 12, fy + 60, "recurrente", "tk", "end", null, 14, 700);
+      for (k = 0; k < n; k++) {
+        var on3 = k === K;
+        s += rect(nx(k) - bw / 2, ny, bw, bh, on3 ? "var(--amber-soft)" : "var(--paper-2)", on3 ? AMB : "var(--axis)", on3 ? 3 : 1.6, 10);
+        s += text(nx(k), ny + 29, (n > 3 ? "" : "neurona ") + (k + 1), "lb", "middle", null, 15, 600);
+        s += line(nx(k), ny - 2, nx(k), oy + 32, TEA, "Tea", on3 ? 2.6 : 1.8, null, on3 ? 1 : 0.55);
+        s += rect(nx(k) - ow / 2, oy, ow, 30, "var(--teal-soft)", TEA, on3 ? 2.6 : 1.6, 8);
+        s += text(nx(k), oy + 20, "h" + "<tspan dy='4' style='font-size:.7em'>t," + (k + 1) + "</tspan>", "lb", "middle", TEA, 14, 700);
+        s += rect(nx(k) - ow / 2, my, ow, 28, "var(--amber-soft)", AMB, 1.6, 7);
+        s += text(nx(k), my + 18, "h" + "<tspan dy='4' style='font-size:.7em'>t−1," + (k + 1) + "</tspan>", "lb", "middle", AMB, 13, 700);
+      }
+      s += text(fx - 12, oy + 20, "<tspan style='font-family:KaTeX_Main,serif;font-weight:700;font-size:1.2em'>h</tspan><tspan dy='5' style='font-size:.72em'>t</tspan>" + "<tspan dy='-5'>: " + n + (n === 1 ? " valor" : " valores") + "</tspan>", "lb", "end", TEA, 14, 700);
+      s += rect(15, 252, 66, 40, "var(--indigo-soft)", IND, 2, 9);
+      s += text(48, 274, sub("x", "t"), "lb", "middle", IND, 19, 700);
+      s += text(fx + fw / 2 + 10, 316, "memoria del paso anterior · en el primer paso todavía no hay memoria: vale 0", "tk", "middle", AMB, 13);
+      $("cnSvg").innerHTML = s;
+    }
+    $("cnN").addEventListener("input", function () { fillK(getN()); draw(); });
+    $("cnN").addEventListener("change", function () { $("cnN").value = getN(); fillK(getN()); draw(); });
+    $("cnK").addEventListener("change", draw);
+    fillK(3); draw();
+  })();
+
+  /* ---------- varias capas ---------- */
+  (function () {
+    var view = 0, k = -1, L = 2, T = 4, zl = 1;
+    function hs(t, l) { return "<tspan style='font-family:KaTeX_Main,serif;font-weight:700;font-size:1.2em'>h</tspan><tspan dy='5' style='font-size:.72em'>" + t + "</tspan><tspan dy='-14' style='font-size:.72em'>(" + l + ")</tspan>"; }
+    var order = []; for (var t = 0; t < T; t++) for (var l = 0; l < L; l++) order.push([t, l]); order.push(["d", 0]);
+    function msg() {
+      if (view === 2) { var L1 = zl + 1, inp0 = zl === 0 ? "la entrada \\(x_t\\)" : "<b>todos</b> los números de la capa de abajo (el vector \\(\\mathbf{h}_t^{(1)}\\))"; return "Por dentro, la capa " + L1 + " es como la de la diapositiva anterior: \\(n\\) neuronas. Cada neurona \\(k\\) recibe " + inp0 + " y la memoria de toda su capa (\\(\\mathbf{h}_{t-1}^{(" + L1 + ")}\\), que vale 0 en el primer paso), y calcula un número \\(h_{t,k}^{(" + L1 + ")}\\)."; }
+      if (view === 0) return "Cada caja es una <b>capa</b> con \\(n\\) neuronas (cajitas de adentro) y su <b>memoria</b> (flecha que vuelve). \\(x_t\\) entra a la capa 1, el vector \\(\\mathbf{h}_t^{(1)}\\) sube a la capa 2 y la capa densa da \\(\\hat y\\). 👆 <b>Haz clic en una capa</b> para verla por dentro.";
+      if (k < 0) return "La misma red, desenrollada: una columna por paso de tiempo. Pulsa <b>Paso →</b> para ver el orden del cálculo.";
+      var o = order[k];
+      if (o[0] === "d") return "Leída toda la serie, la <b>capa densa</b> toma \\(\\mathbf{h}_4^{(2)}\\), el último resultado de la capa de arriba, y da el pronóstico \\(\\hat y\\).";
+      var tt = o[0] + 1, ll = o[1] + 1;
+      var inp = ll === 1 ? "\\(x_" + tt + "\\)" : "\\(\\mathbf{h}_" + tt + "^{(1)}\\) (de la capa de abajo)";
+      return "Paso \\(t=" + tt + "\\), capa " + ll + ": recibe " + inp + " y su memoria \\(\\mathbf{h}_" + (tt - 1) + "^{(" + ll + ")}\\)" + (tt === 1 ? " (vale 0 al empezar)" : "") + "; calcula \\(\\mathbf{h}_" + tt + "^{(" + ll + ")}\\).";
+    }
+    function compact() {
+      var s = "", cx = 280, bw = 180, bh = 52, ys = [205, 112];
+      s += text(cx - bw / 2 - 14, 196, "clic en una capa", "tk", "end", MUT, 13, 600);
+      s += text(cx - bw / 2 - 14, 214, "para verla por dentro", "tk", "end", MUT, 13, 600);
+      s += rect(cx - 40, 290, 80, 34, "var(--indigo-soft)", IND, 2, 9);
+      s += text(cx, 313, sub("x", "t"), "lb", "middle", IND, 18, 700);
+      s += line(cx, 288, cx, ys[0] + bh + 3, IND, "Ind", 2.6);
+      for (var l = 0; l < L; l++) {
+        var y = ys[l];
+        s += '<g data-l="' + l + '" style="cursor:pointer">';
+        s += rect(cx - bw / 2, y, bw, bh, "var(--amber-soft)", AMB, 2.6, 12);
+        s += text(cx, y + 20, "capa recurrente " + (l + 1), "lb", "middle", null, 15, 600);
+        for (var q = 0; q < 4; q++) s += rect(cx - 56 + q * 24, y + 29, 16, 14, "var(--paper-2)", "var(--axis)", 1.2, 3);
+        s += text(cx + 46, y + 41, "…", "tk", "start", null, 14, 700);
+        s += text(cx + 62, y + 41, "n", "tk", "start", null, 12, 600);
+        s += '</g>';
+        s += path("M " + (cx + bw / 2 + 2) + " " + (y + bh / 2 + 8) + " C " + (cx + bw / 2 + 60) + " " + (y + bh / 2 + 30) + ", " + (cx + bw / 2 + 60) + " " + (y - 10) + ", " + (cx + bw / 2 + 4) + " " + (y + 12), AMB, "Amb", 2.6);
+        s += text(cx + bw / 2 + 62, y + bh / 2 - 2, hs("t−1", l + 1), "lb", "start", AMB, 16, 700);
+        s += text(cx + bw / 2 + 62, y + bh / 2 + 18, "memoria", "tk", "start", AMB, 13);
+        var ytop = l === L - 1 ? 64 : ys[l + 1] + bh;
+        s += line(cx, y - 2, cx, ytop + 3, l === L - 1 ? AMB : AMB, "Amb", 2.6);
+        s += text(cx - 12, y - 14, hs("t", l + 1), "lb", "end", AMB, 16, 700);
+      }
+      s += rect(cx - 70, 22, 140, 42, "var(--teal-soft, var(--paper-2))", TEA, 2.4, 10);
+      s += text(cx, 49, "capa densa", "lb", "middle", TEA, 16, 700);
+      s += line(cx + 72, 43, cx + 120, 43, TEA, "Tea", 2.6);
+      s += text(cx + 128, 50, "ŷ", "lb", "start", TEA, 22, 700);
+      s += text(cx + 150, 50, "pronóstico", "tk", "start", TEA, 13);
+      return s;
+    }
+    function unrolled() {
+      var s = "", x0 = 80, dx = 118, cw = 84, ch = 44, ys = [228, 140];
+      var cur = k >= 0 ? order[k] : null;
+      function idx(t, l) { for (var i = 0; i < order.length; i++) if (order[i][0] === t && order[i][1] === l) return i; return -1; }
+      for (var l = 0; l < L; l++) for (var t = 0; t < T; t++) {
+        var x = x0 + t * dx, y = ys[l], i = idx(t, l), done = k >= 0 && i < k, on = i === k;
+        var op = k < 0 || i <= k ? 1 : 0.35;
+        if (t > 0) s += line(x - dx + cw + 2, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 2.4, null, op);
+        else s += line(x - 26, y + ch / 2, x - 3, y + ch / 2, AMB, "Amb", 2, null, op);
+        s += line(x + cw / 2, y + ch + (l === 0 ? 30 : 42), x + cw / 2, y + ch + 3, l === 0 ? IND : AMB, l === 0 ? "Ind" : "Amb", 2.2, null, op);
+        s += rect(x, y, cw, ch, on ? "var(--amber-soft)" : "var(--paper-2)", on ? AMB : done ? AMB : "var(--axis)", on ? 3.2 : 1.6, 9);
+        s += text(x + cw / 2, y + ch / 2 + 6, (i <= k) ? hs(t + 1, l + 1) : "", "lb", "middle", null, 17, 600);
+      }
+      for (var t2 = 0; t2 < T; t2++) s += text(x0 + t2 * dx + cw / 2, 312, sub("x", t2 + 1), "lb", "middle", IND, 16, 700);
+      for (var l2 = 0; l2 < L; l2++) s += text(x0 - 30, ys[l2] + ch / 2 + 5, "capa " + (l2 + 1), "tk", "end", null, 13);
+      s += text(x0 - 22, ys[0] + ch / 2 - 8, "0", "tk", "middle", AMB, 12);
+      s += text(x0 - 22, ys[1] + ch / 2 - 8, "0", "tk", "middle", AMB, 12);
+      var dOn = k === order.length - 1, xl = x0 + (T - 1) * dx + cw / 2;
+      var dop = dOn ? 1 : 0.35;
+      s += line(xl, ys[1] - 3, xl, 92, AMB, "Amb", 2.2, null, dop);
+      s += rect(xl - 60, 48, 120, 42, dOn ? "var(--teal-soft, var(--paper-2))" : "var(--paper-2)", TEA, dOn ? 3 : 1.6, 10, dOn ? 1 : 0.5);
+      s += text(xl, 75, "capa densa", "lb", "middle", TEA, 15, 700);
+      if (dOn) { s += line(xl, 46, xl, 14, TEA, "Tea", 2.6); s += text(xl + 10, 24, "ŷ", "lb", "start", TEA, 20, 700); }
+      return s;
+    }
+    function hk(t, k, l) { return "h<tspan dy='5' style='font-size:.7em'>" + t + "," + k + "</tspan><tspan dy='-13' style='font-size:.7em'>(" + l + ")</tspan>"; }
+    function zoom() {
+      var s = "", B = "<tspan style='font-family:KaTeX_Main,serif;font-weight:700;font-size:1.2em'>h</tspan>";
+      function vec(t, l) { return B + "<tspan dy='5' style='font-size:.7em'>" + t + "</tspan><tspan dy='-13' style='font-size:.7em'>(" + l + ")</tspan><tspan dy='8'></tspan>"; }
+      var fx = 110, fw = 440, fy = 112, fh = 80, n = 3, w = fw / n, bw = 104, bh = 44, ny = fy + 18, oy = 48, ow = 86;
+      function nx(i) { return fx + w * i + w / 2; }
+      var ks = [1, 2, "n"], by = 236, sw = 62;
+      function ix(i) { return 70 + i * 76 + sw / 2; }
+      function mx(i) { return 340 + i * 76 + sw / 2; }
+      for (var k = 0; k < n; k++) for (var j = 0; j < n; j++) {
+        if (zl > 0 || j === 1) s += line(ix(j), by - 2, nx(k) - 12, ny + bh + 2, IND, null, 1.3, null, .45);
+        s += line(mx(j), by - 2, nx(k) + 12, ny + bh + 2, AMB, null, 1.3, null, .45);
+      }
+      s += rect(fx, fy, fw, fh, "none", AMB, 2.2, 14);
+      s += text(fx - 12, fy + 36, "capa " + (zl + 1), "tk", "end", AMB, 15, 700);
+      s += text(fx - 12, fy + 54, "(zoom)", "tk", "end", MUT, 13);
+      for (var k2 = 0; k2 < n; k2++) {
+        s += rect(nx(k2) - bw / 2, ny, bw, bh, "var(--amber-soft)", AMB, 2, 10);
+        s += text(nx(k2), ny + 28, "neurona " + ks[k2], "lb", "middle", null, 15, 600);
+        s += line(nx(k2), ny - 2, nx(k2), oy + 34, AMB, "Amb", 2.2);
+        s += rect(nx(k2) - ow / 2, oy, ow, 32, "var(--paper-2)", AMB, 1.8, 8);
+        s += text(nx(k2), oy + 22, hk("t", ks[k2], zl + 1), "lb", "middle", AMB, 15, 700);
+        if (zl > 0) {
+          s += rect(ix(k2) - sw / 2, by, sw, 30, "var(--indigo-soft)", IND, 1.6, 7);
+          s += text(ix(k2), by + 20, hk("t", ks[k2], 1), "lb", "middle", IND, 13, 700);
+        }
+        s += rect(mx(k2) - sw / 2, by, sw, 30, "var(--amber-soft)", AMB, 1.6, 7);
+        s += text(mx(k2), by + 20, hk("t−1", ks[k2], zl + 1), "lb", "middle", AMB, 12, 700);
+      }
+      s += text((nx(1) + nx(2)) / 2 + 2, oy + 22, "", "lb");
+      function brace(x1, x2, y, up, col) { var d = up ? -8 : 8; return path("M " + x1 + " " + y + " L " + x1 + " " + (y + d) + " L " + x2 + " " + (y + d) + " L " + x2 + " " + y, col, null, 1.8); }
+      s += brace(fx + 20, fx + fw - 20, oy - 6, true, AMB);
+      s += text(fx + fw / 2, oy - 22, "juntos: el vector " + vec("t", zl + 1) + " → sube a " + (zl === 0 ? "la capa 2" : "la capa densa"), "lb", "middle", AMB, 15, 700);
+      if (zl > 0) {
+        s += brace(ix(0) - sw / 2, ix(2) + sw / 2, by + 36, false, IND);
+        s += text(ix(1), by + 64, "vector " + vec("t", 1) + " (de la capa 1)", "lb", "middle", IND, 14, 700);
+      } else {
+        s += rect(ix(1) - sw / 2, by, sw, 30, "var(--indigo-soft)", IND, 1.6, 7);
+        s += text(ix(1), by + 21, sub("x", "t"), "lb", "middle", IND, 15, 700);
+        s += text(ix(1), by + 64, "entrada", "lb", "middle", IND, 14, 700);
+      }
+      s += brace(mx(0) - sw / 2, mx(2) + sw / 2, by + 36, false, AMB);
+      s += text(mx(1), by + 64, "memoria " + vec("t−1", zl + 1) + " (0 en t = 1)", "lb", "middle", AMB, 14, 700);
+      return s;
+    }
+    function draw() {
+      $("vcSvg").innerHTML = view === 0 ? compact() : view === 2 ? zoom() : unrolled();
+      $("vcV0").classList.toggle("on", view === 0); $("vcV1").classList.toggle("on", view === 1);
+      $("vcBackWrap").style.display = view === 2 ? "flex" : "none";
+      $("vcNext").disabled = view === 1 && k >= order.length - 1;
+      $("vcTxt").innerHTML = msg();
+      if (window.renderMathInElement) renderMathInElement($("vcTxt"), { delimiters: [{ left: "\\(", right: "\\)", display: false }] });
+    }
+    $("vcV0").addEventListener("click", function () { view = 0; k = -1; draw(); });
+    $("vcV1").addEventListener("click", function () { view = 1; k = -1; draw(); });
+    $("vcV2").addEventListener("click", function (e) { e.stopPropagation(); view = 0; k = -1; draw(); });
+    $("vcSvg").addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (view !== 0) return;
+      var g = e.target.closest ? e.target.closest("[data-l]") : null;
+      if (g) { zl = +g.getAttribute("data-l"); view = 2; k = -1; draw(); }
+    });
+    $("vcNext").addEventListener("click", function () { if (view !== 1) { view = 1; k = 0; } else if (k < order.length - 1) k++; draw(); });
+    $("vcReset").addEventListener("click", function () { k = -1; draw(); });
+    draw();
+  })();
+
+  /* ---------- actividad: arma tu red ---------- */
+  (function () {
+    var sel = -1;
+    var Bh = "<tspan style='font-family:KaTeX_Main,serif;font-weight:700;font-size:1.2em'>h</tspan>";
+    function gi(id, lo, hi, def) { var v = Math.round(parseFloat($(id).value)); if (isNaN(v)) v = def; return Math.max(lo, Math.min(hi, v)); }
+    function fmtN(v) { return v.toLocaleString("es-CO"); }
+    function cfg() { return { L: gi("arL", 1, 3, 2), n: gi("arN", 1, 4, 3), d: gi("arD", 1, 3, 1), T: gi("arT", 2, 1000, 20) }; }
+    function sc(base, sb, sp) { return base + "<tspan dy='5' style='font-size:.7em'>" + sb + "</tspan>" + (sp ? "<tspan dy='-13' style='font-size:.7em'>(" + sp + ")</tspan><tspan dy='8'></tspan>" : "<tspan dy='-5'></tspan>"); }
+    function compact(c) {
+      var s = "", cx = 210, bw = 200, bh = 46, gap = c.L === 3 ? 62 : 80, bot = 262, total = 0, l;
+      s += rect(cx - 55, bot + 26, 110, 34, "var(--indigo-soft)", IND, 2, 9);
+      s += text(cx, bot + 49, sc("x", "t") + " (" + c.d + (c.d === 1 ? " valor)" : " valores)"), "lb", "middle", IND, 15, 700);
+      var y = bot - bh;
+      s += line(cx, bot + 24, cx, y + bh + 3, IND, "Ind", 2.4);
+      for (l = 0; l < c.L; l++) {
+        var inp = l === 0 ? c.d : c.n, p = c.n * (inp + c.n + 1); total += p;
+        s += '<g data-l="' + l + '" style="cursor:pointer">';
+        s += rect(cx - bw / 2, y, bw, bh, "var(--amber-soft)", AMB, 2.6, 12);
+        s += text(cx, y + 22, "capa recurrente " + (l + 1), "lb", "middle", null, 15, 700);
+        s += text(cx, y + 40, c.n + (c.n === 1 ? " neurona" : " neuronas") + " · clic para ver", "tk", "middle", null, 12);
+        s += '</g>';
+        s += path("M " + (cx + bw / 2 + 2) + " " + (y + bh / 2 + 8) + " C " + (cx + bw / 2 + 50) + " " + (y + bh / 2 + 28) + ", " + (cx + bw / 2 + 50) + " " + (y - 8) + ", " + (cx + bw / 2 + 4) + " " + (y + 12), AMB, "Amb", 2.4);
+        s += text(cx + bw / 2 + 60, y + 18, fmtN(p) + " parámetros", "lb", "start", null, 15, 700);
+        s += text(cx + bw / 2 + 60, y + 38, c.n + " × (" + inp + " + " + c.n + " + 1)", "tk", "start", MUT, 13);
+        var ny = y - gap;
+        s += line(cx, y - 2, cx, ny + (l === c.L - 1 ? 44 : bh) + 3, AMB, "Amb", 2.4);
+        y = ny;
+      }
+      var dy = y + bh - 44, pd = c.n + 1; total += pd;
+      s += '<g data-l="' + c.L + '" style="cursor:pointer">' + rect(cx - 70, dy, 140, 42, "var(--teal-soft, var(--paper-2))", TEA, 2.4, 10) + text(cx, dy + 27, "capa densa", "lb", "middle", TEA, 15, 700) + '</g>';
+      s += line(cx + 72, dy + 21, cx + 104, dy + 21, TEA, "Tea", 2.4);
+      s += text(cx + 112, dy + 28, "ŷ", "lb", "start", TEA, 20, 700);
+      s += text(cx + bw / 2 + 60, dy + 18, fmtN(pd) + " parámetros", "lb", "start", null, 15, 700);
+      s += text(cx + bw / 2 + 60, dy + 38, c.n + " pesos + 1 sesgo", "tk", "start", MUT, 13);
+      s += text(cx + bw / 2 + 60, bot + 49, "se lee " + c.T + " veces, un paso a la vez", "tk", "start", IND, 13);
+      return { s: s, total: total };
+    }
+    function zoom(c, l) {
+      var s = "", dense = l === c.L, nIn = dense ? c.n : (l === 0 ? c.d : c.n), nOut = dense ? 1 : c.n;
+      var fx = 90, fw = 500, fy = 120, fh = 74, nw = fw / nOut, bw = Math.min(110, nw - 14), bh = 42, ny = fy + 16;
+      function nx(i) { return fx + nw * i + nw / 2; }
+      var by = 250, bxw = Math.min(62, (fw - 30) / (nIn + (dense ? 0 : c.n)) - 8), gp = 8;
+      var inW = nIn * (bxw + gp) - gp, memW = dense ? 0 : c.n * (bxw + gp) - gp, sep = dense ? 0 : 40;
+      var x0 = fx + (fw - inW - memW - sep) / 2;
+      function ix(j) { return x0 + j * (bxw + gp) + bxw / 2; }
+      function mx(j) { return x0 + inW + sep + j * (bxw + gp) + bxw / 2; }
+      var ln = l === 0 ? "" : l, k, j;
+      for (k = 0; k < nOut; k++) {
+        for (j = 0; j < nIn; j++) s += line(ix(j), by - 2, nx(k) - 6, ny + bh + 2, IND, null, 1.4, null, .6);
+        if (!dense) for (j = 0; j < c.n; j++) s += line(mx(j), by - 2, nx(k) + 6, ny + bh + 2, AMB, null, 1.4, null, .6);
+      }
+      s += rect(fx, fy, fw, fh, "none", dense ? TEA : AMB, 2.2, 14);
+      s += text(fx - 10, fy + 34, dense ? "capa" : "capa " + (l + 1), "tk", "end", dense ? TEA : AMB, 14, 700);
+      if (dense) s += text(fx - 10, fy + 52, "densa", "tk", "end", TEA, 14, 700);
+      for (k = 0; k < nOut; k++) {
+        s += rect(nx(k) - bw / 2, ny, bw, bh, dense ? "var(--teal-soft, var(--paper-2))" : "var(--amber-soft)", dense ? TEA : AMB, 2, 10);
+        s += text(nx(k), ny + 27, dense ? "neurona" : (c.n > 4 ? "" : "neurona ") + (k + 1), "lb", "middle", null, 14, 600);
+        s += line(nx(k), ny - 2, nx(k), 82, dense ? TEA : AMB, dense ? "Tea" : "Amb", 2);
+        s += rect(nx(k) - 30, 50, 60, 30, "var(--paper-2)", dense ? TEA : AMB, 1.6, 8);
+        s += text(nx(k), 70, dense ? "ŷ" : sc("h", "t," + (k + 1), l + 1), "lb", "middle", dense ? TEA : AMB, dense ? 18 : 14, 700);
+      }
+      for (j = 0; j < nIn; j++) {
+        var lab = dense ? sc("h", "T," + (j + 1), c.L) : (l === 0 ? sc("x", "t," + (j + 1)) : sc("h", "t," + (j + 1), l));
+        s += rect(ix(j) - bxw / 2, by, bxw, 28, "var(--indigo-soft)", IND, 1.6, 7);
+        s += text(ix(j), by + 19, lab, "lb", "middle", IND, bxw > 50 ? 13 : 11, 700);
+      }
+      if (!dense) for (j = 0; j < c.n; j++) {
+        s += rect(mx(j) - bxw / 2, by, bxw, 28, "var(--amber-soft)", AMB, 1.6, 7);
+        s += text(mx(j), by + 19, sc("h", "t−1," + (j + 1), l + 1), "lb", "middle", AMB, bxw > 50 ? 12 : 10, 700);
+      }
+      var inLab = dense ? "último vector de la capa " + c.L : (l === 0 ? "entrada" : "vector de la capa " + l);
+      s += text(dense ? fx + fw / 2 : (ix(0) + ix(nIn - 1)) / 2, by + 50, inLab, "tk", "middle", IND, 13, 600);
+      if (!dense) s += text((mx(0) + mx(c.n - 1)) / 2, by + 50, "memoria (vale 0 en t = 1)", "tk", "middle", AMB, 13, 600);
+      var pw = nOut * nIn, pm = dense ? 0 : c.n * c.n, pb = nOut;
+      s += text(fx + fw / 2, 325, "líneas índigo: " + pw + (dense ? "" : " · líneas ámbar: " + pm) + " · sesgos: " + pb + " → " + fmtN(pw + pm + pb) + " parámetros", "lb", "middle", null, 14, 700);
+      return s;
+    }
+    function draw() {
+      var c = cfg(), r = compact(c);
+      if (sel > c.L) sel = -1;
+      var svg = $("arSvg");
+      if (sel < 0) { svg.setAttribute("viewBox", "95 20 520 315"); svg.innerHTML = r.s; $("arCap").innerHTML = "👆 <b>Haz clic en cualquier capa (también en la densa) para verla por dentro.</b> Al lado de cada capa, sus parámetros: neuronas × (entradas + memoria + sesgo)."; }
+      else {
+        svg.setAttribute("viewBox", "0 30 620 310"); svg.innerHTML = zoom(c, sel);
+        $("arCap").innerHTML = (sel === c.L ? "Zoom a la capa densa: una neurona que toma los \\(n\\) números del último paso y da \\(\\hat y\\)." : "Zoom a la capa recurrente " + (sel + 1) + ": cada línea es un peso. Índigo: pesos de la entrada; ámbar: pesos de la memoria.") + " En el primer paso (\\(t=1\\)) todavía no hay memoria: los valores ámbar valen 0.";
+        if (window.renderMathInElement) renderMathInElement($("arCap"), { delimiters: [{ left: "\\(", right: "\\)", display: false }] });
+      }
+      $("arP").textContent = fmtN(r.total);
+      $("arBackWrap").style.display = sel < 0 ? "none" : "flex";
+    }
+    $("arBack").addEventListener("click", function (e) { e.stopPropagation(); sel = -1; draw(); });
+    $("arSvg").addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (sel >= 0) return;
+      var g = e.target.closest ? e.target.closest("[data-l]") : null;
+      if (g) { sel = +g.getAttribute("data-l"); draw(); }
+    });
+    ["arL", "arN", "arD", "arT"].forEach(function (id) { $(id).addEventListener("input", draw); $(id).addEventListener("change", draw); });
+    draw();
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  var stage = document.getElementById("stage"), slides = [].slice.call(document.querySelectorAll(".slide"));
+  var pg = document.getElementById("pg"), bar = document.getElementById("bar"), cur = 0;
+  var root = document.documentElement;
+
+  try { var t = localStorage.getItem("deck-theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+    stage.style.left = "50%"; stage.style.top = "50%";
+  }
+  function show(i, noHash) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, k) { s.classList.toggle("active", k === cur); });
+    pg.textContent = (cur + 1) + " / " + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + "%";
+    document.querySelector(".foot").style.display = cur === 0 ? "none" : "flex";
+    if (!noHash) history.replaceState(null, "", "#" + (cur + 1));
+  }
+  function go(d) { show(cur + d); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (e.target && e.target.tagName === "INPUT" && k.indexOf("Arrow") === 0) return;
+    if (e.target && e.target.tagName === "BUTTON" && (k === " " || k === "Enter")) return;
+    if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].indexOf(k) > -1) { e.preventDefault(); go(1); }
+    else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].indexOf(k) > -1) { e.preventDefault(); go(-1); }
+    else if (k === "Home") show(0); else if (k === "End") show(slides.length - 1);
+    else if (k === "f" || k === "F") toggleFs(); else if (k === "t" || k === "T") toggleTheme();
+  });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a,button,input,summary,.noclick")) return;
+    var r = stage.getBoundingClientRect();
+    (e.clientX - r.left) / r.width < 0.25 ? go(-1) : go(1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+  function toggleFs() { if (document.fullscreenElement) document.exitFullscreen(); else root.requestFullscreen && root.requestFullscreen(); }
+  function toggleTheme() {
+    var n = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", n); try { localStorage.setItem("deck-theme", n); } catch (e) {}
+  }
+  document.getElementById("bPrev").onclick = function (e) { e.stopPropagation(); go(-1); };
+  document.getElementById("bNext").onclick = function (e) { e.stopPropagation(); go(1); };
+  document.getElementById("bFs").onclick = toggleFs;
+  document.getElementById("bTheme").onclick = toggleTheme;
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () { var n = parseInt(location.hash.slice(1), 10); if (n) show(n - 1, true); });
+
+  function typeset() {
+    if (window.renderMathInElement) {
+      renderMathInElement(document.body, { delimiters: [
+        { left: "\\[", right: "\\]", display: true }, { left: "\\(", right: "\\)", display: false }
+      ], throwOnError: false });
+    }
+  }
+
+
+
+
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, true);
+  window.addEventListener("load", typeset);
+  if (document.readyState === "complete") typeset();
+})();
+</script>
+</body>
+</html>
+
