@@ -549,24 +549,24 @@
 </section>
 
 <section class="slide" data-title="Actividad: la memoria de la LSTM">
-  <div class="hd"><p class="eyebrow">Etapa 2 · Actividad</p><h2>Escribir, guardar y olvidar en la memoria</h2></div>
+  <div class="hd"><p class="eyebrow">Etapa 2 · Actividad</p><h2>¿Cuánto dura un dato? LSTM frente a red simple</h2></div>
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:18px;line-height:1.45"><b>Objetivo:</b> comparar cuánto dura un dato en la LSTM y en la celda simple. En el paso de escritura entra un valor 1; después no entra nada.</p>
+        <p class="lead" style="font-size:18px;line-height:1.45"><b>Objetivo:</b> ver cuánto tiempo sigue contando un dato en la memoria. En un paso entra un dato (vale 1) y después no entra nada más. Cada curva muestra cuánto cuenta ese dato en cada paso.</p>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
-          <label style="grid-template-columns:190px 1fr"><span>Escribir <small>compuerta de entrada abierta</small></span>
+          <label style="grid-template-columns:190px 1fr"><span>Entra el dato <small>en la LSTM: \(i_t = 1\)</small></span>
             <select id="lmW" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)"></select></label>
-          <label style="grid-template-columns:190px 1fr"><span>Olvidar <small>\(f_t=0\) en ese paso</small></span>
+          <label style="grid-template-columns:190px 1fr"><span>Borrar <small>solo LSTM: \(f_t = 0\)</small></span>
             <select id="lmF" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)"></select></label>
-          <label style="grid-template-columns:190px 1fr"><span>\(f_t\) <small>al guardar</small></span>
+          <label style="grid-template-columns:190px 1fr"><span>\(f_t\) <small>solo LSTM, demás pasos</small></span>
             <input type="number" id="lmFv" min="0" max="1" step="0.01" value="0.98" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)"></label>
           <div class="btns"><button type="button" id="lmPlay">▶ Recorrer</button><button type="button" id="lmReset">Reiniciar</button></div>
         </div>
-        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Recorre con los valores iniciales. 2. Elige un paso para olvidar. 3. Baja \(f_t\) a 0,8: la LSTM se parece a la celda simple.</p>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. ▶ Recorrer: el dato dura mucho más en la LSTM. 2. Elige un paso para borrar: solo la LSTM puede borrar cuando quiere. 3. Baja \(f_t\) a 0,8: la LSTM se comporta como la red simple.</p>
       </div>
       <div class="chartbox" style="padding:12px 16px;align-self:center">
-        <div class="cap">Verde: memoria \(c_t\) de la LSTM. Rojo discontinuo: lo que queda en la celda simple con \(w_h=0{,}8\). Las marcas indican cuándo se escribe y cuándo se olvida.</div>
+        <div class="cap" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:15px"><span><svg width="30" height="10" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="5" x2="30" y2="5" style="stroke:var(--teal);stroke-width:3.5"/></svg><b style="color:var(--teal)">LSTM</b>: memoria \(c_t\)</span><span><svg width="30" height="10" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="5" x2="30" y2="5" style="stroke:var(--coral);stroke-width:2.5;stroke-dasharray:7 5"/></svg><b style="color:var(--coral)">Red simple</b>: \(h_t\), \(w_h = 0{,}8\)</span><span><svg width="14" height="16" style="vertical-align:middle;margin:0 8px 0 8px"><line x1="7" y1="0" x2="7" y2="16" style="stroke:var(--indigo);stroke-width:2;stroke-dasharray:4 3"/></svg>paso en que entra el dato</span><span><svg width="14" height="16" style="vertical-align:middle;margin:0 8px 0 8px"><line x1="7" y1="0" x2="7" y2="16" style="stroke:var(--amber);stroke-width:2;stroke-dasharray:4 3"/></svg>paso en que la LSTM lo borra</span></div>
         <svg class="chart" id="lmSvg" viewBox="0 0 560 300" role="img" aria-label="Memoria de la LSTM frente a la celda simple"></svg>
       </div>
     </div>
@@ -1010,7 +1010,7 @@
       return { C: C, R: R, wr: wr, fo: fo };
     }
     function draw() {
-      var d = series(), W = 560, H = 300, ml = 52, mr = 14, mt = 16, mb = 48, s = "";
+      var d = series(), W = 560, H = 300, ml = 62, mr = 14, mt = 16, mb = 48, s = "";
       function sx(t) { return ml + (t - 1) / (T - 1) * (W - ml - mr); }
       function sy(v) { return H - mb - v / 1.15 * (H - mt - mb); }
       [0, 0.5, 1].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
@@ -1023,14 +1023,25 @@
         return '<text x="' + (right ? x + 6 : x - 6) + '" y="' + y + '" class="tk" text-anchor="' + (right ? "start" : "end") + '" style="fill:' + col + ';font-size:14px;font-weight:600;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round">' + t + '</text>';
       }
       s += line(sx(d.wr), mt, sx(d.wr), sy(0), IND, null, 2, "5 4");
-      if (d.fo) s += line(sx(d.fo), mt, sx(d.fo), sy(0), COR, null, 2, "5 4");
-      s += tag(sx(d.wr), mt + 14, "escribir", IND);
-      if (d.fo) s += tag(sx(d.fo), mt + 34, "olvidar", COR);
+      if (d.fo) s += line(sx(d.fo), mt, sx(d.fo), sy(0), AMB, null, 2, "5 4");
+      s += tag(sx(d.wr), mt + 14, "entra", IND);
+      if (d.fo) s += tag(sx(d.fo), mt + 34, "borrar", AMB);
       var upto = Math.floor(pos), a = "", b = "";
       for (t = 1; t <= Math.min(upto, T); t++) { a += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.C[t - 1]) + " "; b += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.R[t - 1]) + " "; }
       if (b) s += path(b, COR, null, 2.5, "7 5");
       if (a) s += path(a, TEA, null, 3.5);
       if (upto >= 1) { s += circ(sx(Math.min(upto, T)), sy(d.C[Math.min(upto, T) - 1]), 6, TEA, "var(--paper)", 2); }
+      if (upto >= T) {                     /* nombres al final de cada curva */
+        var yC = sy(d.C[T - 1]), yR = sy(d.R[T - 1]), lab = function (y, t, col) {
+          return '<text x="' + (W - mr - 10) + '" y="' + y + '" class="tk" text-anchor="end" style="fill:' + col + ';font-size:15px;font-weight:700;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round">' + t + '</text>';
+        };
+        if (Math.abs(yC - yR) >= 22) { s += lab(yC - 12, "LSTM", TEA) + lab(yR - 10, "red simple", COR); }
+        else {                             /* curvas juntas: las dos etiquetas encima, apiladas */
+          var top = Math.min(yC, yR), cUp = yC <= yR;
+          s += lab(top - (cUp ? 30 : 12), "LSTM", TEA) + lab(top - (cUp ? 12 : 30), "red simple", COR);
+        }
+      }
+      s += '<text x="' + (ml - 40) + '" y="' + ((mt + H - mb) / 2) + '" class="tk" text-anchor="middle" transform="rotate(-90 ' + (ml - 40) + ' ' + ((mt + H - mb) / 2) + ')" style="font-size:13px">cuánto cuenta el dato</text>';
       $("lmSvg").innerHTML = s;
     }
     function stop() { if (timer) { cancelAnimationFrame(timer); timer = null; } $("lmPlay").textContent = "▶ Recorrer"; }
