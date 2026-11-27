@@ -486,7 +486,7 @@
     <p class="lead" style="font-size:20px">Las decisiones de diseño, en el orden en que se toman. Lo que no aparece aquí (pérdida, optimizador, entrenamiento) es igual que en las redes que ya conoces.</p></div>
   <div class="bd">
     <div class="grid3" style="gap:14px">
-      <div class="card" style="padding:12px 18px"><span class="tag t-amber">1 · Separar en el tiempo</span><p style="font-size:16px">Entrenamiento, validación y prueba son <b>periodos distintos</b>, en orden. Mezclar al azar deja que el modelo vea el futuro.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-amber">1 · Separar en el tiempo</span><p style="font-size:16px">Entrenamiento, validación y test son <b>periodos distintos</b>, en orden. Mezclar al azar deja que el modelo vea el futuro.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-amber">2 · Escala y ventanas</span><p style="font-size:16px">Llevar los valores a una escala parecida (restar la media y dividir por la desviación, calculadas solo con el periodo de entrenamiento) y cortar cada periodo en ventanas de \(T\) pasos con su etiqueta.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-amber">3 · Línea base</span><p style="font-size:16px">Compararse con un pronóstico trivial, como decir que mañana será igual que hoy. Si la red no le gana, no vale la pena.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-teal">4 · Arquitectura</span><p style="font-size:16px">Según la tarea: solo codificador, secuencia → secuencia, decodificador o codificador–decodificador.</p></div>
