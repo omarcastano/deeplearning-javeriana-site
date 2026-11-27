@@ -321,12 +321,12 @@
 </section>
 
 <section class="slide" data-title="Sigamos un dato">
-  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Sigamos un dato: ¿qué queda de \(x_1\)?</h2>
-    <p class="lead" style="font-size:20px">En la red recurrente simple, todo lo que se recuerda vive en un solo lugar: la memoria \(h_t\). Veamos qué le pasa al <b>primer dato</b>, \(x_1\), a medida que la celda lee los siguientes. Pulsa <b>Siguiente paso</b>.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Sigamos un dato: ¿cuánto cuenta \(x_1\)?</h2>
+    <p class="lead" style="font-size:20px">En la red simple, todo lo recordado vive en la memoria \(h_t\). Veamos cuánto cuenta el <b>primer dato</b>, \(x_1\), en esa memoria paso a paso. Pulsa <b>Siguiente paso</b>.</p></div>
   <div class="bd noclick">
     <div class="chartbox" style="padding:10px 16px">
-      <div class="cap">Cada barra muestra de qué está hecha la memoria en ese paso. <b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los datos que entraron después.</div>
-      <svg class="chart" id="mfSvg" style="max-height:215px" viewBox="0 30 1000 285" role="img" aria-label="Memoria de la red recurrente simple paso a paso"></svg>
+      <div class="cap">Cada barra es \(h_t\) como suma de los datos; cada trozo mide el número que multiplica a ese dato (<b>cuánto cuenta</b>). <b style="color:var(--amber)">Ámbar</b>: \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás.</div>
+      <svg class="chart" id="mfSvg" style="max-height:198px" viewBox="0 30 1000 285" role="img" aria-label="Memoria de la red recurrente simple paso a paso"></svg>
     </div>
     <div class="row2" style="grid-template-columns:1fr auto;gap:18px;align-items:center">
       <div class="card" style="padding:10px 20px;min-height:112px"><span class="tag t-teal" id="mfTag">Antes de empezar</span><p style="font-size:18px;line-height:1.5" id="mfTxt"></p></div>
@@ -336,14 +336,14 @@
 </section>
 
 <section class="slide" data-title="Memoria corta">
-  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>La regla: una multiplicación por \(w_h\) en cada paso</h2>
-    <p class="lead" style="font-size:20px">En la diapositiva anterior, \(x_1\) se multiplicó por \(0{,}5\) una vez por paso. Con cualquier \(w_h\) pasa lo mismo. Prueba otros valores y mira cuánto queda del primer dato.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>La regla: cuánto cuenta \(x_1\) después de \(t\) pasos</h2>
+    <p class="lead" style="font-size:20px">En la diapositiva anterior, el número delante de \(x_1\) se multiplicó por \(0{,}5\) en cada paso. Con cualquier \(w_h\) pasa lo mismo. <b>Prueba:</b> ▶ Animar con \(w_h = 0{,}8\); luego 0,95 y 1,1; luego \(T = 40\).</p></div>
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <div class="eq" style="padding:8px 20px"><div class="lbl">Lo que queda del primer dato en el paso t</div>
-          <div class="math" style="font-size:24px">\[ \text{queda} \approx w_h^{\,t-1} \]</div>
-          <div style="font-size:16px;line-height:1.45;text-align:left">Al llegar al paso \(t\), \(x_1\) se ha multiplicado \(t-1\) veces por \(w_h\) (aproximado: tanh lo cambia un poco).</div></div>
+        <div class="eq" style="padding:6px 20px"><div class="lbl">La memoria en el paso t, como suma</div>
+          <div class="math" style="font-size:22px">\[ h_t \approx w_h^{\,t-1}\,x_1 + \dots + x_t \]</div>
+          <div style="font-size:16px;line-height:1.4;text-align:left">El número delante de \(x_1\), \(w_h^{\,t-1}\), es cuánto cuenta \(x_1\). <b>Por qué importa:</b> la predicción \(\hat y\) sale de la memoria. Si el número delante de \(x_1\) es casi 0, cambiar \(x_1\) casi no cambia \(\hat y\): la red no puede usar \(x_1\).</div></div>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
           <label style="grid-template-columns:170px 1fr"><span>\(w_h\) <small>factor por paso</small></span>
             <input type="number" id="gvW" min="0" max="1.5" step="0.05" value="0.8" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)"></label>
@@ -353,14 +353,13 @@
           <div class="btns"><button type="button" id="gvPlay">▶ Animar</button><button type="button" id="gvReset">Reiniciar</button></div>
         </div>
         <div class="grid2" style="gap:8px">
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Queda en el último paso</div><div class="v" id="gvK" style="font-size:24px">–</div></div>
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Qué pasa con \(x_1\)</div><div class="v" id="gvD" style="font-size:20px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Cuánto cuenta \(x_1\) al final</div><div class="v" id="gvK" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">¿La red puede usar \(x_1\)?</div><div class="v" id="gvD" style="font-size:20px">–</div></div>
         </div>
-        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Pulsa ▶ Animar con \(w_h = 0{,}8\). 2. Repite con 0,95 y con 1,1. 3. Cambia \(T\) a 40.</p>
       </div>
       <div class="chartbox" style="padding:12px 16px;align-self:center">
-        <div class="cap">Cuánto queda de \(x_1\) en cada paso \(t\). <b style="color:var(--teal)">Verde</b>: aún se recuerda. <b style="color:var(--coral)">Rojo</b>: casi nada (menos de 0,05) o demasiado (más de 2).</div>
-        <svg class="chart" id="gvSvg" viewBox="0 0 560 300" role="img" aria-label="Lo que queda del primer dato en cada paso"></svg>
+        <div class="cap">Cada barra: el número delante de \(x_1\) en \(h_t\), es decir, cuánto cuenta \(x_1\) en la memoria del paso \(t\). <b style="color:var(--teal)">Verde</b>: aún cuenta. <b style="color:var(--coral)">Rojo</b>: casi nada (menos de 0,05) o demasiado (más de 2).</div>
+        <svg class="chart" id="gvSvg" viewBox="0 0 560 300" role="img" aria-label="Cuánto cuenta el primer dato en cada paso"></svg>
       </div>
     </div>
   </div>
@@ -371,7 +370,7 @@
     <p class="lead" style="font-size:20px">\(w_h\) es un peso: la red lo ajusta al entrenar. ¿Podría encontrar un valor que ni borre ni infle la memoria? Hay tres casos posibles, y ninguno funciona bien.</p></div>
   <div class="bd">
     <div class="grid3" style="gap:16px">
-      <div class="card" style="padding:14px 20px"><span class="tag t-coral">Caso 1 · Menor que 1</span><p style="font-size:18px;line-height:1.5">Es lo más común. Con \(w_h < 1\), lo que entró hace muchos pasos se vuelve casi cero: la memoria <b>se borra sola</b>.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-coral">Caso 1 · Menor que 1</span><p style="font-size:18px;line-height:1.5">Es lo más común. Con \(w_h < 1\), los datos de hace muchos pasos <b>cuentan casi cero</b>: la memoria se borra sola.</p></div>
       <div class="card" style="padding:14px 20px"><span class="tag t-coral">Caso 2 · Mayor que 1</span><p style="font-size:18px;line-height:1.5">Con \(w_h > 1\), lo viejo crece en cada paso. tanh lo corta entre −1 y 1, así que la memoria se queda <b>pegada en los extremos</b> y deja de reflejar los datos nuevos.</p></div>
       <div class="card" style="padding:14px 20px"><span class="tag t-amber">Caso 3 · Justo 1</span><p style="font-size:18px;line-height:1.5">Habría que acertar el valor exacto. Y aun así, el <b>mismo</b> \(w_h\) se aplica a todos los datos: no puede guardar uno y borrar otro.</p></div>
     </div>
@@ -402,7 +401,7 @@
   <div class="bd noclick">
     <div class="row2" style="grid-template-columns:1.45fr .55fr;gap:18px;align-items:stretch">
       <div class="chartbox" style="padding:10px 16px">
-        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos.</div>
+        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: cuánto cuenta \(x_1\) en la memoria. <b style="color:var(--indigo)">Índigo</b>: los demás datos.</div>
         <svg class="chart" id="i1Svg" style="max-height:225px" viewBox="0 30 1000 285" role="img" aria-label="Memoria que solo suma"></svg>
       </div>
       <div class="col" style="gap:10px;justify-content:center">
@@ -422,7 +421,7 @@
   <div class="bd noclick">
     <div class="row2" style="grid-template-columns:1.45fr .55fr;gap:18px;align-items:stretch">
       <div class="chartbox" style="padding:10px 16px">
-        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos. Sobre cada flecha, el valor de \(f_t\).</div>
+        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: cuánto cuenta \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos. Sobre cada flecha, el valor de \(f_t\).</div>
         <svg class="chart" id="i2Svg" style="max-height:225px" viewBox="0 30 1000 285" role="img" aria-label="Memoria con compuerta de olvido"></svg>
       </div>
       <div class="col" style="gap:10px;justify-content:center">
@@ -821,7 +820,7 @@
       }
       if (fr >= 1) {
         var q = comp[t][1];
-        s += text(cx, Math.min(y, base) - 9, sub("x", 1) + '<tspan dy="-5">: ' + fmtQ(q) + "</tspan>", "lb", "middle", q < 0.05 ? COR : AMB, 19, 700);
+        s += text(cx, Math.min(y, base) - 9, fmtQ(q) + "·" + sub("x", 1), "lb", "middle", q < 0.05 ? COR : AMB, 19, 700);
       }
     }
     return s;
@@ -857,13 +856,13 @@
   stepper("mf", { n: 6, letter: "h", keep: function () { return 0.5; }, write: function () { return 1; },
       arrowLab: function () { return "× 0,5"; } },
     ["Antes de empezar", "Paso 1", "Paso 2", "Paso 3", "Paso 4", "Paso 5", "Paso 6"],
-    ["Para ver solo la memoria, simplificamos la neurona: sin tanh, con \\(w_x = 1\\), \\(w_0 = 0\\) y \\(w_h = 0{,}5\\). Queda \\(h_t = 0{,}5 \\cdot h_{t-1} + x_t\\). Además, suponemos que cada dato vale 1.",
-     "La celda lee \\(x_1\\). Como la memoria empezaba vacía, \\(h_1 = x_1\\): la memoria es <b>todo</b> \\(x_1\\). Del primer dato queda 1.",
-     "La memoria anterior se multiplica por \\(w_h = 0{,}5\\) y se le suma el dato nuevo \\(x_2\\) (índigo). De \\(x_1\\) queda <b>la mitad</b>: 0,5.",
-     "Otra vez se multiplica por 0,5. De \\(x_1\\) queda \\(0{,}5 \\cdot 0{,}5 = 0{,}25\\). Y \\(x_2\\) también empieza a encogerse.",
-     "Queda \\(0{,}5^3 = 0{,}125\\). En cada paso se pierde la mitad de lo que quedaba, aunque nadie haya decidido borrarlo.",
-     "Queda \\(0{,}5^4 \\approx 0{,}06\\). La parte ámbar ya casi no se ve: la memoria está hecha casi solo de los datos recientes.",
-     "Queda \\(0{,}5^5 \\approx 0{,}03\\): un 3 % de \\(x_1\\). El primer dato <b>casi desapareció</b>. La siguiente diapositiva muestra la regla para cualquier \\(w_h\\)."],
+    ["Simplificamos: sin tanh, \\(w_x = 1\\), \\(w_0 = 0\\), \\(w_h = 0{,}5\\). Queda \\(h_t = 0{,}5 \\cdot h_{t-1} + x_t\\). Escribiremos cada \\(h_t\\) como suma de los datos: el número delante de cada dato es <b>cuánto cuenta</b>.",
+     "\\(h_1 = 1 \\cdot x_1\\). La memoria es solo \\(x_1\\): cuenta completo, con un 1 delante.",
+     "\\(h_2 = 0{,}5 \\cdot h_1 + x_2 = 0{,}5\\,x_1 + 1\\,x_2\\). El número delante de \\(x_1\\) bajó a 0,5: ahora \\(x_1\\) cuenta <b>la mitad</b> que \\(x_2\\).",
+     "\\(h_3 = 0{,}25\\,x_1 + 0{,}5\\,x_2 + 1\\,x_3\\). Cada vez que la memoria pasa por \\(w_h\\), los números de los datos viejos se encogen a la mitad.",
+     "\\(h_4 = 0{,}13\\,x_1 + \\dots + 1\\,x_4\\). Qué significa: si \\(x_1\\) hubiera sido 10 °C más alto, \\(h_4\\) cambiaría solo 1,3.",
+     "\\(h_5 = 0{,}06\\,x_1 + \\dots + 1\\,x_5\\). Los datos recientes ocupan casi toda la memoria.",
+     "\\(h_6 = 0{,}03\\,x_1 + \\dots + 1\\,x_6\\): \\(x_1\\) cuenta apenas un 3 %. La predicción \\(\\hat y\\) se calcula con \\(h_6\\), así que <b>casi no puede depender de \\(x_1\\)</b>, aunque sea importante."],
     ["t-teal", "t-amber", "t-amber", "t-amber", "t-amber", "t-coral", "t-coral"]);
 
   /* ---------- Idea 1: memoria que solo suma ---------- */
@@ -934,11 +933,11 @@
         s += '<rect x="' + (sx(k) - bw / 2) + '" y="' + sy(hv) + '" width="' + bw + '" height="' + Math.max(1, sy(0) - sy(hv)) + '" rx="2" style="fill:' + (bad ? COR : (k === 1 ? AMB : TEA)) + '"/>';
       }
       s += text((W + ml) / 2, H - 4, "paso t", "tk");
-      s += text(ml + 6, mt + 12, "lo que queda de x₁", "tk", "start", null, 14);
+      s += text(ml + 6, mt + 12, "cuánto cuenta x₁", "tk", "start", null, 14);
       $("gvSvg").innerHTML = s;
       var lastK = Math.min(T, Math.max(1, Math.floor(shown))), last = Math.pow(w, lastK - 1);
       $("gvK").textContent = last > 1000 ? "> 1000" : (last < 0.001 ? "< 0,001" : fmt(last, 3));
-      $("gvD").textContent = last < 0.05 ? "Se borró" : (last > 2 ? "Crece sin control" : "Se conserva");
+      $("gvD").textContent = last < 0.05 ? "Casi no" : (last > 2 ? "Crece sin control" : "Sí");
       $("gvD").style.color = (last < 0.05 || last > 2) ? "var(--coral)" : "var(--teal)";
     }
     function stop() { if (anim) { cancelAnimationFrame(anim); anim = null; } $("gvPlay").textContent = "▶ Animar"; }
