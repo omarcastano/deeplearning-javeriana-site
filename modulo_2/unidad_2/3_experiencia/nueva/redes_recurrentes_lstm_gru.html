@@ -1017,8 +1017,15 @@
       s += line(ml, sy(0), W - mr, sy(0), "var(--axis)", null, 1.6);
       for (var t = 1; t <= T; t += (t < 5 ? 1 : 5) - (t === 1 ? 0 : 0)) s += text(sx(t), H - mb + 20, t, "tk", "middle", null, 13);
       s += text((W + ml) / 2, H - 4, "paso t", "tk");
-      s += line(sx(d.wr), mt, sx(d.wr), sy(0), IND, null, 2, "5 4") + text(sx(d.wr) + 6, mt + 14, "escribir", "tk", "start", IND, 14);
-      if (d.fo) s += line(sx(d.fo), mt, sx(d.fo), sy(0), COR, null, 2, "5 4") + text(sx(d.fo) - 6, mt + 14, "olvidar", "tk", "end", COR, 14);
+      /* etiquetas en dos alturas y con halo del color del fondo: no se pisan aunque las líneas estén juntas */
+      function tag(x, y, t, col) {
+        var right = x + 70 < W - mr;
+        return '<text x="' + (right ? x + 6 : x - 6) + '" y="' + y + '" class="tk" text-anchor="' + (right ? "start" : "end") + '" style="fill:' + col + ';font-size:14px;font-weight:600;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round">' + t + '</text>';
+      }
+      s += line(sx(d.wr), mt, sx(d.wr), sy(0), IND, null, 2, "5 4");
+      if (d.fo) s += line(sx(d.fo), mt, sx(d.fo), sy(0), COR, null, 2, "5 4");
+      s += tag(sx(d.wr), mt + 14, "escribir", IND);
+      if (d.fo) s += tag(sx(d.fo), mt + 34, "olvidar", COR);
       var upto = Math.floor(pos), a = "", b = "";
       for (t = 1; t <= Math.min(upto, T); t++) { a += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.C[t - 1]) + " "; b += (t === 1 ? "M" : "L") + sx(t) + " " + sy(d.R[t - 1]) + " "; }
       if (b) s += path(b, COR, null, 2.5, "7 5");
