@@ -287,7 +287,7 @@
   <div class="hd" style="position:relative">
     <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes · Parte 2</p>
     <h1>Memoria de <em>largo plazo</em></h1>
-    <p class="lead">Por qué la red recurrente simple olvida rápido y cómo lo resuelven dos neuronas recurrentes con compuertas: la LSTM y la GRU.</p>
+    <p class="lead">Neuronas recurrentes LSTM y GRU.</p>
     <div class="meta"><span>Deep Learning</span><span>Parte 2 · LSTM · GRU</span></div>
   </div>
 </section>
@@ -313,79 +313,162 @@
       <div style="font-size:17px;text-align:left">\(x_t\): entrada del paso \(t\). \(h_{t-1}\): memoria, lo que la neurona calculó en el paso anterior. \(w_x\), \(w_h\), \(w_0\): pesos y sesgo, los mismos en todos los pasos.</div></div>
     <div class="grid3" style="gap:14px">
       <div class="card" style="padding:10px 18px"><span class="tag t-amber">1 · Memoria</span><p style="font-size:16px">Lo leído pasa de un paso al siguiente solo a través de \(h_{t-1}\), y en cada paso se multiplica por \(w_h\).</p></div>
-      <div class="card" style="padding:10px 18px"><span class="tag t-indigo">2 · Desenrollada</span><p style="font-size:16px">Para entrenar, la red se dibuja como una cadena: una copia de la misma neurona por cada paso de la serie.</p></div>
-      <div class="card" style="padding:10px 18px"><span class="tag t-coral">3 · Backward</span><p style="font-size:16px">El gradiente recorre esa cadena del último paso al primero (BPTT). Con series largas, la cadena es muy larga.</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-indigo">2 · Desenrollada</span><p style="font-size:16px">La red se dibuja como una cadena: una copia de la misma neurona por cada paso de la serie.</p></div>
+      <div class="card" style="padding:10px 18px"><span class="tag t-coral">3 · Un solo lugar</span><p style="font-size:16px">Todo lo que la red recuerda vive en \(h_t\), y en cada paso se vuelve a calcular: no hay otro sitio donde guardar algo aparte.</p></div>
     </div>
-    <p class="txt" style="font-size:18px">La pregunta de esta etapa: ¿qué le pasa a lo que entró hace muchos pasos?</p>
+    <p class="txt" style="font-size:18px">La pregunta de esta etapa: ¿qué le pasa a un dato que entró hace muchos pasos?</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Sigamos un dato">
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Sigamos un dato: ¿qué queda de \(x_1\)?</h2>
+    <p class="lead" style="font-size:20px">En la red recurrente simple, todo lo que se recuerda vive en un solo lugar: la memoria \(h_t\). Veamos qué le pasa al <b>primer dato</b>, \(x_1\), a medida que la celda lee los siguientes. Pulsa <b>Siguiente paso</b>.</p></div>
+  <div class="bd noclick">
+    <div class="chartbox" style="padding:10px 16px">
+      <div class="cap">Cada barra muestra de qué está hecha la memoria en ese paso. <b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los datos que entraron después.</div>
+      <svg class="chart" id="mfSvg" style="max-height:255px" viewBox="0 30 1000 285" role="img" aria-label="Memoria de la red recurrente simple paso a paso"></svg>
+    </div>
+    <div class="row2" style="grid-template-columns:1fr auto;gap:18px;align-items:center">
+      <div class="card" style="padding:10px 20px;min-height:112px"><span class="tag t-teal" id="mfTag">Antes de empezar</span><p style="font-size:18px;line-height:1.5" id="mfTxt"></p></div>
+      <div class="btns" style="width:340px"><button type="button" id="mfNext" class="on" style="flex:1.6;font-size:18px;padding:12px 10px;white-space:nowrap">Siguiente paso →</button><button type="button" id="mfReset">Reiniciar</button></div>
+    </div>
   </div>
 </section>
 
 <section class="slide" data-title="Memoria corta">
-  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>El problema: la red olvida rápido</h2></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>La regla: una multiplicación por \(w_h\) en cada paso</h2>
+    <p class="lead" style="font-size:20px">En la diapositiva anterior, \(x_1\) se multiplicó por \(0{,}5\) una vez por paso. Con cualquier \(w_h\) pasa lo mismo. Prueba otros valores y mira cuánto queda del primer dato.</p></div>
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.9fr 1.1fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:18px;line-height:1.45">Recuerda la ecuación: en cada paso, el estado anterior \(h_{t-1}\) se multiplica por \(w_h\). Entonces lo que queda del primer valor se multiplica por \(w_h\) una y otra vez: después de \(t\) pasos queda, aproximadamente, \(w_h^{\,t}\) (sin contar tanh ni los valores nuevos que van entrando). Si \(w_h=0{,}8\), tras 10 pasos queda \(0{,}8^{10}\approx 0{,}11\): casi nada.</p>
+        <div class="eq" style="padding:8px 20px"><div class="lbl">Lo que queda del primer dato en el paso t</div>
+          <div class="math" style="font-size:24px">\[ \text{queda} \approx w_h^{\,t-1} \]</div>
+          <div style="font-size:16px;line-height:1.45;text-align:left">Al llegar al paso \(t\), \(x_1\) se ha multiplicado \(t-1\) veces por \(w_h\) (aproximado: tanh lo cambia un poco).</div></div>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
           <label style="grid-template-columns:170px 1fr"><span>\(w_h\) <small>factor por paso</small></span>
             <input type="number" id="gvW" min="0" max="1.5" step="0.05" value="0.8" style="font:600 18px var(--text);padding:4px 8px;border-radius:9px;border:2px solid var(--amber);background:var(--paper-2);color:var(--fg)"></label>
-          <label style="grid-template-columns:170px 1fr"><span>\(T\) <small>longitud</small></span>
+          <label style="grid-template-columns:170px 1fr"><span>\(T\) <small>pasos</small></span>
             <select id="gvT" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)">
               <option>10</option><option selected>20</option><option>40</option></select></label>
+          <div class="btns"><button type="button" id="gvPlay">▶ Animar</button><button type="button" id="gvReset">Reiniciar</button></div>
         </div>
         <div class="grid2" style="gap:8px">
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Queda en el paso T</div><div class="v" id="gvK" style="font-size:24px">–</div></div>
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Diagnóstico</div><div class="v" id="gvD" style="font-size:20px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Queda en el último paso</div><div class="v" id="gvK" style="font-size:24px">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Qué pasa con \(x_1\)</div><div class="v" id="gvD" style="font-size:20px">–</div></div>
         </div>
-        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Pon \(w_h\) en 0,8, 0,95 y 1,1. 2. Cambia \(T\) a 40.</p>
+        <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> 1. Pulsa ▶ Animar con \(w_h = 0{,}8\). 2. Repite con 0,95 y con 1,1. 3. Cambia \(T\) a 40.</p>
       </div>
       <div class="chartbox" style="padding:12px 16px;align-self:center">
-        <div class="cap">Cuánto queda del primer elemento en cada paso \(t\). Verde: aún se recuerda. Rojo: casi nada (menos de 0,05) o demasiado (más de 2).</div>
-        <svg class="chart" id="gvSvg" viewBox="0 0 560 300" role="img" aria-label="Decaimiento de la memoria con los pasos"></svg>
+        <div class="cap">Cuánto queda de \(x_1\) en cada paso \(t\). <b style="color:var(--teal)">Verde</b>: aún se recuerda. <b style="color:var(--coral)">Rojo</b>: casi nada (menos de 0,05) o demasiado (más de 2).</div>
+        <svg class="chart" id="gvSvg" viewBox="0 0 560 300" role="img" aria-label="Lo que queda del primer dato en cada paso"></svg>
       </div>
     </div>
   </div>
 </section>
 
-<section class="slide" data-title="Gradiente que se desvanece">
-  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Lo mismo le pasa al gradiente</h2>
-    <p class="lead" style="font-size:20px">Recuerda: el gradiente indica cuánto y hacia dónde corregir cada peso. En el backward viaja del último paso al primero, y en cada paso se multiplica por un factor parecido a \(w_h\). Multiplicar un número por sí mismo muchas veces da resultados extremos:</p></div>
+<section class="slide" data-title="Ningún w_h sirve">
+  <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>¿Y si la red aprende un buen \(w_h\)?</h2>
+    <p class="lead" style="font-size:20px">\(w_h\) es un peso: la red lo ajusta al entrenar. ¿Podría encontrar un valor que ni borre ni infle la memoria? Hay tres casos posibles, y ninguno funciona bien.</p></div>
   <div class="bd">
-    <div class="grid2" style="gap:20px">
-      <div class="eq" style="padding:12px 24px"><div class="lbl">Factor menor que 1: se desvanece</div>
-        <div class="math" style="font-size:24px">\[ 0{,}5^{10} \approx 0{,}001 \]</div>
-        <div style="font-size:17px;line-height:1.45;text-align:left">El gradiente que llega a los primeros pasos es casi cero: lo que pasó al principio casi no influye en la corrección de los pesos, y la red <b>no aprende</b> a usarlo. Se llama <b>gradiente que se desvanece</b>.</div></div>
-      <div class="eq" style="padding:12px 24px"><div class="lbl">Factor mayor que 1: explota</div>
-        <div class="math" style="font-size:24px">\[ 1{,}5^{10} \approx 58 \]</div>
-        <div style="font-size:17px;line-height:1.45;text-align:left">El gradiente se vuelve enorme y cada step mueve los pesos demasiado: la pérdida salta y el entrenamiento se daña. Se llama <b>gradiente que explota</b>.</div></div>
+    <div class="grid3" style="gap:16px">
+      <div class="card" style="padding:14px 20px"><span class="tag t-coral">Caso 1 · Menor que 1</span><p style="font-size:18px;line-height:1.5">Es lo más común. Con \(w_h < 1\), lo que entró hace muchos pasos se vuelve casi cero: la memoria <b>se borra sola</b>.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-coral">Caso 2 · Mayor que 1</span><p style="font-size:18px;line-height:1.5">Con \(w_h > 1\), lo viejo crece en cada paso. tanh lo corta entre −1 y 1, así que la memoria se queda <b>pegada en los extremos</b> y deja de reflejar los datos nuevos.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-amber">Caso 3 · Justo 1</span><p style="font-size:18px;line-height:1.5">Habría que acertar el valor exacto. Y aun así, el <b>mismo</b> \(w_h\) se aplica a todos los datos: no puede guardar uno y borrar otro.</p></div>
     </div>
-    <div class="grid3">
-      <div class="card" style="padding:12px 20px"><span class="tag t-teal">tanh: ayuda solo en parte</span><p style="font-size:16px">La activación tanh deja cada estado entre −1 y 1: en el forward los estados no crecen sin control. Pero no impide que el gradiente explote.</p></div>
-      <div class="card" style="padding:12px 20px"><span class="tag t-amber">Remedio · recortar</span><p style="font-size:16px"><i>Gradient clipping</i>: si el gradiente pasa de un tope, se reduce a ese tope antes del step. Evita que explote.</p></div>
-      <div class="card" style="padding:12px 20px"><span class="tag t-coral">Lo que no se arregla</span><p style="font-size:16px">Ninguno de los dos evita que el gradiente se desvanezca: en la práctica, una celda simple recuerda bien solo unos pocos pasos (del orden de 10). Hace falta otra celda: la <b>LSTM</b>.</p></div>
+    <div class="card" style="padding:14px 22px"><span class="tag t-indigo">Conclusión</span><p style="font-size:19px;line-height:1.5;color:var(--fg);margin-top:2px">La red simple tiene <b>dos problemas</b>: su memoria se borra sola, y como usa un solo factor para todo, <b>no puede elegir</b> qué guardar. En la práctica recuerda bien solo unos pocos pasos (del orden de 10). Si el pronóstico depende de algo que pasó hace más tiempo, no lo puede usar.</p></div>
+    <p class="txt" style="font-size:18px">¿Qué se puede hacer? Eso responde la siguiente etapa.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Qué se puede hacer">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>¿Cómo se arregla la memoria?</h2>
+    <p class="lead" style="font-size:20px">La solución que se propuso, y que hoy se usa, no cambia toda la neurona. Cambia solo la forma en que pasa la memoria de un paso al siguiente, y lo hace con <b>tres ideas pequeñas</b>. Juntas forman la <b>LSTM</b>.</p></div>
+  <div class="bd">
+    <div class="grid2" style="gap:16px">
+      <div class="card" style="padding:12px 20px"><span class="tag t-coral">Problema 1 · Se borra sola</span><p style="font-size:17px">En cada paso la memoria se multiplica por \(w_h\): lo viejo se encoge, aunque sea importante.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-coral">Problema 2 · No puede elegir</span><p style="font-size:17px">Usa el mismo factor para todos los datos: no puede guardar unos y descartar otros.</p></div>
+    </div>
+    <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
+      <div class="ag"><span class="n">1</span><div><b>Quitar el factor que borra</b><span>¿Y si la memoria pasa al paso siguiente sin multiplicarse por \(w_h\)? Ataca el problema 1.</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>Agregar un control para borrar</b><span>¿Cómo se borra algo solo cuando ya no sirve? Empieza a atacar el problema 2.</span></div></div>
+      <div class="ag"><span class="n">3</span><div><b>Agregar un control para escribir</b><span>¿Cómo se evita guardar lo que no importa? Completa la solución del problema 2.</span></div></div>
+    </div>
+    <p class="txt" style="font-size:17px;color:var(--muted)">Veremos una idea por diapositiva, con la misma simplificación de antes: cada dato vale 1 y no hay tanh.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Idea 1: sin factor">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM · Idea 1</p><h2>Idea 1: quitar el factor que borra</h2>
+    <p class="lead" style="font-size:20px">Usemos una memoria nueva, \(c_t\), que pasa al paso siguiente <b>tal cual</b>: sin multiplicarse por \(w_h\) y sin tanh. En cada paso solo se le <b>suma</b> el dato nuevo. Pulsa <b>Siguiente paso</b>.</p></div>
+  <div class="bd noclick">
+    <div class="row2" style="grid-template-columns:1.45fr .55fr;gap:18px;align-items:stretch">
+      <div class="chartbox" style="padding:10px 16px">
+        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos.</div>
+        <svg class="chart" id="i1Svg" style="max-height:225px" viewBox="0 30 1000 285" role="img" aria-label="Memoria que solo suma"></svg>
+      </div>
+      <div class="col" style="gap:10px;justify-content:center">
+        <div class="eq" style="padding:8px 16px"><div class="lbl">Memoria sin factor</div>
+          <div class="math" style="font-size:22px">\[ c_t = c_{t-1} + x_t \]</div>
+          <div style="font-size:15px;line-height:1.4;text-align:left">\(c_t\): la memoria nueva en el paso \(t\). Empieza en 0.</div></div>
+        <div class="btns"><button type="button" id="i1Next" class="on" style="flex:1.6;white-space:nowrap">Siguiente paso →</button><button type="button" id="i1Reset">Reiniciar</button></div>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 20px;min-height:84px"><span class="tag t-teal" id="i1Tag">Antes de empezar</span><p style="font-size:18px;line-height:1.5" id="i1Txt"></p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Idea 2: compuerta de olvido">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM · Idea 2</p><h2>Idea 2: un control para borrar</h2>
+    <p class="lead" style="font-size:20px">La idea 1 conserva todo, pero nunca borra nada. Agregamos un número \(f_t\) que multiplica la memoria antes de sumar lo nuevo. A diferencia de \(w_h\), <b>cambia en cada paso</b>: la red lo calcula según lo que está leyendo.</p></div>
+  <div class="bd noclick">
+    <div class="row2" style="grid-template-columns:1.45fr .55fr;gap:18px;align-items:stretch">
+      <div class="chartbox" style="padding:10px 16px">
+        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: lo que queda de \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos. Sobre cada flecha, el valor de \(f_t\).</div>
+        <svg class="chart" id="i2Svg" style="max-height:225px" viewBox="0 30 1000 285" role="img" aria-label="Memoria con compuerta de olvido"></svg>
+      </div>
+      <div class="col" style="gap:10px;justify-content:center">
+        <div class="eq" style="padding:8px 16px"><div class="lbl">Memoria con control de borrado</div>
+          <div class="math" style="font-size:22px">\[ c_t = f_t \cdot c_{t-1} + x_t \]</div></div>
+        <div class="card ctl" style="padding:8px 14px;gap:6px">
+          <div style="font:600 14px var(--text);color:var(--muted)">Elige \(f_t\) en cada paso</div>
+          <div id="i2Ctl" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid2" style="gap:16px">
+      <div class="card" style="padding:10px 20px"><span class="tag t-indigo">Compuerta de olvido</span><p style="font-size:17px">\(f_t\) va de 0 a 1: <b>1</b> conserva toda la memoria, <b>0</b> la borra toda, <b>0,5</b> deja la mitad. <b>Prueba:</b> pon \(f_4 = 0\) y mira qué le pasa a \(x_1\).</p></div>
+      <div class="card" style="padding:10px 20px"><span class="tag t-coral">Lo que aún falta</span><p style="font-size:17px">Ahora la red decide <b>cuándo borrar</b>. Pero cada dato nuevo se sigue escribiendo completo, sirva o no: la memoria se llena de cosas sin importancia.</p></div>
     </div>
   </div>
 </section>
 
-<section class="slide" data-title="Por qué la LSTM">
-  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>¿Por qué hace falta otra celda?</h2>
-    <p class="lead" style="font-size:20px">El problema de la celda simple viene de su propia ecuación. La LSTM cambia justo esa parte.</p></div>
-  <div class="bd">
-    <div class="grid2" style="gap:20px">
-      <div class="eq" style="padding:12px 24px"><div class="lbl">Celda simple: la memoria se multiplica en cada paso</div>
-        <div class="math" style="font-size:24px">\[ h_t = \tanh\big(w_x\,x_t + w_h\,h_{t-1} + w_0\big) \]</div>
-        <div style="font-size:17px;line-height:1.5;text-align:left">La memoria \(h_{t-1}\) pasa por \(w_h\) y por tanh en <b>todos</b> los pasos, aunque no haya nada nuevo que guardar. Como viste en la actividad, así la memoria se borra sola.</div></div>
-      <div class="eq" style="padding:12px 24px"><div class="lbl">LSTM: la memoria solo cambia si la red lo decide</div>
-        <div class="math" style="font-size:24px">\[ c_t = c_{t-1} \quad \text{(si no se borra ni se escribe nada)} \]</div>
-        <div style="font-size:17px;line-height:1.5;text-align:left">La LSTM agrega una segunda memoria, \(c_t\), que pasa de un paso al siguiente <b>sin multiplicarse por \(W_h\) ni pasar por tanh</b>. Solo cambia cuando la red decide borrar o escribir; si no, un valor guardado sigue intacto muchos pasos.</div></div>
+<section class="slide" data-title="Idea 3: compuerta de entrada">
+  <div class="hd"><p class="eyebrow">Etapa 2 · LSTM · Idea 3</p><h2>Idea 3: un control para escribir</h2>
+    <p class="lead" style="font-size:20px">Agregamos un segundo número, \(i_t\), que multiplica el dato nuevo antes de guardarlo. Así la red decide también <b>cuánto escribir</b>: puede guardar \(x_1\) e ignorar los datos que no aportan.</p></div>
+  <div class="bd noclick">
+    <div class="row2" style="grid-template-columns:1.3fr .7fr;gap:18px;align-items:stretch">
+      <div class="chartbox" style="padding:10px 16px">
+        <div class="cap"><b style="color:var(--amber)">Ámbar</b>: \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás datos. Sobre cada flecha, \(f_t\). Junto a cada entrada, \(i_t\).</div>
+        <svg class="chart" id="i3Svg" style="max-height:225px" viewBox="0 30 1000 285" role="img" aria-label="Memoria con compuertas de olvido y de entrada"></svg>
+      </div>
+      <div class="col" style="gap:10px;justify-content:center">
+        <div class="eq" style="padding:8px 16px"><div class="lbl">Memoria con los dos controles</div>
+          <div class="math" style="font-size:22px">\[ c_t = f_t \cdot c_{t-1} + i_t \cdot x_t \]</div></div>
+        <div class="card ctl" style="padding:8px 14px;gap:4px">
+          <div id="i3Ctl" style="display:grid;grid-template-columns:20px repeat(6,1fr);gap:4px 3px;align-items:center"></div>
+        </div>
+      </div>
     </div>
-    <div class="card" style="padding:12px 22px"><span class="tag t-teal">Entonces, ¿cómo cambia la memoria?</span><p style="font-size:18px;line-height:1.5;color:var(--fg);margin-top:2px">Con tres controles que la red aprende, llamados <b>compuertas</b>: una decide qué <b>borrar</b> de \(c_t\), otra qué <b>escribir</b> y otra qué <b>mostrar</b> como salida. La siguiente diapositiva presenta cada una.</p></div>
+    <div class="grid2" style="gap:16px">
+      <div class="card" style="padding:10px 20px"><span class="tag t-indigo">Compuerta de entrada</span><p style="font-size:17px">\(i_t\) también va de 0 a 1: cuánto del dato nuevo se escribe. <b>Prueba:</b> pon \(i_4 = 1\) para guardar también \(x_4\), y luego \(f_5 = 0\) para borrarlo todo.</p></div>
+      <div class="card" style="padding:10px 20px"><span class="tag t-teal">Ya tenemos la memoria de la LSTM</span><p style="font-size:17px">Con \(f_t\) e \(i_t\) la red elige qué conservar, qué borrar y qué escribir. Solo falta decidir qué parte de la memoria sale como \(h_t\): un tercer control.</p></div>
+    </div>
   </div>
 </section>
 
 <section class="slide" data-title="La idea de la LSTM">
   <div class="hd"><p class="eyebrow">Etapa 2 · LSTM</p><h2>LSTM: una memoria con compuertas</h2>
-    <p class="lead" style="font-size:20px">La <b>LSTM</b> (<i>Long Short-Term Memory</i>) tiene dos memorias: \(c_t\), la de largo plazo, y \(h_t\), la de corto plazo, que además es la salida. Tres <b>compuertas</b> controlan qué se borra, qué se escribe y qué se muestra.</p></div>
+    <p class="lead" style="font-size:20px">Las tres ideas, más un control para la salida, forman la <b>LSTM</b> (<i>Long Short-Term Memory</i>). Los controles se llaman <b>compuertas</b>: olvido \(f\) (idea 2), entrada \(i\) (idea 3) y salida \(o\).</p></div>
   <div class="bd">
     <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
       <div class="chartbox" style="padding:12px 16px">
@@ -431,7 +514,7 @@
         <div style="font-size:17px;line-height:1.45;text-align:left">La compuerta de salida decide qué parte de la memoria se muestra en este paso.</div></div>
     </div>
     <div class="grid3">
-      <div class="card" style="padding:14px 20px"><span class="tag t-teal">Suma, no producto</span><p style="font-size:17px">La memoria avanza sumando. Si \(f_t\) vale casi 1, \(c_t\) pasa casi intacta muchos pasos, y el gradiente también.</p></div>
+      <div class="card" style="padding:14px 20px"><span class="tag t-teal">Suma, no producto</span><p style="font-size:17px">La memoria avanza sumando. Si \(f_t\) vale casi 1, \(c_t\) pasa casi intacta muchos pasos (idea 1).</p></div>
       <div class="card" style="padding:14px 20px"><span class="tag t-amber">Las compuertas se aprenden</span><p style="font-size:17px">La red aprende cuándo recordar, cuándo escribir y cuándo olvidar a partir de los datos.</p></div>
       <div class="card" style="padding:14px 20px"><span class="tag t-indigo">Más parámetros</span><p style="font-size:17px">Cuatro bloques de pesos en vez de uno: unas cuatro veces los parámetros de la celda simple.</p></div>
     </div>
@@ -570,7 +653,7 @@
   <div class="hd"><p class="eyebrow">Resumen</p><h2>Las tres preguntas, respondidas</h2></div>
   <div class="bd">
     <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
-      <div class="ag"><span class="n">1</span><div><b>El problema: memoria corta</b><span>Lo que entró hace \(t\) pasos se multiplica por \(w_h\) unas \(t\) veces: se borra (o crece sin control). Al gradiente le pasa lo mismo: se desvanece o explota. El gradient clipping evita que explote, pero no que se desvanezca.</span></div></div>
+      <div class="ag"><span class="n">1</span><div><b>El problema: memoria corta</b><span>En cada paso la memoria se multiplica por \(w_h\): lo que entró hace muchos pasos se borra (o crece sin control), y la red no puede elegir qué guardar. Recuerda bien solo unos pocos pasos.</span></div></div>
       <div class="ag"><span class="n">2</span><div><b>LSTM</b><span>Una memoria \(c_t\) que avanza sumando, sin pasar por \(W_h\) ni por tanh, y tres compuertas que deciden qué olvidar, qué escribir y qué mostrar.</span></div></div>
       <div class="ag"><span class="n">3</span><div><b>GRU y comparación</b><span>Una sola memoria y dos compuertas (actualización y reinicio). LSTM, GRU y RNN simple tienen 4, 3 y 1 bloques de pesos; se prueban LSTM y GRU y se elige con la pérdida de validación.</span></div></div>
     </div>
@@ -700,30 +783,184 @@
     draw();
   })();
 
-  /* ---------- memoria corta ---------- */
+  /* ---------- memoria por pasos: cadena con barras apiladas (mf, i1, i2, i3) ---------- */
+  function renderMath(el) {
+    if (window.renderMathInElement) renderMathInElement(el, { delimiters: [{ left: "\\(", right: "\\)", display: false }] });
+  }
+  function fmtQ(v) { return v === 0 ? "0" : (v >= 0.1 ? String(+v.toFixed(2)).replace(".", ",") : fmt(v, 3)); }
+  /* cfg: n, letter ("h" o "c"), keep(t) y write(t) para t = 1..n, arrowLab(t), inLab(t)
+     shown: pasos visibles (puede tener decimales: el último paso crece) */
+  function memChain(cfg, shown) {
+    var n = cfg.n, t, k, comp = [[]], maxTot = 1;
+    for (t = 1; t <= n; t++) {
+      var row = [], prev = comp[t - 1], kp = cfg.keep(t), tot = 0;
+      for (k = 1; k < t; k++) row[k] = kp * prev[k];
+      row[t] = cfg.write(t);
+      for (k = 1; k <= t; k++) tot += row[k];
+      comp.push(row); maxTot = Math.max(maxTot, tot);
+    }
+    var x0 = 85, dx = 155, cw = 92, ch = 46, cy = 200, base = 186, unit = Math.min(65, 125 / maxTot), bw = 46, s = "";
+    for (t = 1; t <= n; t++) {
+      var x = x0 + (t - 1) * dx, cx = x + cw / 2, vis = t <= Math.ceil(shown - 1e-9), fr = Math.min(1, shown - (t - 1));
+      if (t > 1) {
+        s += line(x - dx + cw + 3, cy + ch / 2, x - 4, cy + ch / 2, vis ? MUT : "var(--line)", vis ? "Mut" : null, 2.5, vis ? null : "5 5");
+        if (cfg.arrowLab) s += text(x - (dx - cw) / 2, cy + ch / 2 - 10, cfg.arrowLab(t), "lb", "middle", vis ? "var(--fg)" : MUT, 18, 700);
+      }
+      s += rect(x, cy, cw, ch, vis ? "var(--paper-2)" : "none", vis ? (!cfg.noHL && t === Math.ceil(shown - 1e-9) ? AMB : "var(--axis)") : "var(--line)", vis && !cfg.noHL && t === Math.ceil(shown - 1e-9) ? 3 : 1.5, 10);
+      s += text(cx, cy + ch / 2 + 7, sub(cfg.letter, t), "lb", "middle", vis ? "var(--fg)" : MUT, 21, 600);
+      var inCol = t === 1 ? AMB : IND;
+      s += line(cx, cy + ch + 42, cx, cy + ch + 4, vis ? inCol : "var(--line)", vis ? (t === 1 ? "Amb" : "Ind") : null, 2.5, vis ? null : "5 5");
+      s += text(cx, cy + ch + 64, sub("x", t), "lb", "middle", vis ? inCol : MUT, 20, 600);
+      if (cfg.inLab) s += text(cx + 10, cy + ch + 30, cfg.inLab(t), "lb", "start", vis ? "var(--fg)" : MUT, 17, 700);
+      if (!vis) continue;
+      var y = base;
+      for (k = 1; k <= t; k++) {
+        var h = comp[t][k] * unit * fr;
+        if (h <= 0.01) continue;
+        y -= h;
+        s += '<rect x="' + (cx - bw / 2) + '" y="' + y + '" width="' + bw + '" height="' + h + '" style="fill:' + (k === 1 ? AMB : IND) + ';opacity:' + (k === 1 ? 1 : (k % 2 ? .45 : .7)) + ';stroke:var(--paper);stroke-width:1"/>';
+      }
+      if (fr >= 1) {
+        var q = comp[t][1];
+        s += text(cx, Math.min(y, base) - 9, sub("x", 1) + ": " + fmtQ(q), "lb", "middle", q < 0.05 ? COR : AMB, 19, 700);
+      }
+    }
+    return s;
+  }
+  /* paso a paso con animación suave del último paso */
+  function stepper(p, cfg, tags, txts, cols) {
+    var k = 0, anim = null;
+    function paint(shown) { $(p + "Svg").innerHTML = memChain(cfg, shown); }
+    function setText() {
+      $(p + "Tag").textContent = tags[k];
+      $(p + "Tag").className = "tag " + (cols[k] || "t-amber");
+      $(p + "Txt").innerHTML = txts[k]; renderMath($(p + "Txt"));
+      $(p + "Next").disabled = k >= cfg.n;
+    }
+    function go(to) {
+      if (anim) cancelAnimationFrame(anim);
+      var from = k, t0 = null; k = to; setText();
+      if (to <= from) { paint(to); return; }
+      function frame(now) {
+        if (t0 === null) t0 = now;
+        var u = Math.min(1, (now - t0) / 900), e = u * u * (3 - 2 * u);
+        paint(from + (to - from) * e);
+        anim = u < 1 ? requestAnimationFrame(frame) : null;
+      }
+      anim = requestAnimationFrame(frame);
+    }
+    $(p + "Next").addEventListener("click", function () { if (k < cfg.n) go(k + 1); });
+    $(p + "Reset").addEventListener("click", function () { go(0); });
+    go(0);
+  }
+
+  /* ---------- Sigamos un dato (red simple, w_h = 0,5) ---------- */
+  stepper("mf", { n: 6, letter: "h", keep: function () { return 0.5; }, write: function () { return 1; },
+      arrowLab: function () { return "× 0,5"; } },
+    ["Antes de empezar", "Paso 1", "Paso 2", "Paso 3", "Paso 4", "Paso 5", "Paso 6"],
+    ["Para ver solo la memoria, simplificamos la neurona: sin tanh, con \\(w_x = 1\\), \\(w_0 = 0\\) y \\(w_h = 0{,}5\\). Queda \\(h_t = 0{,}5 \\cdot h_{t-1} + x_t\\). Además, suponemos que cada dato vale 1.",
+     "La celda lee \\(x_1\\). Como la memoria empezaba vacía, \\(h_1 = x_1\\): la memoria es <b>todo</b> \\(x_1\\). Del primer dato queda 1.",
+     "La memoria anterior se multiplica por \\(w_h = 0{,}5\\) y se le suma el dato nuevo \\(x_2\\) (índigo). De \\(x_1\\) queda <b>la mitad</b>: 0,5.",
+     "Otra vez se multiplica por 0,5. De \\(x_1\\) queda \\(0{,}5 \\cdot 0{,}5 = 0{,}25\\). Y \\(x_2\\) también empieza a encogerse.",
+     "Queda \\(0{,}5^3 = 0{,}125\\). En cada paso se pierde la mitad de lo que quedaba, aunque nadie haya decidido borrarlo.",
+     "Queda \\(0{,}5^4 \\approx 0{,}06\\). La parte ámbar ya casi no se ve: la memoria está hecha casi solo de los datos recientes.",
+     "Queda \\(0{,}5^5 \\approx 0{,}03\\): un 3 % de \\(x_1\\). El primer dato <b>casi desapareció</b>. La siguiente diapositiva muestra la regla para cualquier \\(w_h\\)."],
+    ["t-teal", "t-amber", "t-amber", "t-amber", "t-amber", "t-coral", "t-coral"]);
+
+  /* ---------- Idea 1: memoria que solo suma ---------- */
+  stepper("i1", { n: 6, letter: "c", keep: function () { return 1; }, write: function () { return 1; },
+      arrowLab: function () { return "× 1"; } },
+    ["Antes de empezar", "Paso 1", "Paso 2", "Paso 3", "Paso 4", "Paso 5", "Paso 6"],
+    ["Es la regla de la red simple, pero sin \\(w_h\\): la memoria anterior pasa completa (es como multiplicar por 1) y se le suma el dato nuevo. Cada dato vale 1.",
+     "\\(c_1 = x_1\\): la memoria es todo \\(x_1\\).",
+     "\\(c_2 = c_1 + x_2\\). Ahora \\(x_1\\) pasa <b>completo</b>: sigue valiendo 1. En la red simple ya había perdido la mitad.",
+     "\\(x_1\\) sigue completo. Pero la memoria ya vale 3: guarda todo lo que ha leído.",
+     "La memoria vale 4. Nada se borra nunca, ni siquiera lo que ya no sirve.",
+     "La memoria vale 5 y sigue creciendo en cada paso.",
+     "Lo bueno: \\(x_1\\) se conservó completo. Lo malo: la memoria <b>se llena</b> y crece sin límite. Hace falta una forma de borrar: la idea 2."],
+    ["t-teal", "t-amber", "t-teal", "t-amber", "t-amber", "t-coral", "t-coral"]);
+
+  /* ---------- Ideas 2 y 3: el estudiante elige f_t e i_t ---------- */
+  var SEL = "font:600 14px var(--text);padding:3px 0 3px 3px;border-radius:8px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg);width:100%";
+  function opts(v) { return [["0", "0"], ["0.5", "0,5"], ["1", "1"]].map(function (o) { return '<option value="' + o[0] + '"' + (+o[0] === v ? " selected" : "") + ">" + o[1] + "</option>"; }).join(""); }
+  function lab(t) { return '<span style="font:600 14px var(--text);color:var(--muted);text-align:center;display:block">' + t + "</span>"; }
   (function () {
+    var f = [0, 0, 1, 1, 1, 1, 1], h = "";
+    for (var t = 2; t <= 6; t++) h += '<label style="display:block">' + lab("\\(f_" + t + "\\)") + '<select id="i2F' + t + '" style="' + SEL + '">' + opts(f[t]) + "</select></label>";
+    $("i2Ctl").innerHTML = h; renderMath($("i2Ctl"));
+    var cfg = { n: 6, letter: "c", noHL: true, keep: function (t) { return f[t]; }, write: function () { return 1; },
+      arrowLab: function (t) { return "× " + fmt(f[t], f[t] % 1 ? 1 : 0); } };
+    function draw() { $("i2Svg").innerHTML = memChain(cfg, 6); }
+    for (var u = 2; u <= 6; u++) (function (u) { $("i2F" + u).addEventListener("change", function () { f[u] = +this.value; draw(); }); })(u);
+    draw();
+  })();
+  (function () {
+    var f = [0, 0, 1, 1, 1, 1, 1], g = [0, 1, 0, 0, 0, 0, 0], h = lab(""), t;
+    for (t = 1; t <= 6; t++) h += lab(t);
+    h += lab("\\(f\\)") + lab("–");
+    for (t = 2; t <= 6; t++) h += '<select id="i3F' + t + '" style="' + SEL + '">' + opts(f[t]) + "</select>";
+    h += lab("\\(i\\)");
+    for (t = 1; t <= 6; t++) h += '<select id="i3I' + t + '" style="' + SEL + '">' + opts(g[t]) + "</select>";
+    $("i3Ctl").innerHTML = h; renderMath($("i3Ctl"));
+    var cfg = { n: 6, letter: "c", noHL: true, keep: function (t) { return f[t]; }, write: function (t) { return g[t]; },
+      arrowLab: function (t) { return "× " + fmt(f[t], f[t] % 1 ? 1 : 0); },
+      inLab: function (t) { return "× " + fmt(g[t], g[t] % 1 ? 1 : 0); } };
+    function draw() { $("i3Svg").innerHTML = memChain(cfg, 6); }
+    for (t = 1; t <= 6; t++) (function (u) {
+      if (u > 1) $("i3F" + u).addEventListener("change", function () { f[u] = +this.value; draw(); });
+      $("i3I" + u).addEventListener("change", function () { g[u] = +this.value; draw(); });
+    })(t);
+    draw();
+  })();
+
+  /* ---------- memoria corta: regla general (gráfico de barras animable) ---------- */
+  (function () {
+    var shown = Infinity, anim = null;
+    function params() {
+      var w = parseFloat(String($("gvW").value).replace(",", ".")); if (isNaN(w)) w = 0.8;
+      return { w: Math.max(0, Math.min(1.5, w)), T: +$("gvT").value };
+    }
     function draw() {
-      var w = parseFloat($("gvW").value); if (isNaN(w)) w = 0.8; w = Math.max(0, Math.min(1.5, w));
-      var T = +$("gvT").value, W = 560, H = 300, ml = 52, mr = 14, mt = 14, mb = 40, ymax = 2.2, s = "", k;
+      var P = params(), w = P.w, T = P.T, W = 560, H = 300, ml = 52, mr = 14, mt = 14, mb = 40, ymax = 2.2, s = "", k;
       function sx(t) { return ml + (t - 0.5) / T * (W - ml - mr); }
       function sy(v) { return H - mb - Math.min(v, ymax) / ymax * (H - mt - mb); }
       [0, 0.5, 1, 1.5, 2].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
       s += line(ml, sy(0), W - mr, sy(0), "var(--axis)", null, 1.6);
       var bw = Math.max(3, (W - ml - mr) / T * 0.7);
       for (k = 1; k <= T; k++) {
-        var v = Math.pow(w, k - 1), bad = v < 0.05 || v > 2;
-        s += '<rect x="' + (sx(k) - bw / 2) + '" y="' + sy(v) + '" width="' + bw + '" height="' + Math.max(1, sy(0) - sy(v)) + '" rx="2" style="fill:' + (bad ? COR : TEA) + '"/>';
+        var fr = Math.max(0, Math.min(1, shown - (k - 1)));
         if (T <= 20 || k % 5 === 0 || k === 1) s += text(sx(k), H - mb + 20, k, "tk", "middle", null, 13);
+        if (fr <= 0) continue;
+        var v = Math.pow(w, k - 1), bad = v < 0.05 || v > 2, hv = v * fr;
+        s += '<rect x="' + (sx(k) - bw / 2) + '" y="' + sy(hv) + '" width="' + bw + '" height="' + Math.max(1, sy(0) - sy(hv)) + '" rx="2" style="fill:' + (bad ? COR : (k === 1 ? AMB : TEA)) + '"/>';
       }
       s += text((W + ml) / 2, H - 4, "paso t", "tk");
-      s += text(ml + 6, mt + 12, "lo que queda del primer elemento", "tk", "start", null, 14);
+      s += text(ml + 6, mt + 12, "lo que queda de x₁", "tk", "start", null, 14);
       $("gvSvg").innerHTML = s;
-      var last = Math.pow(w, T - 1);
+      var lastK = Math.min(T, Math.max(1, Math.floor(shown))), last = Math.pow(w, lastK - 1);
       $("gvK").textContent = last > 1000 ? "> 1000" : (last < 0.001 ? "< 0,001" : fmt(last, 3));
-      $("gvD").textContent = last < 0.05 ? "Se desvanece" : (last > 2 ? "Explota" : "Se conserva");
+      $("gvD").textContent = last < 0.05 ? "Se borró" : (last > 2 ? "Crece sin control" : "Se conserva");
       $("gvD").style.color = (last < 0.05 || last > 2) ? "var(--coral)" : "var(--teal)";
     }
-    ["input", "change"].forEach(function (ev) { $("gvW").addEventListener(ev, draw); $("gvT").addEventListener(ev, draw); });
+    function stop() { if (anim) { cancelAnimationFrame(anim); anim = null; } $("gvPlay").textContent = "▶ Animar"; }
+    $("gvPlay").addEventListener("click", function () {
+      if (anim) { stop(); return; }
+      var T = params().T; if (shown >= T) shown = 0;
+      $("gvPlay").textContent = "❚❚ Pausa";
+      var last = null, speed = T / 7;            /* recorrido completo en unos 7 s */
+      function frame(now) {
+        if (last === null) last = now;
+        shown += Math.min((now - last) / 1000, 0.05) * speed; last = now;
+        if (shown >= T) { shown = T; draw(); stop(); return; }
+        draw(); anim = requestAnimationFrame(frame);
+      }
+      anim = requestAnimationFrame(frame);
+    });
+    $("gvReset").addEventListener("click", function () { stop(); shown = 0; draw(); });
+    ["input", "change"].forEach(function (ev) {
+      $("gvW").addEventListener(ev, function () { stop(); shown = Infinity; draw(); });
+      $("gvT").addEventListener(ev, function () { stop(); shown = Infinity; draw(); });
+    });
     draw();
   })();
 
