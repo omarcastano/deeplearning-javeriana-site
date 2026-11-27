@@ -822,7 +822,7 @@
       }
       if (fr >= 1) {
         var q = comp[t][1];
-        s += text(cx, Math.min(y, base) - 9, sub("x", 1) + ": " + fmtQ(q), "lb", "middle", q < 0.05 ? COR : AMB, 19, 700);
+        s += text(cx, Math.min(y, base) - 9, sub("x", 1) + '<tspan dy="-5">: ' + fmtQ(q) + "</tspan>", "lb", "middle", q < 0.05 ? COR : AMB, 19, 700);
       }
     }
     return s;
@@ -921,7 +921,7 @@
       return { w: Math.max(0, Math.min(1.5, w)), T: +$("gvT").value };
     }
     function draw() {
-      var P = params(), w = P.w, T = P.T, W = 560, H = 300, ml = 52, mr = 14, mt = 14, mb = 40, ymax = 2.2, s = "", k;
+      var P = params(), w = P.w, T = P.T, W = 560, H = 300, ml = 52, mr = 14, mt = 14, mb = 48, ymax = 2.2, s = "", k;
       function sx(t) { return ml + (t - 0.5) / T * (W - ml - mr); }
       function sy(v) { return H - mb - Math.min(v, ymax) / ymax * (H - mt - mb); }
       [0, 0.5, 1, 1.5, 2].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
@@ -1012,7 +1012,7 @@
       return { C: C, R: R, wr: wr, fo: fo };
     }
     function draw() {
-      var d = series(), W = 560, H = 300, ml = 52, mr = 14, mt = 16, mb = 40, s = "";
+      var d = series(), W = 560, H = 300, ml = 52, mr = 14, mt = 16, mb = 48, s = "";
       function sx(t) { return ml + (t - 1) / (T - 1) * (W - ml - mr); }
       function sy(v) { return H - mb - v / 1.15 * (H - mt - mb); }
       [0, 0.5, 1].forEach(function (v) { s += line(ml, sy(v), W - mr, sy(v), "var(--grid)", null, 1); s += text(ml - 8, sy(v) + 5, fmt(v, 1), "tk", "end"); });
