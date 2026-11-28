@@ -304,79 +304,78 @@
   </div>
 </section>
 
-<section class="slide" data-title="Arquitecturas">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitecturas</p><h2>Cuatro formas de conectar entradas y salidas</h2>
-    <p class="lead" style="font-size:20px">Ya conocemos las tres celdas (simple, LSTM y GRU). Todas producen un \(h_t\) en cada paso; según el problema se usan <b>unas salidas u otras</b>. Si solo queremos el valor de mañana, basta la última; si queremos una predicción en cada paso, se usan todas. A cada forma de conectar entradas y salidas se le llama <b>arquitectura</b>.</p></div>
-  <div class="bd noclick">
-    <div class="row2 grow" style="grid-template-columns:1.15fr .85fr;align-items:center;gap:22px">
-      <div class="chartbox" style="padding:12px 16px">
-        <div class="cap">Índigo: entradas que se usan. Verde: salidas que se usan. Gris: pasos sin entrada o sin salida.</div>
-        <svg class="chart" id="tpSvg" viewBox="0 0 600 300" role="img" aria-label="Esquema de entradas y salidas"></svg>
-      </div>
-      <div class="col" style="gap:12px">
-        <div class="card ctl" style="padding:10px 18px">
-          <label style="grid-template-columns:120px 1fr"><span>Tipo</span>
-            <select id="tpSel" style="font:600 16px var(--text);padding:6px;border-radius:9px;border:1px solid var(--line);background:var(--paper-2);color:var(--fg)">
-              <option value="0">Secuencia → vector</option><option value="1">Secuencia → secuencia</option><option value="2">Vector → secuencia</option><option value="3">Secuencia → otra secuencia</option></select></label>
-        </div>
-        <div class="card" style="padding:14px 20px"><span class="tag t-teal" id="tpTag">Ejemplo</span><p style="font-size:18px" id="tpTxt"></p></div>
-        <p class="txt" style="font-size:16px;color:var(--muted)"><b>Prueba:</b> elige cada tipo. Las siguientes diapositivas explican cada uno en detalle.</p>
-      </div>
+<section class="slide" data-title="Tipos de arquitectura">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitecturas</p><h2>Tipos de arquitectura</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px">Según el problema que se quiera resolver, una red recurrente se puede usar con cuatro tipos de arquitectura. Cambia qué entra a la red y qué sale de ella.</p></div>
+  <div class="bd" style="gap:12px">
+    <div class="grid4" style="gap:16px">
+      <div class="card" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px"><span class="tag t-amber" style="margin-bottom:0;align-self:flex-start">Arquitectura 1</span><h3 style="font-size:21px;margin:0;min-height:54px;line-height:1.25">Secuencia → vector</h3>
+        <svg class="chart" id="ovSvg1" viewBox="0 0 270 190" role="img" aria-label="Secuencia → vector"></svg>
+        <p style="font-size:16px;color:var(--fg)">Entra una serie de valores; sale <b>un solo</b> resultado.</p><p style="font-size:15px"><b style="color:var(--teal)">Ejemplo:</b> Precios de una acción de los últimos 30 días → precio de mañana.</p></div>
+      <div class="card" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px"><span class="tag t-amber" style="margin-bottom:0;align-self:flex-start">Arquitectura 2</span><h3 style="font-size:21px;margin:0;min-height:54px;line-height:1.25">Secuencia → secuencia</h3>
+        <svg class="chart" id="ovSvg2" viewBox="0 0 270 190" role="img" aria-label="Secuencia → secuencia"></svg>
+        <p style="font-size:16px;color:var(--fg)">Entra una serie; sale <b>una predicción en cada paso</b>.</p><p style="font-size:15px"><b style="color:var(--teal)">Ejemplo:</b> Después de cada día leído → precio del día siguiente.</p></div>
+      <div class="card" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px"><span class="tag t-amber" style="margin-bottom:0;align-self:flex-start">Arquitectura 3</span><h3 style="font-size:21px;margin:0;min-height:54px;line-height:1.25">Vector → secuencia</h3>
+        <svg class="chart" id="ovSvg3" viewBox="0 0 270 190" role="img" aria-label="Vector → secuencia"></svg>
+        <p style="font-size:16px;color:var(--fg)">Entra <b>un solo vector</b> (pocos números); sale una serie.</p><p style="font-size:15px"><b style="color:var(--teal)">Ejemplo:</b> Datos de mañana (temperatura, festivo) → demanda eléctrica hora a hora.</p></div>
+      <div class="card" style="padding:12px 16px;display:flex;flex-direction:column;gap:6px"><span class="tag t-amber" style="margin-bottom:0;align-self:flex-start">Arquitectura 4</span><h3 style="font-size:21px;margin:0;min-height:54px;line-height:1.25">Codificador–decodificador</h3>
+        <svg class="chart" id="ovSvg4" viewBox="0 0 270 190" role="img" aria-label="Codificador–decodificador"></svg>
+        <p style="font-size:16px;color:var(--fg)">Entra una serie; sale <b>otra serie</b>, que puede tener otro largo.</p><p style="font-size:15px"><b style="color:var(--teal)">Ejemplo:</b> Ventas de los últimos 30 días → ventas de los próximos 7.</p></div>
     </div>
+    <p class="txt" style="font-size:16px;color:var(--muted)"><span class="hl-i"><b>Índigo:</b></span> lo que entra. <span class="hl-t"><b>Verde:</b></span> lo que sale. <b>Gris punteado:</b> no entra nada o no se usa. Cada arquitectura se explica en las siguientes diapositivas.</p>
   </div>
 </section>
 
 <section class="slide" data-title="Solo codificador">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencia → vector</p><h2>Solo codificador: resumir la secuencia en un vector</h2>
-    <p class="lead" style="font-size:20px">La red lee toda la secuencia y se queda con el <b>último estado</b> \(h_T\). Ese vector es un <b>resumen</b> de todo lo leído: por eso a esta parte se le llama <b>codificador</b>. Encima se pone una capa densa que da la respuesta.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 1 de 4</p><h2>Secuencia → vector: leer toda la serie y dar un solo resultado</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px"><b>Entra</b> una secuencia (varios valores en orden). <b>Sale</b> un solo resultado: un número, o unos pocos números juntos (un <b>vector</b>).</p></div>
   <div class="bd">
-    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+    <div class="row2 grow" style="grid-template-columns:1.05fr .95fr;align-items:center;gap:22px">
       <div class="chartbox" style="padding:12px 16px">
-        <div class="cap">Las salidas intermedias se descartan (gris). Solo \(h_T\) pasa a la capa densa, que produce \(\hat y\).</div>
-        <svg class="chart" id="enSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura solo codificador"></svg>
+        <div class="cap">Entran \(x_1,\dots,x_6\). Las salidas de los pasos 1 a 5 no se usan (gris). Solo el último estado, \(h_6\), pasa a la capa densa.</div>
+        <svg class="chart" id="enSvg" viewBox="0 0 600 310" role="img" aria-label="Arquitectura secuencia a vector"></svg>
       </div>
       <div class="col" style="gap:10px">
-        <div class="eq" style="padding:8px 18px"><div class="lbl">Capa de salida</div><div class="math" style="font-size:22px">\[ \hat y = W_y\, h_T + w_{0y} \]</div>
-          <div style="font-size:16px;text-align:left">\(W_y\), \(w_{0y}\): pesos de la capa densa. Sin activación para un valor (regresión); con softmax para elegir una clase.</div></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Regresión</span><p style="font-size:16px">Pronosticar el valor siguiente de una serie, o los \(H\) siguientes a la vez si la capa densa tiene \(H\) salidas. Sirve para cualquier \(T\): \(h_T\) siempre tiene tamaño \(n\).</p></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Clasificación</span><p style="font-size:16px">Decir si un electrocardiograma es normal, qué actividad hace una persona según el acelerómetro del reloj, o si una serie de transacciones es un fraude.</p></div>
-        
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber" style="margin-bottom:6px">Cómo funciona</span><p style="font-size:16px">La red lee toda la serie. Su último estado resume lo leído y una capa densa lo convierte en la predicción \(\hat y\).</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal" style="margin-bottom:6px">Ejemplo</span><p style="font-size:16px">Precio de una acción: con los precios de los últimos 30 días <span style="white-space:nowrap">(\(x_1,\dots,x_{30}\)),</span> predecir el precio de mañana (\(\hat y\)).</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo" style="margin-bottom:6px">También sirve para</span><p style="font-size:16px">Predecir los próximos 7 días de una vez: la capa densa da 7 números en vez de 1.</p></div>
       </div>
     </div>
   </div>
 </section>
 
 <section class="slide" data-title="Secuencia a secuencia">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Secuencia → secuencia</p><h2>Una salida en cada paso</h2>
-    <p class="lead" style="font-size:20px">Aquí <b>todos</b> los \(h_t\) se usan: en cada paso, una capa densa (la misma para todos los pasos) convierte \(h_t\) en una predicción \(\hat y_t\). La salida es otra secuencia, alineada con la entrada.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 2 de 4</p><h2>Secuencia → secuencia: una predicción en cada paso</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px"><b>Entra</b> una secuencia. <b>Sale</b> otra secuencia del mismo largo: una predicción por cada valor leído.</p></div>
   <div class="bd">
-    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+    <div class="row2 grow" style="grid-template-columns:1.05fr .95fr;align-items:center;gap:22px">
       <div class="chartbox" style="padding:12px 16px">
-        <div class="cap">Cada \(\hat y_t\) solo puede usar \(x_1,\dots,x_t\): lo que ya llegó, nunca lo que viene.</div>
-        <svg class="chart" id="ssSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura secuencia a secuencia"></svg>
+        <div class="cap">Entran \(x_1,\dots,x_6\) y en cada paso sale una predicción \(\hat y_t\). Cada \(\hat y_t\) solo usa lo leído hasta el paso \(t\).</div>
+        <svg class="chart" id="ssSvg" viewBox="0 0 600 310" role="img" aria-label="Arquitectura secuencia a secuencia"></svg>
       </div>
       <div class="col" style="gap:10px">
-        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Pronóstico en cada paso</span><p style="font-size:16px">En cada paso \(t\), la red predice el valor siguiente, \(x_{t+1}\). Así, la etiqueta es la misma serie corrida un paso hacia adelante: para la entrada \(x_1,\dots,x_T\) la etiqueta es \(x_2,\dots,x_{T+1}\).</p></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-amber">Más señal para aprender</span><p style="font-size:16px">La pérdida suma los errores de <b>todos</b> los pasos, no solo del último. El gradiente llega a cada paso de forma directa y el entrenamiento es más estable y rápido.</p></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Etiquetar cada instante</span><p style="font-size:16px">Marcar en una señal de sensores en qué momentos hay una falla, o en un audio en qué instantes habla alguien.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber" style="margin-bottom:6px">Cómo funciona</span><p style="font-size:16px">En cada paso, la misma capa densa convierte el estado \(h_t\) en una predicción \(\hat y_t\). Se usan todas.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal" style="margin-bottom:6px">Ejemplo</span><p style="font-size:16px">Precio de una acción: después de leer el precio de cada día, predecir el del día siguiente. Si entran \(x_1,\dots,x_{30}\), las respuestas correctas son \(x_2,\dots,x_{31}\).</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo" style="margin-bottom:6px">Ventaja</span><p style="font-size:16px">La pérdida suma los errores de todos los pasos, no solo del último: la red tiene más ejemplos de los que aprender y entrena más rápido.</p></div>
       </div>
     </div>
   </div>
 </section>
 
 <section class="slide" data-title="Solo decodificador">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Vector → secuencia</p><h2>Solo decodificador: generar una secuencia</h2>
-    <p class="lead" style="font-size:20px">El <b>decodificador</b> hace lo contrario del codificador: parte de un vector (un estado inicial) y <b>genera</b> la secuencia paso a paso. Lo usual es que cada salida \(\hat y_t\) se vuelva la entrada del paso siguiente: es una generación <b>autorregresiva</b>.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 3 de 4</p><h2>Vector → secuencia: de un vector a una serie completa</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px"><b>Entra</b> un solo vector: unos pocos números que describen la situación. <b>Sale</b> una secuencia: la red la genera un valor por paso.</p></div>
   <div class="bd">
-    <div class="row2 grow" style="grid-template-columns:1.1fr .9fr;align-items:center;gap:22px">
+    <div class="row2 grow" style="grid-template-columns:1.05fr .95fr;align-items:center;gap:22px">
       <div class="chartbox" style="padding:12px 16px">
-        <div class="cap">Flechas punteadas: la salida de un paso se usa como entrada del siguiente. El primer paso recibe el vector inicial.</div>
-        <svg class="chart" id="deSvg" viewBox="0 0 600 300" role="img" aria-label="Arquitectura solo decodificador"></svg>
+        <div class="cap">Entra un solo vector en el primer paso y salen \(\hat y_1,\dots,\hat y_6\). Flechas verdes punteadas: cada predicción entra al paso siguiente.</div>
+        <svg class="chart" id="deSvg" viewBox="0 0 600 310" role="img" aria-label="Arquitectura vector a secuencia"></svg>
       </div>
       <div class="col" style="gap:10px">
-        <div class="card" style="padding:10px 18px"><span class="tag t-teal">Pronóstico de largo alcance</span><p style="font-size:16px">Predecir un valor, agregarlo a la serie como si fuera real y volver a predecir: así se pronostican tantos pasos como se quiera.</p></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-indigo">Generación</span><p style="font-size:16px">Producir trayectorias, señales sintéticas o melodías nota a nota a partir de un estado inicial.</p></div>
-        <div class="card" style="padding:10px 18px"><span class="tag t-coral">El riesgo</span><p style="font-size:16px">Cada predicción tiene algo de error, y ese error entra como dato en el paso siguiente: los errores se <b>acumulan</b>. La actividad siguiente lo muestra.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber" style="margin-bottom:6px">Cómo funciona</span><p style="font-size:16px">A partir del vector, la red genera la serie un valor por paso, usando cada predicción como entrada del paso siguiente: generación <b>autorregresiva</b>.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal" style="margin-bottom:6px">Ejemplo</span><p style="font-size:16px">Demanda eléctrica: con un vector que describe mañana (temperatura prevista, si es festivo), predecir la demanda de cada una de sus 24 horas.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo" style="margin-bottom:6px">También sirve para</span><p style="font-size:16px">Predecir las ventas diarias del primer mes de un producto nuevo a partir de sus características (precio, categoría).</p></div>
+        <p class="txt" style="font-size:15px;color:var(--muted);line-height:1.4"><b style="color:var(--coral)">Riesgo:</b> si cada predicción entra como dato, sus errores se acumulan. La actividad siguiente lo muestra.</p>
       </div>
     </div>
   </div>
@@ -387,7 +386,7 @@
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:17px;line-height:1.45">Dos estrategias para predecir los próximos \(H\) valores: <b style="color:var(--coral)">autorregresiva</b> (un modelo predice un paso, se reinyecta, se repite) y <b style="color:var(--indigo)">directa</b> (la capa de salida da los \(H\) valores de una vez, como un codificador con \(H\) salidas). Para que se vea la idea, los dos usan modelos lineales que miran los últimos \(P\) valores, ajustados a esta serie.</p>
+        <p class="lead" style="font-size:17px;line-height:1.45">Queremos los próximos \(H\) valores de una serie. <b style="color:var(--coral)">Autorregresiva:</b> predecir el siguiente, tratarlo como dato real y repetir \(H\) veces. <b style="color:var(--indigo)">Directa:</b> dar los \(H\) valores de una sola vez (como un codificador con \(H\) salidas), sin usar predicciones propias. Para ver solo la estrategia, los dos usan un modelo sencillo que mira los últimos \(P\) valores.</p>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
           <label style="grid-template-columns:190px 1fr"><span>\(H\) <small>pasos a pronosticar</small></span>
             <select id="msH"><option>5</option><option selected>15</option><option>30</option></select></label>
@@ -412,17 +411,20 @@
 </section>
 
 <section class="slide" data-title="Codificador–decodificador">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Codificador–decodificador</p><h2>Codificador–decodificador: dos redes en serie</h2>
-    <p class="lead" style="font-size:20px">Un <b>codificador</b> resume la secuencia de entrada en un vector de <b>contexto</b>; un <b>decodificador</b> parte de ese contexto y genera la salida. Las dos secuencias pueden tener <b>longitudes distintas</b>.</p></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 4 de 4</p><h2>Codificador–decodificador: de una secuencia a otra</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px"><b>Entra</b> una secuencia. <b>Sale</b> otra secuencia, que puede tener <b>otro largo</b>. Junta las arquitecturas 1 y 3: primero un codificador, luego un decodificador.</p></div>
   <div class="bd">
-    <div class="chartbox" style="padding:10px 16px">
-      <div class="cap">Índigo: el codificador lee \(x_1,\dots,x_T\). Ámbar: el contexto (el último estado del codificador). Verde: el decodificador genera \(\hat y_1,\dots,\hat y_H\), reinyectando cada salida.</div>
-      <svg class="chart" id="ecSvg" style="max-height:150px" viewBox="0 0 1100 250" role="img" aria-label="Arquitectura codificador-decodificador"></svg>
-    </div>
-    <div class="grid3">
-      <div class="card" style="padding:12px 20px"><span class="tag t-teal">Aplicaciones</span><p style="font-size:16px">Leer 30 días de demanda de energía y pronosticar los próximos 7; pronosticar la trayectoria de un vehículo.</p></div>
-      <div class="card" style="padding:12px 20px"><span class="tag t-amber">Al entrenar</span><p style="font-size:16px">En cada paso el decodificador recibe el valor <b>real</b> anterior, no su predicción (<i>teacher forcing</i>). Al pronosticar de verdad usa sus propias predicciones.</p></div>
-      <div class="card" style="padding:12px 20px"><span class="tag t-coral">El cuello de botella</span><p style="font-size:16px">Toda la entrada cabe en un solo vector: con secuencias largas se pierde información. La <b>atención</b> (no se ve en esta unidad) deja al decodificador consultar todos los estados.</p></div>
+    <div class="row2 grow" style="grid-template-columns:1.05fr .95fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:12px 16px">
+        <div class="cap"><span class="hl-i"><b>Codificador</b></span>: lee \(x_1,\dots,x_4\) y lo resume en el <span class="hl-a"><b>contexto</b></span>. <span class="hl-t"><b>Decodificador</b></span>: parte del contexto y genera \(\hat y_1,\dots,\hat y_3\).</div>
+        <svg class="chart" id="ecSvg" viewBox="0 0 600 310" role="img" aria-label="Arquitectura codificador-decodificador"></svg>
+      </div>
+      <div class="col" style="gap:10px">
+        <div class="card" style="padding:10px 18px"><span class="tag t-amber" style="margin-bottom:6px">Cómo funciona</span><p style="font-size:16px">El último estado del codificador es el <b>contexto</b>: un vector que resume los \(T\) valores de entrada. El decodificador parte de él y genera los \(H\) valores de salida, uno por paso.</p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-teal" style="margin-bottom:6px">Ejemplo</span><p style="font-size:16px">Ventas de una tienda: con las ventas de los últimos 30 días <span style="white-space:nowrap">(\(T=30\)),</span> predecir las de los próximos 7 <span style="white-space:nowrap">(\(H=7\)).</span></p></div>
+        <div class="card" style="padding:10px 18px"><span class="tag t-indigo" style="margin-bottom:6px">Al entrenar</span><p style="font-size:16px">En cada paso el decodificador recibe el valor <b>real</b> anterior, no su predicción (<i>teacher forcing</i>). Al pronosticar de verdad usa sus propias predicciones.</p></div>
+        <p class="txt" style="font-size:15px;color:var(--muted);line-height:1.4"><b style="color:var(--coral)">Límite:</b> toda la entrada cabe en un solo vector; con secuencias largas se pierde información. La actividad siguiente lo muestra.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -431,7 +433,7 @@
   <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Seguir la información por el codificador y el decodificador</h2></div>
   <div class="bd noclick">
     <div class="chartbox" style="padding:10px 16px">
-      <div class="cap">La celda resaltada es la que trabaja. Barra ámbar bajo cada celda: cuánto queda en el estado del primer valor \(x_1\) (con una celda simple con \(w_h=0{,}8\)). Cuando llega al contexto, ya es poco.</div>
+      <div class="cap">La celda resaltada es la que trabaja. Barra ámbar: cuánto del primer dato \(x_1\) sigue en la memoria. En una celda simple la memoria se multiplica en cada paso por un peso \(w_h\) (aquí 0,8): 100 %, 80 %, 64 %… Al llegar al contexto queda poco.</div>
       <svg class="chart" id="aeSvg" style="max-height:300px" viewBox="0 0 1160 320" role="img" aria-label="Recorrido por un codificador-decodificador"></svg>
     </div>
     <div class="row2" style="grid-template-columns:auto 1fr auto;gap:18px;align-items:center">
@@ -459,23 +461,23 @@
         <svg class="chart" id="biSvg" viewBox="0 0 520 250" role="img" aria-label="Capa bidireccional"></svg>
       </div>
     </div>
-    <p class="txt" style="font-size:18px;color:var(--muted)">La bidireccional sirve cuando toda la secuencia está disponible desde el inicio (por ejemplo, clasificar un electrocardiograma ya registrado o rellenar un valor que falta en medio de una serie): lo que pasa en un instante se entiende mejor viendo también lo que vino después. No sirve para predecir el futuro, porque ese futuro todavía no se conoce.</p>
+    <p class="txt" style="font-size:18px;color:var(--muted)">La bidireccional sirve cuando toda la secuencia está disponible desde el inicio (por ejemplo, rellenar un día sin registro en medio de una serie de pasajeros, viendo los días de antes y los de después): lo que pasa en un instante se entiende mejor viendo también lo que vino después. No sirve para predecir el futuro, porque ese futuro todavía no se conoce.</p>
   </div>
 </section>
 
 <section class="slide" data-title="Aplicaciones">
   <div class="hd"><p class="eyebrow">Etapa 2 · Aplicaciones</p><h2>Dónde se usan las redes recurrentes</h2>
-    <p class="lead" style="font-size:20px">Siempre que los datos llegan en orden y lo anterior ayuda a entender lo siguiente. Cada aplicación usa una de las arquitecturas que ya viste.</p></div>
+    <p class="lead" style="font-size:20px">Siempre que haya que pronosticar valores futuros de una serie a partir de su pasado. Cada aplicación usa una de las cuatro arquitecturas.</p></div>
   <div class="bd">
     <div class="grid4" style="gap:14px">
-      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Energía</span><p style="font-size:15px">Pronosticar la demanda eléctrica de las próximas horas para planear la generación. <b>Codificador–decodificador</b>.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Finanzas</span><p style="font-size:15px">Pronosticar ventas o flujo de caja; detectar transacciones fraudulentas. <b>Solo codificador</b>.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Clima</span><p style="font-size:15px">Temperatura y lluvia de los próximos días a partir de varias estaciones (serie multivariada).</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Tráfico</span><p style="font-size:15px">Usuarios por hora de una página, vehículos por vía, pasajeros por estación.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Salud</span><p style="font-size:15px">Clasificar electrocardiogramas; alertar cambios en los signos vitales de un paciente. <b>Solo codificador</b>.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Industria</span><p style="font-size:15px">Detectar fallas en máquinas a partir de vibración y temperatura; mantenimiento predictivo. <b>Secuencia → secuencia</b>.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Movimiento</span><p style="font-size:15px">Reconocer actividades con el acelerómetro del celular; predecir trayectorias de robots o vehículos.</p></div>
-      <div class="card" style="padding:12px 16px"><span class="tag t-amber">Audio y música</span><p style="font-size:15px">Reconocer eventos en un audio; generar música nota a nota. <b>Solo decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Energía</span><p style="font-size:15px">Pronosticar la demanda eléctrica de las próximas 24 horas para planear la generación. <b>Codificador–decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Finanzas</span><p style="font-size:15px">Pronosticar las ventas o el flujo de caja del próximo mes. <b>Secuencia → vector</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Clima</span><p style="font-size:15px">Pronosticar temperatura y lluvia de los próximos 7 días con los datos de varias estaciones. <b>Codificador–decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-teal">Tráfico</span><p style="font-size:15px">Pronosticar los pasajeros de mañana en una estación o los vehículos de la próxima hora en una vía. <b>Secuencia → vector</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Salud</span><p style="font-size:15px">Pronosticar la ocupación de camas de un hospital en la próxima semana. <b>Codificador–decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Industria</span><p style="font-size:15px">Pronosticar la temperatura de una máquina en la próxima hora para anticipar una falla. <b>Secuencia → secuencia</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-indigo">Transporte</span><p style="font-size:15px">Pronosticar la posición de un vehículo en los próximos segundos a partir de su recorrido. <b>Codificador–decodificador</b>.</p></div>
+      <div class="card" style="padding:12px 16px"><span class="tag t-amber">Comercio</span><p style="font-size:15px">Pronosticar las ventas diarias de un producto nuevo a partir de sus características. <b>Vector → secuencia</b>.</p></div>
     </div>
     <p class="txt" style="font-size:18px;color:var(--muted)">Hoy, en secuencias muy largas, muchas de estas tareas también se resuelven con convoluciones 1D o con modelos de atención. Las redes recurrentes siguen siendo una buena opción, más liviana, cuando la secuencia es moderada y llega paso a paso (en tiempo real).</p>
   </div>
@@ -577,63 +579,55 @@
     return a;
   })();
 
-  /* ---------- tipos de tareas ---------- */
+  /* ---------- panorama: cuatro arquitecturas ---------- */
   (function () {
-    var T = [
-      { tag: "Secuencia → vector", txt: "Lee toda la secuencia y usa <b>solo la última salida</b>. Ejemplos: pronosticar el valor siguiente de una serie o clasificar una señal completa.",
-        inp: function () { return 1; }, out: function (k) { return k === 5; } },
-      { tag: "Secuencia → secuencia", txt: "Produce <b>una salida en cada paso</b>. Ejemplo: recibe los precios de los últimos días y en cada paso predice el del día siguiente (la misma serie, desplazada un día).",
-        inp: function () { return 1; }, out: function () { return 1; } },
-      { tag: "Vector → secuencia", txt: "Recibe <b>una sola entrada</b> al inicio y genera una secuencia. Ejemplo: generar una serie paso a paso a partir de un estado inicial.",
-        inp: function (k) { return k === 0; }, out: function () { return 1; } },
-      { tag: "Secuencia → otra secuencia", txt: "Una red <b>resume</b> la secuencia de entrada en un vector y otra la <b>convierte</b> en una secuencia de salida de otra longitud. Ejemplo: leer 30 días de una serie y pronosticar los 7 siguientes.",
-        inp: function (k) { return k < 3; }, out: function (k) { return k >= 3; } }
+    var C = [
+      [function () { return 1; }, function (k) { return k === 3; }],
+      [function () { return 1; }, function () { return 1; }],
+      [function (k) { return k === 0; }, function () { return 1; }],
+      [function (k) { return k < 2; }, function (k) { return k >= 2; }]
     ];
-    function draw() {
-      var o = T[+$("tpSel").value], s = "", n = 6;
-      s += chain(n, 30, 110, 95, { cw: 70, ch: 54, label: function () { return "celda"; },
-        inp: function (k) { return o.inp(k) ? sub("x", k + 1) : ""; }, out: function (k) { return o.out(k) ? sub("ŷ", k + 1) : ""; } });
-      if (+$("tpSel").value === 3) {
-        s += line(30 + 3 * 95 - 12, 40, 30 + 3 * 95 - 12, 260, COR, null, 2, "6 5");
-        s += text(30 + 1 * 95 + 35, 290, "codificador", "tk", "middle", null, 15);
-        s += text(30 + 4 * 95 + 35, 290, "decodificador", "tk", "middle", null, 15);
-      }
-      $("tpSvg").innerHTML = s;
-      $("tpTag").textContent = o.tag; $("tpTxt").innerHTML = o.txt;
-    }
-    $("tpSel").addEventListener("change", draw);
-    draw();
+    C.forEach(function (c, i) {
+      var s = chain(4, 14, 78, 64, { cw: 46, ch: 36, label: function () { return ""; },
+        inp: function (k) { return c[0](k) ? (i === 2 ? "vector" : "x") : ""; }, out: function (k) { return c[1](k) ? "ŷ" : ""; } });
+      if (i === 3) s += line(14 + 2 * 64 - 9, 20, 14 + 2 * 64 - 9, 180, COR, null, 1.5, "5 4", .6);
+      $("ovSvg" + (i + 1)).innerHTML = s;
+    });
   })();
 
-
-  /* ---------- solo codificador ---------- */
+  /* ---------- esquemas de arquitecturas (días de la semana) ---------- */
+  /* ---------- 1: secuencia -> vector ---------- */
   (function () {
-    var s = chain(5, 30, 120, 105, { cw: 72, ch: 54, label: function (k) { return k === 4 ? "h" + "<tspan dy='5' style='font-size:.72em'>T</tspan>" : "celda"; },
-      inp: function (k) { return k === 4 ? sub("x", "T") : sub("x", k + 1); }, out: function (k) { return ""; }, on: function (k) { return k === 4; } });
-    var xr = 30 + 4 * 105 + 72;
-    s += line(xr + 2, 147, 520, 147, AMB, "Amb", 3);
-    s += rect(522, 118, 70, 58, "var(--teal-soft)", TEA, 2.5, 10);
-    s += text(557, 143, "capa", "lb", "middle", null, 15, 600) + text(557, 162, "densa", "lb", "middle", null, 15, 600);
-    s += line(557, 116, 557, 70, TEA, "Tea", 2.5);
-    s += text(557, 58, "ŷ", "lb", "middle", TEA, 20, 700);
-    s += text(290, 40, "las salidas intermedias no se usan", "tk", "middle", null, 15);
+    var n = 6, x0 = 14, dx = 80, cw = 62, y = 118, ch = 54;
+    var s = chain(n, x0, y, dx, { cw: cw, ch: ch, label: function (k) { return "paso " + (k + 1); },
+      inp: function (k) { return sub("x", k + 1); }, out: function () { return ""; }, on: function (k) { return k === n - 1; } });
+    var xr = x0 + (n - 1) * dx + cw;
+    s += text((x0 + x0 + 4 * dx + cw) / 2, 50, "predicciones que se descartan", "tk", "middle", null, 14);
+    s += line(xr + 2, y + ch / 2, 506, y + ch / 2, AMB, "Amb", 3);
+    s += text((xr + 506) / 2, y + ch / 2 - 10, sub("h", 6), "lb", "middle", AMB, 15, 600);
+    s += rect(508, y - 2, 78, ch + 4, "var(--teal-soft)", TEA, 2.5, 10);
+    s += text(547, y + 22, "capa", "lb", "middle", null, 15, 600) + text(547, y + 41, "densa", "lb", "middle", null, 15, 600);
+    s += line(547, y - 4, 547, y - 40, TEA, "Tea", 2.5);
+    s += text(547, y - 50, "ŷ", "lb", "middle", TEA, 20, 700);
     $("enSvg").innerHTML = s;
   })();
 
-  /* ---------- secuencia a secuencia ---------- */
+  /* ---------- 2: secuencia -> secuencia ---------- */
   (function () {
-    $("ssSvg").innerHTML = chain(5, 40, 120, 112, { cw: 74, ch: 54, label: function () { return "celda"; },
+    var n = 6, x0 = 30, dx = 95, cw = 70, y = 118, ch = 54;
+    var s = chain(n, x0, y, dx, { cw: cw, ch: ch, label: function (k) { return "paso " + (k + 1); },
       inp: function (k) { return sub("x", k + 1); }, out: function (k) { return sub("ŷ", k + 1); } });
+    $("ssSvg").innerHTML = s;
   })();
 
-  /* ---------- solo decodificador ---------- */
+  /* ---------- 3: vector -> secuencia ---------- */
   (function () {
-    var n = 5, x0 = 70, dx = 105, y = 120, cw = 72, ch = 54, s = "", k;
-    s += chain(n, x0, y, dx, { cw: cw, ch: ch, label: function () { return "celda"; },
+    var n = 6, x0 = 30, dx = 95, cw = 70, y = 118, ch = 54, k;
+    var s = chain(n, x0, y, dx, { cw: cw, ch: ch, label: function (k) { return "paso " + (k + 1); },
       inp: function (k) { return k === 0 ? "vector" : ""; }, out: function (k) { return sub("ŷ", k + 1); } });
     for (k = 0; k < n - 1; k++) {
       var xa = x0 + k * dx + cw / 2, xb = x0 + (k + 1) * dx + cw / 2;
-      s += path("M" + (xa + 10) + " 62 C " + (xa + 55) + " 62, " + (xb - 50) + " 250, " + (xb - 4) + " 214", TEA, "Tea", 2, "5 5");
+      s += path("M" + (xa + 10) + " " + (y - 52) + " C " + (xa + 55) + " " + (y - 52) + ", " + (xb - 50) + " " + (y + ch + 76) + ", " + (xb - 4) + " " + (y + ch + 42), TEA, "Tea", 2, "5 5");
     }
     $("deSvg").innerHTML = s;
   })();
@@ -694,20 +688,27 @@
     draw();
   })();
 
-  /* ---------- codificador–decodificador (esquema) ---------- */
+  /* ---------- 4: codificador–decodificador ---------- */
   (function () {
-    var s = "", T = 4, H = 3, cw = 72, ch = 54, y = 95, k;
-    s += chain(T, 20, y, 100, { cw: cw, ch: ch, label: function () { return "cod."; }, inp: function (k) { return k === T - 1 ? sub("x", "T") : sub("x", k + 1); }, out: function () { return ""; } });
-    var xc = 20 + (T - 1) * 100 + cw;
-    s += line(xc + 2, y + ch / 2, 488, y + ch / 2, AMB, "Amb", 3);
-    s += rect(490, y - 6, 120, ch + 12, "var(--amber-soft)", AMB, 3, 12);
-    s += text(550, y + ch / 2 + 6, "contexto", "lb", "middle", null, 17, 700);
-    s += line(612, y + ch / 2, 676, y + ch / 2, AMB, "Amb", 3);
-    var dx0 = 680;
-    s += chain(H, dx0, y, 130, { cw: cw + 10, ch: ch, label: function () { return "dec."; }, inp: function (k) { return k === 0 ? "inicio" : ""; }, out: function (k) { return k === H - 1 ? sub("ŷ", "H") : sub("ŷ", k + 1); } });
-    for (k = 0; k < H - 1; k++) { var xa = dx0 + k * 130 + 41, xb = dx0 + (k + 1) * 130 + 41; s += path("M" + (xa + 12) + " 40 C " + (xa + 70) + " 40, " + (xb - 60) + " 225, " + (xb - 4) + " 192", TEA, "Tea", 2, "5 5"); }
-    s += text(170, 238, "codificador", "tk", "middle", IND, 16);
-    s += text(dx0 + 170, 238, "decodificador", "tk", "middle", TEA, 16);
+    var T = 4, H = 3, y = 118, ch = 54, cw = 54, dx = 66, x0 = 8, k, s = "";
+    s += chain(T, x0, y, dx, { cw: cw, ch: ch, label: function () { return "cod."; },
+      inp: function (k) { return sub("x", k + 1); }, out: function () { return ""; } });
+    var xc = x0 + (T - 1) * dx + cw, cx0 = xc + 18;
+    s += line(xc + 2, y + ch / 2, cx0 - 3, y + ch / 2, AMB, "Amb", 3);
+    s += rect(cx0, y - 4, 84, ch + 8, "var(--amber-soft)", AMB, 3, 12);
+    s += text(cx0 + 42, y + ch / 2 + 6, "contexto", "lb", "middle", null, 15, 700);
+    var d0 = cx0 + 84 + 22;
+    s += line(cx0 + 86, y + ch / 2, d0 - 3, y + ch / 2, AMB, "Amb", 3);
+    s += chain(H, d0, y, dx, { cw: cw, ch: ch, label: function () { return "dec."; },
+      inp: function () { return ""; }, out: function (k) { return sub("ŷ", k + 1); } });
+    for (k = 0; k < H - 1; k++) {
+      var xa = d0 + k * dx + cw / 2, xb = d0 + (k + 1) * dx + cw / 2;
+      s += path("M" + (xa + 9) + " " + (y - 52) + " C " + (xa + 40) + " " + (y - 52) + ", " + (xb - 36) + " " + (y + ch + 76) + ", " + (xb - 4) + " " + (y + ch + 42), TEA, "Tea", 2, "5 5");
+    }
+    s += line(cx0 - 9, 30, cx0 - 9, 280, COR, null, 1.5, "6 5", .6);
+    s += line(d0 - 11, 30, d0 - 11, 280, COR, null, 1.5, "6 5", .6);
+    s += text(x0 + (T * dx) / 2 - 6, 300, "codificador", "tk", "middle", IND, 15);
+    s += text(d0 + (H * dx) / 2 - 6, 300, "decodificador", "tk", "middle", TEA, 15);
     $("ecSvg").innerHTML = s;
   })();
 
