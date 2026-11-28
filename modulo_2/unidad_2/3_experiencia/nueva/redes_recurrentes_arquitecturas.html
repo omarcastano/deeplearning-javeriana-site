@@ -548,19 +548,19 @@
   </div>
 </section>
 
-<section class="slide" data-title="Capas apiladas">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más grandes</p><h2>Apilar capas: una capa recurrente encima de otra</h2>
-    <p class="lead" style="font-size:19px;max-width:1120px">En los esquemas anteriores había <b>una sola capa recurrente</b> (una fila de cajas). Como viste en la parte 1, se pueden poner varias capas recurrentes una encima de otra, cada una con varias neuronas. Esto sirve en cualquiera de las cuatro arquitecturas: lo que entra y lo que sale no cambia.</p></div>
+<section class="slide" data-title="Varias capas y varias neuronas">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más grandes</p><h2>Redes recurrentes con varias capas y varias neuronas</h2>
+    <p class="lead" style="font-size:19px;max-width:1120px">Para que se vieran claras, los esquemas anteriores tenían una sola capa (una fila de cajas). Pero, como en las redes que ya conoces, cualquiera de las cuatro arquitecturas puede ser una red con <b>varias capas</b> y <b>varias neuronas</b> en cada capa, y esas neuronas pueden ser <b>simples (RNN), LSTM o GRU</b>. Lo que entra y lo que sale no cambia.</p></div>
   <div class="bd">
     <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:22px">
       <div class="chartbox" style="padding:10px 14px">
         <div class="cap">Cada caja es una capa completa (todas sus neuronas) en un paso. La capa 1 lee los datos \(x_t\); la capa 2 lee los estados \(h_t\) que produce la capa 1. Arriba, la capa densa usa el último estado de la capa 2.</div>
-        <svg class="chart" id="apSvg" viewBox="0 0 560 300" role="img" aria-label="Dos capas recurrentes apiladas"></svg>
+        <svg class="chart" id="apSvg" viewBox="0 0 560 300" role="img" aria-label="Red recurrente con dos capas"></svg>
       </div>
       <div class="col" style="gap:9px">
         <div class="card" style="padding:9px 18px"><span class="tag t-amber" style="margin-bottom:5px">Para qué</span><p style="font-size:15.5px">Cada capa extra permite aprender patrones más complejos de la serie, como en las redes densas con varias capas ocultas.</p></div>
         <div class="card" style="padding:9px 18px"><span class="tag t-teal" style="margin-bottom:5px">Cuántas</span><p style="font-size:15.5px">Lo usual es 1 o 2 capas. Más capas hacen la red más lenta de entrenar y más propensa al sobreajuste: se agregan solo si la pérdida de validación mejora.</p></div>
-        <div class="card" style="padding:9px 18px"><span class="tag t-indigo" style="margin-bottom:5px">En PyTorch</span><p style="font-size:15.5px"><code style="font-size:14px">nn.GRU(input_size=1, hidden_size=32, num_layers=2, batch_first=True)</code><br>2 capas apiladas de 32 neuronas cada una. <code style="font-size:14px">nn.LSTM</code> y <code style="font-size:14px">nn.RNN</code> usan los mismos argumentos.</p></div>
+        <div class="card" style="padding:9px 18px"><span class="tag t-indigo" style="margin-bottom:5px">En PyTorch</span><p style="font-size:15.5px"><code style="font-size:14px">nn.GRU(input_size=1, hidden_size=32, num_layers=2, batch_first=True)</code><br>Una red de 2 capas con 32 neuronas GRU cada una. <code style="font-size:14px">nn.LSTM</code> y <code style="font-size:14px">nn.RNN</code> usan los mismos argumentos.</p></div>
       </div>
     </div>
   </div>
@@ -593,7 +593,7 @@
       <div class="card" style="padding:12px 18px"><span class="tag t-amber">2 · Escala y ventanas</span><p style="font-size:16px">Llevar los valores a una escala parecida (restar la media y dividir por la desviación, calculadas solo con el periodo de entrenamiento) y cortar cada periodo en ventanas de \(T\) pasos con su etiqueta.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-amber">3 · Línea base</span><p style="font-size:16px">Compararse con un pronóstico trivial, como decir que mañana será igual que hoy. Si la red no le gana, no vale la pena.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-teal">4 · Arquitectura</span><p style="font-size:16px">Según la tarea: solo codificador, secuencia → secuencia, decodificador o codificador–decodificador.</p></div>
-      <div class="card" style="padding:12px 18px"><span class="tag t-teal">5 · Celda y tamaño</span><p style="font-size:16px">Empezar con LSTM o GRU, una o dos capas apiladas y pocas decenas de neuronas; crecer solo si la validación mejora.</p></div>
+      <div class="card" style="padding:12px 18px"><span class="tag t-teal">5 · Celda y tamaño</span><p style="font-size:16px">Empezar con LSTM o GRU, una o dos capas y pocas decenas de neuronas por capa; crecer solo si la validación mejora.</p></div>
       <div class="card" style="padding:12px 18px"><span class="tag t-coral">6 · Cuidar el entrenamiento</span><p style="font-size:16px"><b>Gradient clipping</b> contra el gradiente que explota, <b>dropout</b> (apagar neuronas al azar al entrenar) contra el sobreajuste y <b>early stopping</b> (parar cuando la pérdida de validación deja de bajar).</p></div>
     </div>
   </div>
@@ -603,7 +603,7 @@
   <div class="hd"><p class="eyebrow">Resumen</p><h2>Las dos preguntas, respondidas</h2></div>
   <div class="bd">
     <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
-      <div class="ag"><span class="n">1</span><div><b>Arquitecturas y aplicaciones</b><span>Secuencia → vector (solo el último \(h_T\)), secuencia → secuencia (una salida por paso), vector → secuencia (autorregresivo) y codificador–decodificador (un vector de contexto). Las capas se apilan y pueden leer en los dos sentidos.</span></div></div>
+      <div class="ag"><span class="n">1</span><div><b>Arquitecturas y aplicaciones</b><span>Secuencia → vector (solo el último \(h_T\)), secuencia → secuencia (una salida por paso), vector → secuencia (autorregresivo) y codificador–decodificador (un vector de contexto). Todas pueden tener varias capas y varias neuronas (simples, LSTM o GRU), y una capa puede leer en los dos sentidos.</span></div></div>
       <div class="ag"><span class="n">2</span><div><b>En la práctica</b><span>Al armar una: separar en el tiempo, escalar y hacer ventanas, compararse con una línea base, empezar con LSTM o GRU, y cuidar el entrenamiento (clipping, dropout, early stopping).</span></div></div>
     </div>
   </div>
@@ -909,7 +909,7 @@
   })();
 
 
-  /* ---------- apiladas y bidireccional ---------- */
+  /* ---------- varias capas y bidireccional ---------- */
   (function () {
     var s = "", k, dx = 112, x0 = 116, cw = 80, ch = 42;
     s += text(8, 186, "capa 1", "lb", "start", null, 16, 700) + text(8, 204, "(lee x)", "tk", "start", null, 13);
