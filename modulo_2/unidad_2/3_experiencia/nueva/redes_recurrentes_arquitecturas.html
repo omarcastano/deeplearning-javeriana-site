@@ -440,12 +440,32 @@
   </div>
 </section>
 
+<section class="slide" data-title="Pronosticar varios pasos: dos formas">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Pronosticar varios pasos</p><h2>¿Y si queremos varios días? Dos formas de pronosticarlos</h2>
+    <p class="lead" style="font-size:19px;max-width:1120px">Muchas veces no basta con mañana: queremos varios valores futuros, por ejemplo las ventas de los <b>próximos 3 días</b>. Con las arquitecturas que ya vimos hay dos formas de obtenerlos.</p></div>
+  <div class="bd" style="gap:12px">
+    <div class="grid2" style="gap:18px">
+      <div class="chartbox" style="padding:10px 16px">
+        <span class="tag t-indigo" style="margin:4px 0 4px 6px">Forma 1 · Directa</span>
+        <svg class="chart" id="vpA" viewBox="0 0 560 210" role="img" aria-label="Pronóstico directo de tres valores"></svg>
+        <div class="cap" style="font-size:16px">Una red <b>secuencia → vector</b> (arquitectura 1) cuya capa densa da <b>3 números</b>: lee la historia una vez y entrega los 3 días juntos.</div>
+      </div>
+      <div class="chartbox" style="padding:10px 16px">
+        <span class="tag t-coral" style="margin:4px 0 4px 6px">Forma 2 · Paso a paso (autorregresiva)</span>
+        <svg class="chart" id="vpB" viewBox="0 0 560 210" role="img" aria-label="Pronóstico paso a paso de tres valores"></svg>
+        <div class="cap" style="font-size:16px">Una red que da <b>solo el día siguiente</b>. Su predicción se agrega a la serie como si fuera un dato real y se vuelve a usar la red, 3 veces. Usar sus propias predicciones como entrada se llama <b>autorregresivo</b>; así genera el decodificador (arquitectura 3).</div>
+      </div>
+    </div>
+    <p class="txt" style="font-size:17px;line-height:1.4"><b>¿Cuál conviene?</b> En la forma 2, si \(\hat y_1\) tiene un error, ese error entra en el cálculo de \(\hat y_2\) y \(\hat y_3\): los errores se <b>acumulan</b>. La forma 1 no acumula errores, pero hay que fijar de antemano cuántos días se quieren. La actividad siguiente compara las dos.</p>
+  </div>
+</section>
+
 <section class="slide" data-title="Actividad: pronosticar varios pasos">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Pronosticar varios pasos: uno a uno o todos a la vez</h2></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Pronosticar varios pasos · Actividad</p><h2>Directa o paso a paso: ¿cuál se equivoca menos?</h2></div>
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:17px;line-height:1.45">Queremos los próximos \(H\) valores de una serie. <b style="color:var(--coral)">Autorregresiva:</b> predecir el siguiente, tratarlo como dato real y repetir \(H\) veces. <b style="color:var(--indigo)">Directa:</b> dar los \(H\) valores de una sola vez (como un codificador con \(H\) salidas), sin usar predicciones propias. Para ver solo la estrategia, los dos usan un modelo sencillo que mira los últimos \(P\) valores.</p>
+        <p class="lead" style="font-size:17px;line-height:1.45">Se pronostican los próximos \(H\) valores de una serie con las dos formas de la diapositiva anterior: <b style="color:var(--indigo)">directa</b> y <b style="color:var(--coral)">paso a paso</b>. Para que solo cambie la forma, las dos usan el mismo modelo sencillo, que mira los últimos \(P\) valores (con una red la idea es la misma).</p>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
           <label style="grid-template-columns:190px 1fr"><span>\(H\) <small>pasos a pronosticar</small></span>
             <select id="msH"><option>5</option><option selected>15</option><option>30</option></select></label>
@@ -454,16 +474,16 @@
             <select id="msP"><option selected>5</option><option>10</option><option>20</option></select></label>
         </div>
         <div class="grid2" style="gap:8px">
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio autorregresivo</div><div class="v" id="msEa" style="font-size:24px;color:var(--coral)">–</div></div>
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio directo</div><div class="v" id="msEd" style="font-size:24px;color:var(--indigo)">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio, paso a paso</div><div class="v" id="msEa" style="font-size:24px;color:var(--coral)">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio, directa</div><div class="v" id="msEd" style="font-size:24px;color:var(--indigo)">–</div></div>
         </div>
       </div>
       <div class="col" style="gap:8px">
         <div class="chartbox" style="padding:10px 16px">
-          <div class="cap">Gris: lo conocido. Verde: lo que de verdad pasó. Rojo discontinuo: autorregresivo. Índigo: directo.</div>
+          <div class="cap">Gris: valores conocidos. Verde: lo que de verdad pasó. <span class="hl-i"><b>Índigo:</b></span> forma directa. <span class="hl-c"><b>Rojo punteado:</b></span> forma paso a paso.</div>
           <svg class="chart" id="msSvg" viewBox="0 0 580 290" role="img" aria-label="Pronóstico de varios pasos"></svg>
         </div>
-        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> con \(P=5\) el modelo de un paso es impreciso y, como cada error entra como dato, el autorregresivo se desvía cada vez más. Sube \(P\) a 20: con un buen modelo las dos estrategias se parecen. El directo no reinyecta nada, pero necesita una salida por paso y un \(H\) fijo.</p>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> con \(P=5\) el modelo se equivoca un poco en cada paso; en la forma paso a paso ese error entra como dato y la curva roja se aleja cada vez más. Sube \(P\) a 20: con un modelo más preciso, las dos formas se parecen. Cambia el inicio para probar otros tramos de la serie.</p>
       </div>
     </div>
   </div>
@@ -689,6 +709,38 @@
       s += path("M" + (xa + 10) + " " + (y - 52) + " C " + (xa + 55) + " " + (y - 52) + ", " + (xb - 50) + " " + (y + ch + 76) + ", " + (xb - 4) + " " + (y + ch + 42), TEA, "Tea", 2, "5 5");
     }
     $("deSvg").innerHTML = s;
+  })();
+
+  /* ---------- dos formas de pronosticar varios pasos ---------- */
+  (function () {
+    var bw = 44, bh = 34, g = 6;
+    function box(x, y, lbl, kind) {
+      var f = kind === "x" ? "var(--indigo-soft)" : "var(--teal-soft)", st = kind === "x" ? IND : TEA;
+      return rect(x, y, bw, bh, f, st, 1.8, 7) + text(x + bw / 2, y + bh / 2 + 6, lbl, "lb", "middle", st, 16, 700);
+    }
+    function row(y, items, outs, col) {
+      var s = "", k, x = 8;
+      items.forEach(function (it, k) { s += box(x + k * (bw + g), y, it[0], it[1]); });
+      var xe = x + items.length * (bw + g);
+      s += line(xe, y + bh / 2, xe + 30, y + bh / 2, AMB, "Amb", 2.5);
+      s += rect(xe + 34, y - 2, 64, bh + 4, "var(--amber-soft)", AMB, 2, 9) + text(xe + 66, y + bh / 2 + 6, "red", "lb", "middle", null, 15, 700);
+      s += line(xe + 100, y + bh / 2, xe + 128, y + bh / 2, col, col === COR ? "Cor" : "Ind", 2.5);
+      outs.forEach(function (o, k) { s += box(xe + 132 + k * (bw + g), y, o, "y"); });
+      return s;
+    }
+    var X = function (i) { return [sub("x", i), "x"]; }, Y = function (i) { return [sub("ŷ", i), "y"]; };
+    var a = row(70, [X(1), X(2), X(3), X(4), X(5)], [sub("ŷ", 1), sub("ŷ", 2), sub("ŷ", 3)], IND);
+    a += text(8, 52, "una sola pasada", "tk", "start", IND, 15, 600);
+    a += text(402, 140, "los 3 días juntos", "tk", "middle", TEA, 14, 600);
+    $("vpA").innerHTML = a;
+    var b = "", rows = [[X(1), X(2), X(3), X(4), X(5)], [X(2), X(3), X(4), X(5), Y(1)], [X(3), X(4), X(5), Y(1), Y(2)]];
+    rows.forEach(function (r, i) {
+      var y = 8 + i * 68;
+      b += row(y, r, [sub("ŷ", i + 1)], COR);
+      b += text(552, y + bh / 2 + 6, "paso " + (i + 1), "tk", "end", COR, 14, 600);
+      if (i < 2) b += path("M " + (8 + 5 * 50 + 132 + bw / 2) + " " + (y + bh + 2) + " C " + (8 + 5 * 50 + 132 + bw / 2) + " " + (y + bh + 28) + ", " + (8 + 4 * 50 + bw / 2 + 60) + " " + (y + 68 - 26) + ", " + (8 + 4 * 50 + bw / 2 + 6) + " " + (y + 68 - 3), COR, "Cor", 1.8, "5 4");
+    });
+    $("vpB").innerHTML = b;
   })();
 
   /* ---------- actividad: pronosticar varios pasos ---------- */
