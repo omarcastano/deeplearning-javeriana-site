@@ -351,7 +351,7 @@
 
 <section class="slide" data-title="Secuencia → vector: aplicaciones">
   <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 1 de 4 · Aplicaciones</p><h2>Secuencia → vector: ¿dónde se aplica?</h2>
-    <p class="lead" style="font-size:19px;max-width:1120px">Entra la historia reciente de una serie y sale <b>un solo número</b>: el valor del próximo periodo. Elige un caso para ver qué entra y qué sale.</p></div>
+    <p class="lead" style="font-size:19px;max-width:1120px">Entra la historia reciente de una serie y sale <b>un solo número</b>: el del próximo periodo. Elige un caso.</p></div>
   <div class="bd noclick" style="margin-top:6px">
     <div class="row2 grow" style="grid-template-columns:.8fr 1.2fr;align-items:stretch;gap:20px">
       <div class="col" style="gap:10px">
@@ -387,7 +387,7 @@
 
 <section class="slide" data-title="Secuencia → secuencia: aplicaciones">
   <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 2 de 4 · Aplicaciones</p><h2>Secuencia → secuencia: ¿dónde se aplica?</h2>
-    <p class="lead" style="font-size:19px;max-width:1120px">Los datos llegan uno a uno y, <b>cada vez que llega uno</b>, la red pronostica el siguiente. Sirve para pronósticos en tiempo real. Elige un caso.</p></div>
+    <p class="lead" style="font-size:19px;max-width:1120px"><b>Cada vez que llega un dato</b>, la red pronostica el siguiente: pronóstico en tiempo real. Elige un caso.</p></div>
   <div class="bd noclick" style="margin-top:6px">
     <div class="row2 grow" style="grid-template-columns:.8fr 1.2fr;align-items:stretch;gap:20px">
       <div class="col" style="gap:10px">
@@ -874,7 +874,7 @@
   function P(pts, col, w, dash) { return pts.length < 2 ? "" : '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '" style="fill:none;stroke:' + col + ';stroke-width:' + (w || 2.5) + (dash ? ';stroke-dasharray:' + dash : '') + ';stroke-linejoin:round"/>'; }
   function C(x, y, r, col) { return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" style="fill:' + col + ';stroke:var(--paper);stroke-width:1.5"/>'; }
   function R(x, y, w, h, fill, stroke) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="8" style="fill:' + fill + ';stroke:' + stroke + ';stroke-width:1.5"/>'; }
-  function num(v) { var a = Math.abs(v), d = a >= 100 ? 0 : a >= 10 ? 1 : 2; return v.toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function num(v) { if (Math.abs(v) < 1e-9) return "0"; var a = Math.abs(v), d = a >= 100 ? 0 : a >= 10 ? 1 : 2; return v.toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d }); }
   function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646 - 0.5; }; }
   function serie(n, f, ns, seed) { var r = rng(seed), a = [], k; for (k = 0; k < n; k++) a.push(f(k) + ns * r()); return a; }
   var PI2 = 2 * Math.PI;
@@ -969,15 +969,14 @@
       var xn = sx(hist.length - 0.5);
       s += L(xn, mt - 6, xn, H - mb + 4, MUT, 1.5, "5 4");
       s += T(xn, H - mb + 20, "ahora", "var(--muted)", 13);
-      s += T((x0 + xn) / 2, H - 10, c.inL, IND, 15, "middle", 600);
+      s += kind === "s2v" ? T(x0, H - 10, c.inL, IND, 15, "start", 600) : T((x0 + xn) / 2, H - 10, c.inL, IND, 15, "middle", 600);
       if (kind === "s2v") {
         if (p >= 0.85) {
           var xp = sx(hist.length), yp = ys.f(out[0]);
           s += L(sx(hist.length - 1), ys.f(hist[hist.length - 1]), xp, yp, TEA, 2, "4 4");
           s += C(xp, yp, 8, TEA);
-          s += T(xp - 12, yp + (yp > H / 2 ? -22 : 30), "ŷ = " + num(out[0]), TEA, 16, "end", 700);
         }
-        s += T(x1, H - 10, c.outL, TEA, 15, "end", 600);
+        s += T(x1, H - 10, c.outL + (p >= 0.85 ? " (ŷ = " + num(out[0]) + ")" : ""), TEA, 15, "end", 600);
       } else {
         var no = Math.max(0, Math.min(out.length, Math.floor((p - 0.55) / 0.45 * out.length)));
         var op = [[sx(hist.length - 1), ys.f(hist[hist.length - 1])]];
