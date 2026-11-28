@@ -30,10 +30,10 @@
 <br><br></div>
 
 <!-- Recurso 2 -->
-<p class="btn_recurso" data-cambio="nuevo"><span class="num_recurso"><i class="fa-solid fa-code"></i></span>Pronóstico de varios pasos</p>
+<p class="btn_recurso" data-cambio="nuevo"><span class="num_recurso"><i class="fa-solid fa-code"></i></span>Arquitecturas para pronosticar</p>
 <div id="recurso_2" class="contenedor_recurso">
-<p class="cuerpo_txt" data-cambio="nuevo">Casi nunca basta con pronosticar un solo paso: para programar trenes y turnos, la empresa de transporte necesita saber qué pasará en las <strong>próximas dos semanas</strong>. En el siguiente código pronosticamos 14 días con las dos estrategias vistas en la tercera presentación: <strong>uno a uno</strong> (la red usa sus propios pronósticos como entrada) y <strong>todos a la vez</strong> (la red entrega los 14 días en una sola salida), y vemos cómo crece el error a medida que miramos más lejos.</p>
-<a href="https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_2/3_experiencia/nueva/4_Script2_M2_U2_varios_pasos_pytorch.ipynb" target="_blank" class="btn_03" rel="noopener" data-cambio="nuevo">Pronóstico de varios pasos</a></div>
+<p class="cuerpo_txt" data-cambio="nuevo">En el siguiente código programamos las cuatro arquitecturas de la tercera presentación con un mismo problema: pronosticar cuántas personas tomarán el metro de Chicago en las <strong>próximas dos semanas</strong>. Cada arquitectura tiene su sección, con su esquema, un ejemplo de lo que entra y lo que sale, la red y su pronóstico: <strong>secuencia → vector</strong> (lee 56 días y entrega los 14 siguientes juntos), <strong>secuencia → secuencia</strong> (una predicción en cada paso, que luego se usa paso a paso para llegar a 14 días), <strong>vector → secuencia</strong> (a partir de unos pocos números genera los 14 días uno por uno) y <strong>codificador–decodificador</strong> (lee 56 días, los resume en un contexto y genera los 14 días). Al final se comparan sus errores día por día frente a un pronóstico ingenuo.</p>
+<a href="https://github.com/omarcastano/deeplearning-javeriana-site/blob/main/modulo_2/unidad_2/3_experiencia/nueva/4_Script2_M2_U2_arquitecturas_pytorch.ipynb" target="_blank" class="btn_03" rel="noopener" data-cambio="nuevo">Arquitecturas para pronosticar</a></div>
 
 <style>
 body.rev [data-cambio]{position:relative;outline:2px dashed var(--c,#2f6fdb);outline-offset:6px;border-radius:4px}
