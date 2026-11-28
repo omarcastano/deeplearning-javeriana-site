@@ -344,6 +344,22 @@
   </div>
 </section>
 
+<section class="slide" data-title="Secuencia → vector: aplicaciones">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 1 de 4 · Aplicaciones</p><h2>Secuencia → vector: ¿dónde se aplica?</h2>
+    <p class="lead" style="font-size:20px;max-width:1120px">En todos estos casos <b>entra</b> la historia reciente de una serie y <b>sale</b> un solo número: el valor que tendrá en el próximo periodo.</p></div>
+  <div class="bd" style="gap:14px">
+    <div class="grid3" style="gap:16px">
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Energía</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> consumo eléctrico de una ciudad, hora a hora, en las últimas 48 horas.<br><b>Sale:</b> consumo de la próxima hora.</p><p style="font-size:15px;margin-top:4px">Para decidir cuánta energía generar.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Comercio</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> unidades vendidas de un producto en un supermercado, día a día, en los últimos 60 días.<br><b>Sale:</b> unidades que se venderán mañana.</p><p style="font-size:15px;margin-top:4px">Para saber cuánto pedir al proveedor.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Finanzas</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> precio de cierre del dólar, día a día, en los últimos 30 días.<br><b>Sale:</b> precio de cierre de mañana.</p><p style="font-size:15px;margin-top:4px">Para planear compras o pagos en dólares.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Transporte</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> pasajeros que entran a una estación de bus, día a día, en las últimas 8 semanas.<br><b>Sale:</b> pasajeros de mañana.</p><p style="font-size:15px;margin-top:4px">Para decidir cuántos buses poner en servicio.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Salud</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> pacientes que llegan a urgencias de un hospital, día a día, en los últimos 3 meses.<br><b>Sale:</b> pacientes de mañana.</p><p style="font-size:15px;margin-top:4px">Para programar médicos y enfermeras.</p></div>
+      <div class="card" style="padding:12px 20px"><span class="tag t-teal" style="margin-bottom:6px">Clima</span><p style="font-size:16px;color:var(--fg)"><b>Entra:</b> temperatura, humedad y presión de una estación, hora a hora, en las últimas 24 horas (tres valores por paso).<br><b>Sale:</b> temperatura de la próxima hora.</p><p style="font-size:15px;margin-top:4px">Para avisar a tiempo de una helada o de calor extremo.</p></div>
+    </div>
+    <p class="txt" style="font-size:16px;color:var(--muted)">Si en lugar de un número se quieren varios (por ejemplo, las ventas de cada uno de los próximos 7 días), la capa densa da 7 salidas: sigue siendo secuencia → vector.</p>
+  </div>
+</section>
+
 <section class="slide" data-title="Secuencia a secuencia">
   <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 2 de 4</p><h2>Secuencia → secuencia: una predicción en cada paso</h2>
     <p class="lead" style="font-size:20px;max-width:1120px"><b>Entra</b> una secuencia. <b>Sale</b> otra secuencia del mismo largo: una predicción por cada valor leído.</p></div>
