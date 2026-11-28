@@ -361,7 +361,7 @@
       </div>
       <div class="chartbox" style="padding:8px 14px 4px;display:flex;flex-direction:column">
         <div class="cap"><span class="hl-i"><b>Índigo:</b></span> los valores que entran (la red los lee uno por uno). <span class="hl-t"><b>Verde:</b></span> el único valor que sale, \(\hat y\).</div>
-        <svg class="chart" id="ap1Svg" viewBox="0 0 620 330" role="img" aria-label="Gráfica del caso elegido"></svg>
+        <svg class="chart" id="ap1Svg" viewBox="0 0 620 390" role="img" aria-label="Gráfica del caso elegido"></svg>
       </div>
     </div>
   </div>
@@ -397,7 +397,7 @@
       </div>
       <div class="chartbox" style="padding:8px 14px 4px;display:flex;flex-direction:column">
         <div class="cap"><span class="hl-i"><b>Índigo:</b></span> valores que van llegando. <span class="hl-t"><b>Verde punteado:</b></span> en cada paso, el pronóstico del valor siguiente.</div>
-        <svg class="chart" id="ap2Svg" viewBox="0 0 620 330" role="img" aria-label="Gráfica del caso elegido"></svg>
+        <svg class="chart" id="ap2Svg" viewBox="0 0 620 390" role="img" aria-label="Gráfica del caso elegido"></svg>
       </div>
     </div>
   </div>
@@ -434,7 +434,7 @@
       </div>
       <div class="chartbox" style="padding:8px 14px 4px;display:flex;flex-direction:column">
         <div class="cap"><span class="hl-i"><b>Índigo:</b></span> el vector que entra (unos pocos números o categorías). <span class="hl-t"><b>Verde:</b></span> la serie que genera la red, un valor por paso.</div>
-        <svg class="chart" id="ap3Svg" viewBox="0 0 620 330" role="img" aria-label="Gráfica del caso elegido"></svg>
+        <svg class="chart" id="ap3Svg" viewBox="0 0 620 390" role="img" aria-label="Gráfica del caso elegido"></svg>
       </div>
     </div>
   </div>
@@ -500,7 +500,7 @@
       </div>
       <div class="chartbox" style="padding:8px 14px 4px;display:flex;flex-direction:column">
         <div class="cap"><span class="hl-i"><b>Índigo:</b></span> la serie que lee el codificador. <span class="hl-t"><b>Verde:</b></span> la serie que genera el decodificador.</div>
-        <svg class="chart" id="ap4Svg" viewBox="0 0 620 330" role="img" aria-label="Gráfica del caso elegido"></svg>
+        <svg class="chart" id="ap4Svg" viewBox="0 0 620 390" role="img" aria-label="Gráfica del caso elegido"></svg>
       </div>
     </div>
   </div>
@@ -941,10 +941,10 @@
     ] }
   };
 
-  var W = 620, H = 330, mt = 40, mb = 46;
+  var W = 620, H = 390, mt = 40, mb = 46;
   function yscale(vals) {
     var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = (hi - lo) * 0.12 || 1;
-    lo -= pad; hi += pad;
+    var mn = lo; lo -= pad; hi += pad; if (mn >= 0 && lo < 0) lo = 0;
     return { f: function (v) { return mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb); }, lo: lo, hi: hi };
   }
   function axes(s, ys, x0, x1, unit) {
@@ -975,7 +975,7 @@
           var xp = sx(hist.length), yp = ys.f(out[0]);
           s += L(sx(hist.length - 1), ys.f(hist[hist.length - 1]), xp, yp, TEA, 2, "4 4");
           s += C(xp, yp, 8, TEA);
-          s += T(xp - 4, yp - 16, "ŷ = " + num(out[0]), TEA, 15, "end", 700);
+          s += T(xp - 12, yp + (yp > H / 2 ? -22 : 30), "ŷ = " + num(out[0]), TEA, 16, "end", 700);
         }
         s += T(x1, H - 10, c.outL, TEA, 15, "end", 600);
       } else {
@@ -997,21 +997,20 @@
       var last = hp2[hp2.length - 1], lp = pp[pp.length - 1];
       s += L(last[0], H - mb + 2, last[0], mt - 6, IND, 1, "3 4");
       s += T(last[0] - 4, mt - 10, "paso " + m + ": lee", IND, 13, "end", 600);
-      s += T(lp[0] + 4, lp[1] - 12, "predice el siguiente", TEA, 13, lp[0] > x1 - 140 ? "end" : "start", 600);
       s += T(x0, H - 10, "índigo: valores que llegan", IND, 15, "start", 600);
       s += T(x1, H - 10, "verde: pronóstico del valor siguiente", TEA, 15, "end", 600);
     } else {
-      var o = d, ys3 = yscale(o.concat([0])), vx0 = 8, vw = 170, cx0 = 250, sx3 = function (i) { return cx0 + i / (o.length - 1) * (x1 - cx0); };
+      var o = d, ys3 = yscale(o), vx0 = 8, vw = 170, cx0 = 250, sx3 = function (i) { return cx0 + i / (o.length - 1) * (x1 - cx0); };
       s += T(vx0 + vw / 2, 22, "entra: un vector", IND, 15, "middle", 700);
       c.feat.forEach(function (f, i) {
-        var y = 50 + i * 74;
+        var y = 70 + i * 90;
         s += R(vx0, y, vw, 60, "var(--indigo-soft)", IND);
         s += T(vx0 + vw / 2, y + 23, f[0], "var(--muted)", 13);
         s += T(vx0 + vw / 2, y + 47, f[1], IND, 17, "middle", 700);
       });
-      s += L(vx0 + vw + 8, 160, cx0 - 40, 160, AMB, 3);
-      s += '<path d="M' + (cx0 - 42) + ' 152 L ' + (cx0 - 30) + ' 160 L ' + (cx0 - 42) + ' 168 Z" style="fill:' + AMB + '"/>';
-      s += T((vx0 + vw + cx0 - 30) / 2, 148, "red", "var(--amber)", 13, "middle", 700);
+      s += L(vx0 + vw + 8, 190, cx0 - 40, 190, AMB, 3);
+      s += '<path d="M' + (cx0 - 42) + ' 182 L ' + (cx0 - 30) + ' 190 L ' + (cx0 - 42) + ' 198 Z" style="fill:' + AMB + '"/>';
+      s += T((vx0 + vw + cx0 - 30) / 2, 178, "red", "var(--amber)", 13, "middle", 700);
       [0, 0.5, 1].forEach(function (q) { var v = ys3.lo + q * (ys3.hi - ys3.lo), y = ys3.f(v); s += L(cx0, y, x1, y, "var(--grid)", 1); s += T(cx0 - 6, y + 5, num(v), "var(--muted)", 13, "end"); });
       s += T(x1, 22, c.unit, "var(--muted)", 14, "end", 600);
       var no3 = Math.max(1, Math.floor(p * o.length)), op3 = [];
