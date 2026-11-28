@@ -527,38 +527,60 @@
 </section>
 
 <section class="slide" data-title="Actividad: codificar y decodificar">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Actividad</p><h2>Seguir la información por el codificador y el decodificador</h2></div>
-  <div class="bd noclick">
-    <div class="chartbox" style="padding:10px 16px">
-      <div class="cap">La celda resaltada es la que trabaja. Barra ámbar: cuánto del primer dato \(x_1\) sigue en la memoria. En una celda simple la memoria se multiplica en cada paso por un peso \(w_h\) (aquí 0,8): 100 %, 80 %, 64 %… Al llegar al contexto queda poco.</div>
-      <svg class="chart" id="aeSvg" style="max-height:300px" viewBox="0 0 1160 320" role="img" aria-label="Recorrido por un codificador-decodificador"></svg>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Arquitectura 4 de 4 · Actividad</p><h2>Todo pasa por un solo vector: ¿qué se pierde?</h2>
+    <p class="lead" style="font-size:18px;max-width:1120px">El decodificador <b>no ve la serie de entrada</b>: solo ve el contexto (el último estado del codificador). <b>Pregunta:</b> ¿cuánto del primer valor, \(x_1\), sigue en el contexto cuando el codificador termina de leer?</p></div>
+  <div class="bd noclick" style="gap:10px;margin-top:4px">
+    <div class="chartbox" style="padding:8px 16px">
+      <div class="cap"><span class="hl-a"><b>Barra ámbar:</b></span> qué parte del aporte de \(x_1\) sigue en la memoria tras cada paso. En una celda simple la memoria se multiplica en cada paso por un peso \(w_h\) (aquí 0,8): 100 %, 80 %, 64 %…</div>
+      <svg class="chart" id="aeSvg" style="max-height:190px" viewBox="0 0 1160 320" role="img" aria-label="Recorrido por un codificador-decodificador"></svg>
     </div>
-    <div class="row2" style="grid-template-columns:auto 1fr auto;gap:18px;align-items:center">
-      <div class="card ctl" style="padding:8px 18px;gap:6px;width:420px">
-        <label style="grid-template-columns:230px 1fr"><span>\(T\) <small>largo de la entrada</small></span><input type="number" id="aeT" min="2" max="9" step="1" value="6"></label>
-        <label style="grid-template-columns:230px 1fr"><span>\(H\) <small>largo de la salida</small></span><input type="number" id="aeH" min="1" max="6" step="1" value="3"></label>
+    <div class="row2" style="grid-template-columns:300px 1fr 210px;gap:14px;align-items:stretch">
+      <div class="col" style="gap:8px">
+        <div class="card ctl" style="padding:6px 16px;gap:4px">
+          <label style="grid-template-columns:170px 1fr"><span>\(T\) <small>valores de entrada</small></span><input type="number" id="aeT" min="2" max="9" step="1" value="6"></label>
+          <label style="grid-template-columns:170px 1fr"><span>\(H\) <small>valores de salida</small></span><input type="number" id="aeH" min="1" max="6" step="1" value="3"></label>
+        </div>
+        <div class="btns"><button type="button" id="aePlay">▶ Recorrer</button><button type="button" id="aeReset">Reiniciar</button></div>
       </div>
-      <p class="txt" style="font-size:16px;line-height:1.45"><b>Prueba:</b> recorre con \(T=6\) y luego con \(T=9\): el aporte de \(x_1\) al contexto baja. Cambia \(H\): el codificador no cambia, solo el decodificador. Con LSTM o GRU la barra bajaría mucho más despacio, pero el contexto sigue siendo un solo vector.</p>
-      <div class="btns" style="width:260px"><button type="button" id="aePlay">▶ Recorrer</button><button type="button" id="aeReset">Reiniciar</button></div>
+      <div class="card" style="padding:8px 18px"><p style="font-size:15px;color:var(--fg);line-height:1.4"><b>1.</b> Pulsa <b>Recorrer</b> con \(T=6\): llega el 33 %. <b>2.</b> Pon \(T=9\): llega el 17 %; con más entrada se recuerda menos el inicio. <b>3.</b> Cambia \(H\): no cambia nada, porque el contexto solo depende del codificador.</p><p style="font-size:14.5px;line-height:1.4;margin-top:6px"><b style="color:var(--coral)">Por qué importa:</b> con entradas largas, el pronóstico casi no usa los primeros valores. LSTM y GRU lo atenúan; los modelos con <b>atención</b> (fuera de esta unidad) lo resuelven dejando al decodificador mirar todos los estados.</p></div>
+      <div class="kpi" style="padding:8px 16px;display:flex;flex-direction:column;justify-content:center"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Aporte de \(x_1\) que llega al contexto</div><div class="v" id="aeK" style="color:var(--amber)">–</div></div>
     </div>
   </div>
 </section>
 
-<section class="slide" data-title="Capas apiladas y bidireccionales">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más elaboradas</p><h2>Apilar capas y leer en los dos sentidos</h2>
-    <p class="lead" style="font-size:20px">Las capas apiladas que viste en la parte 1 sirven en cualquiera de estas arquitecturas y con cualquier celda; además, una capa puede leer la secuencia en los dos sentidos.</p></div>
+<section class="slide" data-title="Capas apiladas">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más grandes</p><h2>Apilar capas: una capa recurrente encima de otra</h2>
+    <p class="lead" style="font-size:19px;max-width:1120px">En los esquemas anteriores había <b>una sola capa recurrente</b> (una fila de cajas). Como viste en la parte 1, se pueden poner varias capas recurrentes una encima de otra, cada una con varias neuronas. Esto sirve en cualquiera de las cuatro arquitecturas: lo que entra y lo que sale no cambia.</p></div>
   <div class="bd">
-    <div class="grid2">
-      <div class="chartbox" style="padding:12px 16px">
-        <div class="cap"><b>Red recurrente profunda:</b> la secuencia de \(h_t\) de una capa es la entrada de la siguiente.</div>
-        <svg class="chart" id="apSvg" viewBox="0 0 520 250" role="img" aria-label="Dos capas recurrentes apiladas"></svg>
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:10px 14px">
+        <div class="cap">Cada caja es una capa completa (todas sus neuronas) en un paso. La capa 1 lee los datos \(x_t\); la capa 2 lee los estados \(h_t\) que produce la capa 1. Arriba, la capa densa usa el último estado de la capa 2.</div>
+        <svg class="chart" id="apSvg" viewBox="0 0 560 300" role="img" aria-label="Dos capas recurrentes apiladas"></svg>
       </div>
-      <div class="chartbox" style="padding:12px 16px">
-        <div class="cap"><b>Red bidireccional:</b> una capa lee de izquierda a derecha y otra al revés; en cada paso se juntan las dos.</div>
-        <svg class="chart" id="biSvg" viewBox="0 0 520 250" role="img" aria-label="Capa bidireccional"></svg>
+      <div class="col" style="gap:9px">
+        <div class="card" style="padding:9px 18px"><span class="tag t-amber" style="margin-bottom:5px">Para qué</span><p style="font-size:15.5px">Cada capa extra permite aprender patrones más complejos de la serie, como en las redes densas con varias capas ocultas.</p></div>
+        <div class="card" style="padding:9px 18px"><span class="tag t-teal" style="margin-bottom:5px">Cuántas</span><p style="font-size:15.5px">Lo usual es 1 o 2 capas. Más capas hacen la red más lenta de entrenar y más propensa al sobreajuste: se agregan solo si la pérdida de validación mejora.</p></div>
+        <div class="card" style="padding:9px 18px"><span class="tag t-indigo" style="margin-bottom:5px">En PyTorch</span><p style="font-size:15.5px"><code style="font-size:14px">nn.GRU(input_size=1, hidden_size=32, num_layers=2, batch_first=True)</code><br>2 capas apiladas de 32 neuronas cada una. <code style="font-size:14px">nn.LSTM</code> y <code style="font-size:14px">nn.RNN</code> usan los mismos argumentos.</p></div>
       </div>
     </div>
-    <p class="txt" style="font-size:18px;color:var(--muted)">La bidireccional sirve cuando toda la secuencia está disponible desde el inicio (por ejemplo, rellenar un día sin registro en medio de una serie de pasajeros, viendo los días de antes y los de después): lo que pasa en un instante se entiende mejor viendo también lo que vino después. No sirve para predecir el futuro, porque ese futuro todavía no se conoce.</p>
+  </div>
+</section>
+
+<section class="slide" data-title="Capa bidireccional">
+  <div class="hd"><p class="eyebrow">Etapa 1 · Redes más grandes</p><h2>Capa bidireccional: leer la serie en los dos sentidos</h2>
+    <p class="lead" style="font-size:19px;max-width:1120px">Hasta ahora la red leía de \(x_1\) a \(x_T\), del pasado al presente. Una capa <b>bidireccional</b> son dos capas recurrentes que leen la misma serie: una hacia adelante y otra hacia atrás.</p></div>
+  <div class="bd">
+    <div class="row2 grow" style="grid-template-columns:1fr 1fr;align-items:center;gap:22px">
+      <div class="chartbox" style="padding:10px 14px">
+        <div class="cap"><span class="hl-a"><b>Fila de abajo:</b></span> lee de \(x_1\) a \(x_4\). <span class="hl-i"><b>Fila de arriba:</b></span> lee de \(x_4\) a \(x_1\). En cada paso se unen los dos estados: ese paso conoce lo que vino antes y lo que vino después.</div>
+        <svg class="chart" id="biSvg" viewBox="0 0 560 300" role="img" aria-label="Capa bidireccional"></svg>
+      </div>
+      <div class="col" style="gap:9px">
+        <div class="card" style="padding:9px 18px"><span class="tag t-teal" style="margin-bottom:5px">Ejemplo</span><p style="font-size:15.5px">Rellenar un día sin registro en una serie de pasajeros: para estimar el miércoles que falta, sirven el martes <b>y</b> el jueves.</p></div>
+        <div class="card" style="padding:9px 18px"><span class="tag t-coral" style="margin-bottom:5px">Cuidado al pronosticar</span><p style="font-size:15.5px">Para pronosticar el futuro <b>no sirve</b>: al predecir mañana, los días que vienen todavía no existen, así que no hay nada que leer hacia atrás. Solo se usa cuando la serie completa ya está registrada.</p></div>
+        <div class="card" style="padding:9px 18px"><span class="tag t-indigo" style="margin-bottom:5px">En PyTorch</span><p style="font-size:15.5px"><code style="font-size:14px">nn.GRU(input_size=1, hidden_size=32, bidirectional=True, batch_first=True)</code><br>Cada estado tiene 64 números: los 32 de cada sentido, uno al lado del otro.</p></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -861,6 +883,7 @@
       }
       s += text(x0 + (T * dx) / 2, 300, "codificador: lee " + T + " pasos", "tk", "middle", IND, 15);
       s += text(d0 + (H * dx) / 2 - 20, 300, "decodificador: genera " + H, "tk", "middle", TEA, 15);
+      $("aeK").textContent = Math.round(Math.pow(0.8, T - 1) * 100) + " %";
       $("aeSvg").setAttribute("viewBox", "0 0 " + Math.max(1160, d0 + H * dx + 10) + " 320");
       $("aeSvg").innerHTML = s;
     }
@@ -888,27 +911,33 @@
 
   /* ---------- apiladas y bidireccional ---------- */
   (function () {
-    var s = "", k, dx = 110, x0 = 40, cw = 74, ch = 40;
+    var s = "", k, dx = 112, x0 = 116, cw = 80, ch = 42;
+    s += text(8, 186, "capa 1", "lb", "start", null, 16, 700) + text(8, 204, "(lee x)", "tk", "start", null, 13);
+    s += text(8, 106, "capa 2", "lb", "start", null, 16, 700) + text(8, 124, "(lee h de capa 1)", "tk", "start", null, 12);
     for (k = 0; k < 4; k++) {
       var x = x0 + k * dx;
-      s += rect(x, 140, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x + cw / 2, 166, "capa 1", "tk", "middle", null, 14);
-      s += rect(x, 60, cw, ch, "var(--amber-soft)", AMB, 1.5, 8) + text(x + cw / 2, 86, "capa 2", "tk", "middle", null, 14);
-      if (k > 0) { s += line(x - dx + cw + 2, 160, x - 3, 160, AMB, "Amb", 2.5); s += line(x - dx + cw + 2, 80, x - 3, 80, AMB, "Amb", 2.5); }
-      s += line(x + cw / 2, 224, x + cw / 2, 183, IND, "Ind", 2.5) + text(x + cw / 2, 244, sub("x", k + 1), "lb", "middle", IND, 16, 600);
-      s += line(x + cw / 2, 138, x + cw / 2, 103, AMB, "Amb", 2.5);
-      s += line(x + cw / 2, 58, x + cw / 2, 22, TEA, "Tea", 2.5);
+      s += rect(x, 170, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x + cw / 2, 196, "capa 1", "tk", "middle", null, 14);
+      s += rect(x, 90, cw, ch, "var(--amber-soft)", AMB, 1.5, 8) + text(x + cw / 2, 116, "capa 2", "tk", "middle", null, 14);
+      if (k > 0) { s += line(x - dx + cw + 2, 191, x - 3, 191, AMB, "Amb", 2.5); s += line(x - dx + cw + 2, 111, x - 3, 111, AMB, "Amb", 2.5); }
+      s += line(x + cw / 2, 256, x + cw / 2, 215, IND, "Ind", 2.5) + text(x + cw / 2, 278, sub("x", k + 1), "lb", "middle", IND, 16, 600);
+      s += line(x + cw / 2, 168, x + cw / 2, 135, AMB, "Amb", 2.5) + text(x + cw / 2 + 8, 157, sub("h", k + 1), "tk", "start", AMB, 13);
     }
+    var xl = x0 + 3 * dx + cw / 2;
+    s += line(xl, 88, xl, 52, TEA, "Tea", 2.5);
+    s += rect(xl - 50, 14, 100, 36, "var(--teal-soft)", TEA, 2, 8) + text(xl, 37, "densa → ŷ", "tk", "middle", TEA, 14, 700);
     $("apSvg").innerHTML = s;
     s = "";
     for (k = 0; k < 4; k++) {
       var x2 = x0 + k * dx;
-      s += rect(x2, 140, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x2 + cw / 2, 166, "→", "lb", "middle", AMB, 18, 700);
-      s += rect(x2, 75, cw, ch, "var(--paper-2)", "var(--axis)", 1.5, 8) + text(x2 + cw / 2, 101, "←", "lb", "middle", IND, 18, 700);
-      if (k > 0) { s += line(x2 - dx + cw + 2, 160, x2 - 3, 160, AMB, "Amb", 2.5); s += line(x2 - 3, 95, x2 - dx + cw + 2, 95, IND, "Ind", 2.5); }
-      s += line(x2 + cw / 2, 224, x2 + cw / 2, 183, IND, "Ind", 2.5) + text(x2 + cw / 2, 244, sub("x", k + 1), "lb", "middle", IND, 16, 600);
-      s += line(x2 + cw / 2, 73, x2 + cw / 2, 30, TEA, "Tea", 2.5);
-      s += text(x2 + cw / 2, 22, "unir", "tk", "middle", TEA, 13);
+      s += rect(x2, 170, cw, ch, "var(--paper-2)", AMB, 1.5, 8) + text(x2 + cw / 2, 197, "→", "lb", "middle", AMB, 20, 700);
+      s += rect(x2, 100, cw, ch, "var(--paper-2)", IND, 1.5, 8) + text(x2 + cw / 2, 127, "←", "lb", "middle", IND, 20, 700);
+      if (k > 0) { s += line(x2 - dx + cw + 2, 191, x2 - 3, 191, AMB, "Amb", 2.5); s += line(x2 - 3, 121, x2 - dx + cw + 2, 121, IND, "Ind", 2.5); }
+      s += line(x2 + cw / 2, 256, x2 + cw / 2, 215, MUT, "Mut", 2.2) + text(x2 + cw / 2, 278, sub("x", k + 1), "lb", "middle", IND, 16, 600);
+      s += line(x2 + cw / 2, 98, x2 + cw / 2, 58, TEA, "Tea", 2.5);
+      s += rect(x2 + 8, 22, cw - 16, 32, "var(--teal-soft)", TEA, 1.5, 8) + text(x2 + cw / 2, 43, "unir", "tk", "middle", TEA, 14, 700);
     }
+    s += text(8, 196, "hacia", "tk", "start", AMB, 14, 600) + text(8, 212, "adelante", "tk", "start", AMB, 14, 600);
+    s += text(8, 126, "hacia", "tk", "start", IND, 14, 600) + text(8, 142, "atrás", "tk", "start", IND, 14, 600);
     $("biSvg").innerHTML = s;
   })();
 })();
