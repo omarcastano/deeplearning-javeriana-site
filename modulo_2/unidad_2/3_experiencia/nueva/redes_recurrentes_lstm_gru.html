@@ -322,11 +322,11 @@
 
 <section class="slide" data-title="Sigamos un dato">
   <div class="hd"><p class="eyebrow">Etapa 1 · El problema</p><h2>Sigamos un dato: ¿cuánto cuenta \(x_1\)?</h2>
-    <p class="lead" style="font-size:20px">En la red simple, todo lo recordado vive en la memoria \(h_t\). Veamos cuánto cuenta el <b>primer dato</b>, \(x_1\), en esa memoria paso a paso. Pulsa <b>Siguiente paso</b>.</p></div>
+    <p class="lead" style="font-size:20px">En la red simple, todo lo recordado vive en la memoria \(h_t\). Veamos cuánto cuenta el <b>primer dato</b>, \(x_1\), en esa memoria a medida que avanza la lectura. Pulsa <b>Siguiente paso</b>.</p></div>
   <div class="bd noclick">
     <div class="chartbox" style="padding:10px 16px">
       <div class="cap">Cada barra es \(h_t\) como suma de los datos; cada trozo mide el número que multiplica a ese dato (<b>cuánto cuenta</b>). <b style="color:var(--amber)">Ámbar</b>: \(x_1\). <b style="color:var(--indigo)">Índigo</b>: los demás.</div>
-      <svg class="chart" id="mfSvg" style="max-height:198px" viewBox="0 30 1000 285" role="img" aria-label="Memoria de la red recurrente simple paso a paso"></svg>
+      <svg class="chart" id="mfSvg" style="max-height:198px" viewBox="0 30 1000 285" role="img" aria-label="Memoria de la red recurrente simple a lo largo de la lectura"></svg>
     </div>
     <div class="row2" style="grid-template-columns:1fr auto;gap:18px;align-items:center">
       <div class="card" style="padding:10px 20px;min-height:112px"><span class="tag t-teal" id="mfTag">Antes de empezar</span><p style="font-size:18px;line-height:1.5" id="mfTxt"></p></div>
@@ -631,7 +631,7 @@
 <section class="slide" data-title="RNN, LSTM y GRU">
   <style>.slide[data-title="RNN, LSTM y GRU"] td{padding:8px 18px;font-size:17px}.slide[data-title="RNN, LSTM y GRU"] td:first-child{font-size:19px;width:200px}</style>
   <div class="hd"><p class="eyebrow">Etapa 3 · Comparación</p><h2>¿Cuál usar?</h2>
-    <p class="lead" style="font-size:20px">Las tres leen la secuencia paso a paso con pesos compartidos; cambian en cómo cuidan la memoria.</p></div>
+    <p class="lead" style="font-size:20px">Las tres leen la secuencia un dato a la vez, con pesos compartidos; cambian en cómo cuidan la memoria.</p></div>
   <div class="bd">
     <table>
       <thead><tr><th></th><th>RNN simple</th><th>LSTM</th><th>GRU</th></tr></thead>
@@ -825,7 +825,7 @@
     }
     return s;
   }
-  /* paso a paso con animación suave del último paso */
+  /* avance de la memoria con animación suave del último paso */
   function stepper(p, cfg, tags, txts, cols) {
     var k = 0, anim = null;
     function paint(shown) { $(p + "Svg").innerHTML = memChain(cfg, shown); }

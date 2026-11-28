@@ -293,7 +293,7 @@
   <div class="hd" style="position:relative">
     <p class="eyebrow">Unidad 2 · Redes neuronales recurrentes · Parte 3</p>
     <h1>Arquitecturas</h1>
-    <p class="lead">Cómo se conectan las entradas y salidas de una red recurrente según el problema, dónde se usan y cómo se arma una paso a paso.</p>
+    <p class="lead">Cómo se conectan las entradas y salidas de una red recurrente según el problema, dónde se usan y qué decisiones hay que tomar para armar una.</p>
     <div class="meta"><span>Deep Learning</span><span>Parte 3 · Arquitecturas</span></div>
   </div>
 </section>
@@ -304,7 +304,7 @@
   <div class="bd">
     <div class="agenda" style="gap:10px 24px;grid-template-columns:1fr">
       <div class="ag"><span class="n">1</span><div><b>Arquitecturas</b><span>¿Qué tipos hay y dónde se aplica cada uno?</span></div></div>
-      <div class="ag"><span class="n">2</span><div><b>En la práctica</b><span>¿Cómo se arma una red recurrente, paso a paso?</span></div></div>
+      <div class="ag"><span class="n">2</span><div><b>En la práctica</b><span>¿Qué decisiones hay que tomar para armar una red recurrente?</span></div></div>
     </div>
   </div>
 </section>
@@ -451,8 +451,8 @@
         <div class="cap" style="font-size:16px">Una red <b>secuencia → vector</b> (arquitectura 1) cuya capa densa da <b>3 números</b>: lee la historia una vez y entrega los 3 días juntos.</div>
       </div>
       <div class="chartbox" style="padding:10px 16px">
-        <span class="tag t-coral" style="margin:4px 0 4px 6px">Forma 2 · Paso a paso (autorregresiva)</span>
-        <svg class="chart" id="vpB" viewBox="0 0 560 210" role="img" aria-label="Pronóstico paso a paso de tres valores"></svg>
+        <span class="tag t-coral" style="margin:4px 0 4px 6px">Forma 2 · Autorregresiva</span>
+        <svg class="chart" id="vpB" viewBox="0 0 560 210" role="img" aria-label="Pronóstico autorregresivo de tres valores"></svg>
         <div class="cap" style="font-size:16px">Una red que da <b>solo el día siguiente</b>. Su predicción se agrega a la serie como si fuera un dato real y se vuelve a usar la red, 3 veces. Usar sus propias predicciones como entrada se llama <b>autorregresivo</b>; así genera el decodificador (arquitectura 3).</div>
       </div>
     </div>
@@ -461,11 +461,11 @@
 </section>
 
 <section class="slide" data-title="Actividad: pronosticar varios pasos">
-  <div class="hd"><p class="eyebrow">Etapa 1 · Pronosticar varios pasos · Actividad</p><h2>Directa o paso a paso: ¿cuál se equivoca menos?</h2></div>
+  <div class="hd"><p class="eyebrow">Etapa 1 · Pronosticar varios pasos · Actividad</p><h2>Directa o autorregresiva: ¿cuál se equivoca menos?</h2></div>
   <div class="bd noclick">
     <div class="row2 grow" style="grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:22px">
       <div class="col" style="gap:10px;justify-content:flex-start">
-        <p class="lead" style="font-size:17px;line-height:1.45">Se pronostican los próximos \(H\) valores de una serie con las dos formas de la diapositiva anterior: <b style="color:var(--indigo)">directa</b> y <b style="color:var(--coral)">paso a paso</b>. Para que solo cambie la forma, las dos usan el mismo modelo sencillo, que mira los últimos \(P\) valores (con una red la idea es la misma).</p>
+        <p class="lead" style="font-size:17px;line-height:1.45">Se pronostican los próximos \(H\) valores de una serie con las dos formas de la diapositiva anterior: <b style="color:var(--indigo)">directa</b> y <b style="color:var(--coral)">autorregresiva</b>. Para que solo cambie la forma, las dos usan el mismo modelo sencillo, que mira los últimos \(P\) valores (con una red la idea es la misma).</p>
         <div class="card ctl" style="padding:8px 18px;gap:6px">
           <label style="grid-template-columns:190px 1fr"><span>\(H\) <small>pasos a pronosticar</small></span>
             <select id="msH"><option>5</option><option selected>15</option><option>30</option></select></label>
@@ -474,16 +474,16 @@
             <select id="msP"><option selected>5</option><option>10</option><option>20</option></select></label>
         </div>
         <div class="grid2" style="gap:8px">
-          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio, paso a paso</div><div class="v" id="msEa" style="font-size:24px;color:var(--coral)">–</div></div>
+          <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio, autorregresiva</div><div class="v" id="msEa" style="font-size:24px;color:var(--coral)">–</div></div>
           <div class="kpi" style="padding:6px 12px"><div class="k" style="text-transform:none;letter-spacing:0;font-size:14px">Error medio, directa</div><div class="v" id="msEd" style="font-size:24px;color:var(--indigo)">–</div></div>
         </div>
       </div>
       <div class="col" style="gap:8px">
         <div class="chartbox" style="padding:10px 16px">
-          <div class="cap">Gris: valores conocidos. Verde: lo que de verdad pasó. <span class="hl-i"><b>Índigo:</b></span> forma directa. <span class="hl-c"><b>Rojo punteado:</b></span> forma paso a paso.</div>
+          <div class="cap">Gris: valores conocidos. Verde: lo que de verdad pasó. <span class="hl-i"><b>Índigo:</b></span> forma directa. <span class="hl-c"><b>Rojo punteado:</b></span> forma autorregresiva.</div>
           <svg class="chart" id="msSvg" viewBox="0 0 580 290" role="img" aria-label="Pronóstico de varios pasos"></svg>
         </div>
-        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> con \(P=5\) el modelo se equivoca un poco en cada paso; en la forma paso a paso ese error entra como dato y la curva roja se aleja cada vez más. Sube \(P\) a 20: con un modelo más preciso, las dos formas se parecen. Cambia el inicio para probar otros tramos de la serie.</p>
+        <p class="txt" style="font-size:16px;line-height:1.4"><b>Prueba:</b> con \(P=5\) el modelo se equivoca un poco en cada paso; en la forma autorregresiva ese error entra como dato y la curva roja se aleja cada vez más. Sube \(P\) a 20: con un modelo más preciso, las dos formas se parecen. Cambia el inicio para probar otros tramos de la serie.</p>
       </div>
     </div>
   </div>
@@ -567,7 +567,7 @@
 </section>
 
 <section class="slide" data-title="Cómo armar una red recurrente">
-  <div class="hd"><p class="eyebrow">Etapa 2 · En la práctica</p><h2>Cómo armar una red recurrente, paso a paso</h2>
+  <div class="hd"><p class="eyebrow">Etapa 2 · En la práctica</p><h2>Cómo armar una red recurrente</h2>
     <p class="lead" style="font-size:20px">Las decisiones de diseño, en el orden en que se toman. Lo que no aparece aquí (pérdida, optimizador, entrenamiento) es igual que en las redes que ya conoces.</p></div>
   <div class="bd">
     <div class="grid3" style="gap:14px">

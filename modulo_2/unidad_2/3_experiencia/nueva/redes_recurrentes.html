@@ -432,11 +432,11 @@
         <tr><td>Solo acepta ventanas de un largo fijo.</td><td><b>Servir para cualquier largo</b>: si se leen los valores uno por uno con los mismos pesos, da igual si son 5 o 500.</td></tr>
       </tbody>
     </table>
-    <div class="card" style="padding:12px 22px"><span class="tag t-amber">Falta una pieza</span><p style="font-size:18px;line-height:1.5;color:var(--fg);margin-top:2px">Si la red lee un valor a la vez, ¿cómo sabe lo que leyó antes? Necesita una <b>memoria</b>: un resumen de lo leído que pase de un paso al siguiente. Esa es la idea de la red recurrente, y la siguiente diapositiva la muestra paso a paso.</p></div>
+    <div class="card" style="padding:12px 22px"><span class="tag t-amber">Falta una pieza</span><p style="font-size:18px;line-height:1.5;color:var(--fg);margin-top:2px">Si la red lee un valor a la vez, ¿cómo sabe lo que leyó antes? Necesita una <b>memoria</b>: un resumen de lo leído que pase de un paso al siguiente. Esa es la idea de la red recurrente, y la siguiente diapositiva la muestra en detalle.</p></div>
   </div>
 </section>
 
-<section class="slide" data-title="La idea paso a paso">
+<section class="slide" data-title="La idea en detalle">
   <div class="hd"><p class="eyebrow">Etapa 2 · La neurona recurrente</p><h2>La neurona recurrente</h2>
     <p class="lead" style="font-size:20px">Para resolver los problemas de la red densa se propone un nuevo tipo de neurona: la <b>neurona recurrente</b>, también llamada <b>celda</b>. Lee un valor por paso y guarda una <b>memoria</b> \(h\) que pasa al paso siguiente. Ejemplo: con la temperatura de 4 días (18, 20, 23 y 25 °C) queremos pronosticar la del día 5. Pulsa <b>Siguiente paso</b>.</p></div>
   <div class="bd noclick">
@@ -577,7 +577,7 @@
       <div class="link">→</div>
       <div class="card"><span class="n" style="font-size:34px">2</span><h3 style="font-size:21px">Pérdida</h3><p style="font-size:16px">La capa densa convierte el último estado \(h_T\) en el pronóstico \(\hat y\), y se compara con la etiqueta.</p></div>
       <div class="link">→</div>
-      <div class="card"><span class="n" style="font-size:34px">3</span><h3 style="font-size:21px">Backward</h3><p style="font-size:16px">El gradiente viaja hacia atrás, paso a paso, por toda la cadena: es el <b>backpropagation through time</b> (BPTT).</p></div>
+      <div class="card"><span class="n" style="font-size:34px">3</span><h3 style="font-size:21px">Backward</h3><p style="font-size:16px">El gradiente viaja hacia atrás por toda la cadena: es el <b>backpropagation through time</b> (BPTT).</p></div>
       <div class="link">→</div>
       <div class="card"><span class="n" style="font-size:34px">4</span><h3 style="font-size:21px">Step</h3><p style="font-size:16px">Como los pesos son compartidos, se suman los aportes de todos los pasos y se actualizan una sola vez.</p></div>
     </div>
@@ -806,7 +806,7 @@
     draw();
   })();
 
-  /* ---------- la idea paso a paso (temperaturas) ---------- */
+  /* ---------- la idea en detalle (temperaturas) ---------- */
   (function () {
     var vals = [18, 20, 23, 25], k = 0;
     var tags = ["Antes de empezar", "Paso 1", "Paso 2", "Paso 3", "Paso 4", "Al final"];
